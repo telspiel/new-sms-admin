@@ -1,0 +1,269 @@
+.dr-summary {
+  padding: 10px;
+  min-height: 100vh;
+}
+
+/* Header */
+
+.dr-summary-header h1 {
+  margin: 0;
+  color: #373435;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.dr-summary-header p {
+  margin-top: 6px;
+  color: #808080;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* Filter Card */
+
+.filter-card {
+  margin-top: 20px;
+  background: linear-gradient(to bottom, #fff8e6, #ffffff);
+  border-radius: 18px;
+  padding: 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  box-shadow: 0 3px 10px rgba(0,0,0,.08);
+}
+
+.filter-left {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label {
+  font-size: 13px;
+  color: #a67a00;
+  margin-bottom: 8px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.filter-group input,
+.filter-group select {
+  width: 180px;
+  height: 40px;
+  border: 1px solid #e8d49b;
+  border-radius: 12px;
+  padding: 0 15px;
+  background: white;
+  font-size: 15px;
+  outline: none;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.reset-btn {
+  height: 40px;
+  width: 90px;
+  border: 1px solid #d6dbe6;
+  background: white;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.submit-btn {
+  height: 40px;
+  width: 90px;
+  border: none;
+  background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
+  color: black;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.submit-btn:hover {
+  background: #e0a300;
+}
+
+/* Table */
+.table-card {
+  margin-top: 24px;
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.08);
+  overflow: hidden;
+}
+
+.table-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+}
+
+.table-card .search-box {
+  width: 280px;
+  height: 45px;
+  border: 1px solid #e3e6ef;
+  border-radius: 12px;
+  padding: 0 15px;
+  font-size: 15px;
+  outline: none;
+}
+
+.table-top span {
+  color: #7c8aa0;
+  font-size: 15px;
+}
+
+.dr-summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.dr-summary-table thead {
+  background: #fafbfd;
+}
+
+.dr-summary-table th,
+.dr-summary-table td {
+  padding: 16px 20px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.dr-summary-table thead th {
+  color: #75839a;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left !important;
+}
+
+.dr-summary-table tbody td {
+  border-top: 1px solid #edf0f5;
+  font-size: 15px;
+}
+
+.dr-summary-table th:nth-child(1),
+.dr-summary-table td:nth-child(1) {
+  width: 30%;
+}
+
+.dr-summary-table th:nth-child(2),
+.dr-summary-table td:nth-child(2) {
+  width: 45%;
+}
+
+.dr-summary-table th:nth-child(3),
+.dr-summary-table td:nth-child(3) {
+  width: 25%;
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  background: #fff2cc;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #b67d00;
+  font-weight: bold;
+}
+
+.count-cell {
+  text-align: left;
+  font-weight: 700;
+}
+
+.total-row {
+  background: #fcfcfc;
+  font-weight: 700;
+}
+
+.total-row td:last-child {
+  color: #c68a00;
+}
+
+.empty-state-cell {
+  padding: 60px 20px !important;
+  border: none !important;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #f3f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8d96a8;
+  font-size: 22px;
+  margin-bottom: 18px;
+}
+
+.empty-state h3 {
+  margin: 0;
+  color: #18243d;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.empty-state p {
+  margin-top: 12px;
+  color: #8d96a8;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* Responsive */
+
+@media (max-width: 900px) {
+
+  .filter-card {
+    flex-direction: column;
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .filter-buttons {
+    justify-content: flex-end;
+  }
+
+  .table-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+}

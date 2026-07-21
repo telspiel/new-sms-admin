@@ -1,0 +1,197 @@
+.department-management {
+  padding: 10px;
+  min-height: 100vh;
+}
+
+/* Header */
+.department-management-header h1 {
+  margin: 0;
+  color: #373435;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.department-management-header p {
+  margin-top: 6px;
+  color: #808080;
+  font-size: 14px;
+  text-align: left;
+}
+
+.wrap-add-department-btn {
+    display: flex;
+    width: 100%;
+    justify-content: right;
+    margin-bottom: 20px;
+}
+
+.wrap-add-department-btn .add-department-btn{
+    border: none;
+    outline: none;
+    background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
+    color: #111;
+    padding: 12px 22px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: .25s;
+    box-shadow: 0 8px 18px rgba(247, 181, 0, .35);
+}
+
+.department-card{
+    background:#fff;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 8px 25px rgba(0,0,0,.08);
+}
+
+.department-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding: 10px 20px;
+    border-bottom:1px solid #ececec;
+}
+
+.department-toolbar-left{
+    display:flex;
+    gap:14px;
+}
+
+.department-toolbar .search-box{
+    width:280px;
+    display:flex;
+    align-items:center;
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:0 15px;
+    height: 40px
+}
+
+.department-toolbar .search-box input{
+    flex:1;
+    border:none;
+    outline:none;
+    padding:12px;
+    font-size:15px;
+}
+
+.department-toolbar select{
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 5px 10px;
+    font-size: 15px;
+    outline: none;
+    height: 40px;
+    width: 200px;
+}
+
+.org-dropdown {
+  position: relative;
+  width: 240px;
+}
+
+.org-dropdown-header {
+  height: 40px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 0 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: #fff;
+  font-size: 15px;
+}
+
+.org-dropdown-menu {
+  position: absolute;
+  top: 46px;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 999;
+}
+
+.org-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.org-option:hover {
+  background: #f8f9fc;
+}
+
+.org-option input {
+  cursor: pointer;
+}
+
+.department-toolbar .count{
+    color:#7d8796;
+    font-size: 17px;
+}
+
+.department-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.department-data-table th:nth-child(1),
+.department-data-table td:nth-child(1) {
+    width: 28%;
+}
+
+.department-data-table th:nth-child(2),
+.department-data-table td:nth-child(2) {
+    width: 27%;
+}
+
+.department-data-table th:nth-child(3),
+.department-data-table td:nth-child(3) {
+    width: 18%;
+}
+
+.department-data-table th:nth-child(4),
+.department-data-table td:nth-child(4) {
+    width: 15%;
+}
+
+.department-data-table th:nth-child(5),
+.department-data-table td:nth-child(5) {
+    width: 12%;
+}
+
+.department-data-table th{
+    text-align:left;
+    padding:16px 22px;
+    color:#7b8797;
+    font-size: 14px;
+    font-weight:700;
+    border-bottom:1px solid #ececec;
+}
+
+.department-data-table td{
+    padding:10px 20px;
+    border-bottom:1px solid #f1f1f1;
+    text-align: left;
+}
+
+.dept-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}

@@ -1,0 +1,336 @@
+.generate-api-key {
+  padding: 10px;
+  min-height: 100vh;
+}
+
+/* Header */
+
+.generate-api-key-header h1 {
+  margin: 0;
+  color: #373435;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.generate-api-key-header p {
+  margin-top: 6px;
+  color: #808080;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* Card */
+
+.api-key-card {
+  margin-top: 24px;
+  width: 100%;
+  max-width: 950px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 30px;
+  border: 1px solid #ececec;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+.api-key-card .section h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #9a6b00;
+  text-align: left;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #ececec;
+  margin: 20px 0;
+}
+
+/* Form */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 15px;
+  color: #373435;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.api-key-status {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #16a34a;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.api-key-status i {
+  font-size: 16px;
+  color: #16a34a;
+}
+
+/* Select */
+.api-key-card .select-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 450px;
+}
+
+.select-wrapper .react-select__control {
+  min-height: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #d9dce5;
+  background: #f8f9fc;
+  box-shadow: none;
+}
+
+.select-wrapper .react-select__value-container {
+  height: 40px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.select-wrapper .react-select__input-container {
+  margin: 0;
+  padding: 0;
+}
+
+.select-wrapper .react-select__placeholder,
+.select-wrapper .react-select__single-value {
+  margin: 0;
+}
+
+.select-wrapper .react-select__indicators {
+  height: 40px;
+}
+
+.select-wrapper .react-select__indicator {
+  padding: 8px;
+}
+
+.select-wrapper .react-select__indicator-separator {
+  display: none;
+}
+
+/* API Key */
+
+.api-key-card .key-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.api-key-card .key-row input {
+  flex: 1;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #d9dce5;
+  background: #f8f9fc;
+  padding: 0 16px;
+  font-size: 14px;
+  color: #373435;
+  outline: none;
+}
+
+.key-row .icon-btn {
+  width: 48px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #e6e6e6;
+  background: #fff;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 18px;
+  transition: 0.25s;
+}
+
+.key-row .icon-btn:hover {
+  background: #f5f5f5;
+  color: #373435;
+}
+
+/* Button */
+.section .generate-btn-wrapper {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 25px;
+}
+
+.regenerate-warning {
+  margin-top: 10px;
+  max-width: 600px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #808080;
+  text-align: left;
+}
+
+.regenerate-warning strong {
+  color: #373435;
+  font-weight: 600;
+}
+
+.section .generate-btn {
+  height: 40px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
+  color: #111;
+  font-size: 16px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.section .regenerate-btn {
+  height: 40px;
+  padding: 0 22px;
+  background: #fff;
+  border: 1px solid #f6cfcf;
+  color: #b42318;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.helper-text {
+  margin-top: 16px;
+  color: #373435;
+  font-size: 15px;
+}
+
+/* Modal Style */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.regenerate-modal {
+  width: 480px;
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  border-bottom: 1px solid #ececec;
+}
+
+.warning-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #fdecec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.warning-icon i {
+  color: #e5484d;
+  font-size: 24px;
+}
+
+/* Modal Style */
+.modal-header h2 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 700;
+  color: #2f3542;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-body p {
+margin: 0 0 12px;
+font-size: 16px;
+color: #5f6472;
+line-height: 1.7;
+text-align: justify;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  border-top: 1px solid #ececec;
+}
+
+.modal-footer .cancel-btn,
+.confirm-btn {
+  flex: 1;
+  height: 46px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 10px;
+}
+
+.modal-footer .cancel-btn {
+  background: #fff;
+  border: 1px solid #d9dde7;
+  color: #4b5565;
+}
+
+.modal-footer .confirm-btn {
+  border: none;
+  background: #ea4444;
+  color: #fff;
+}
+
+.modal-footer .cancel-btn:hover {
+  background: #f8f9fb;
+}
+
+.modal-footer .confirm-btn:hover {
+  background: #d93c3c;
+}
+
+/* Responsive */
+
+@media (max-width: 768px) {
+  .api-key-card {
+    padding: 20px;
+  }
+
+  .api-key-card .key-row {
+    flex-wrap: wrap;
+  }
+
+  .api-key-card .key-row input {
+    width: 100%;
+  }
+
+  .api-key-card .select-wrapper {
+    max-width: 100%;
+  }
+}
