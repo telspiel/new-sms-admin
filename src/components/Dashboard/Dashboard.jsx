@@ -219,6 +219,32 @@ const summaryData = {
     }
 }, [userData]);
 
+//Animated number display
+const AnimatedNumber = ({ value, duration = 1200 }) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let start = 0;
+
+    const increment = value / (duration / 16);
+
+    const timer = setInterval(() => {
+      start += increment;
+
+      if (start >= value) {
+        setCount(value);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(start));
+      }
+    }, 16);
+
+    return () => clearInterval(timer);
+  }, [value, duration]);
+
+  return <>{count.toLocaleString()}</>;
+};
+
   return (
     <div className="dashboard">
 
@@ -234,7 +260,6 @@ const summaryData = {
       {/* Top Cards */}
 
       <div className="stats-grid">
-
         <div className="stat-card">
           <div className="stat-icon yellow">
             <i className="fa-regular fa-clock"></i>
@@ -242,7 +267,9 @@ const summaryData = {
 
           <div className="stat-info">
             <h4>SMS Count Today</h4>
-            <h2>{dashboardData.totalSmsToday ?? 0}</h2>
+            <h2>
+            <AnimatedNumber value={dashboardData.totalSmsToday ?? 0} />
+            </h2>
             <span className="success-text">
               ▲ live today
             </span>
@@ -256,7 +283,9 @@ const summaryData = {
 
           <div className="stat-info">
             <h4>SMS Count Current Month</h4>
-            <h2>{dashboardData.totalSmsMonth ?? 0}</h2>
+             <h2>
+            <AnimatedNumber value={dashboardData.totalSmsMonth ?? 0} />
+            </h2>
             <span className="success-text">
               June 2026
             </span>
@@ -271,14 +300,13 @@ const summaryData = {
           <div className="stat-info">
             <h4>Available Credits</h4>
             <h2>
-            {dashboardData.availableCredits?.toLocaleString() ?? 0}
+            <AnimatedNumber value={dashboardData.availableCredits ?? 0} />
             </h2>
             <span className="success-text">
               Balance remaining
             </span>
           </div>
         </div>
-
       </div>
 
       {/* Charts */}

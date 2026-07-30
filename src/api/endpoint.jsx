@@ -17,6 +17,10 @@ class Endpoints {
 
       //Department Management
       getAlldepartment: { path: "departmentService/getAllDepartmentsList", server: "primary" },
+      saveDepartment: { path: "departmentService/saveDepartment", server: "primary" },
+
+      //Internal User
+      listInternalusers: { path: "userService/getAllInternalUsersList", server: "primary" },
 
       getUserApiKey: { path: "pushApiKeyService/getUserApiKey", server: "primary" },
       generateNewApiKey: { path: "pushApiKeyService/generateUserApiKey", server: "primary" },
@@ -33,6 +37,10 @@ class Endpoints {
       viewRoutingGroups: { path: "reseller/viewRoutingGroupDetails", server: "primary" },
       getUserKennalList: { path: "reseller/getUserKannelList", server: "primary" },
       updatedKennalGroupMap: { path: "reseller/updateKannelGroupMapping", server: "primary" },
+
+      //New User Routing
+      unroutedUserlist: { path: "reseller/unroutedUsers", server: "primary"},
+      saveNewUserRouting: { path: "reseller/newUserRouting", server: "primary"},
 
       currentTelcoSummary: { path: "getUserConnectSummaryForDate", server: "secondary" },
       connectSummary: { path: "connectSummaryService/connectSummary", server: "primary" },

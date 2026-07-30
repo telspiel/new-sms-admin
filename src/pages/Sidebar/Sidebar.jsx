@@ -1,14 +1,76 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
-import "@fortawesome/fontawesome-free/css/all.min.css";
+import { useState, useEffect } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Users,
+  UserRound,
+  KeyRound,
+  IndianRupee,
+  BarChart3,
+  FileText,
+  ArrowLeftRight,
+  Monitor,
+  Settings,
+  Image,
+  TriangleAlert,
+  ChevronRight,
+  ChevronDown,
+} from "lucide-react";
 import "./Sidebar.css";
 
 function Sidebar() {
- const [managementOpen, setManagementOpen] = useState(false);
- const [userManagementOpen, setUserManagementOpen] = useState(false);
- const [reportsOpen, setReportsOpen] = useState(false);
- const [routingOpen, setRoutingOpen] = useState(false);
- const [configOpen, setConfigOpen] = useState(false);
+  const location = useLocation();
+
+  const [managementOpen, setManagementOpen] = useState(false);
+  const [userManagementOpen, setUserManagementOpen] = useState(false);
+  const [reportsOpen, setReportsOpen] = useState(false);
+  const [routingOpen, setRoutingOpen] = useState(false);
+  const [configOpen, setConfigOpen] = useState(false);
+
+  useEffect(() => {
+    // Management Console
+    setManagementOpen(
+      [
+        "/organization-management",
+        "/department-management",
+        "/external-users",
+        "/internal-users",
+      ].includes(location.pathname)
+    );
+
+    // User Management
+    setUserManagementOpen(
+      ["/external-users", "/internal-users"].includes(location.pathname)
+    );
+
+    // Reports
+    setReportsOpen(
+      [
+        "/delivery-report",
+        "/summary-report",
+        "/campaign-report",
+      ].includes(location.pathname)
+    );
+
+    // Routing Management
+    setRoutingOpen(
+      [
+        "/manage-connect",
+        "/new-user-routing",
+        "/switch-gateway",
+        "/userwise-routing",
+        "/smpp-session-management",
+      ].includes(location.pathname)
+    );
+
+    // Config
+    setConfigOpen(
+      [
+        "/global-blacklist",
+        "/user-premium-routing",
+      ].includes(location.pathname)
+    );
+  }, [location.pathname]);
 
   return (
     <aside className="sidebar">
@@ -18,108 +80,109 @@ function Sidebar() {
         <li className="menu-item">
           <NavLink
             to="/dashboard"
-            className={({ isActive }) =>
-              isActive ? "active-link" : ""
-            }
+            className={({ isActive }) => (isActive ? "active-link" : "")}
           >
-            <i className="fa-solid fa-table-cells-large"></i>
+            <LayoutDashboard size={20} strokeWidth={1.8} />
             <span>Dashboard</span>
           </NavLink>
         </li>
 
         {/* Management Console */}
         <li>
-            <div
-                className="menu-header"
-                onClick={() => setManagementOpen(!managementOpen)}
-            >
-                <div>
-                <i className="fa-solid fa-users"></i>
-                <span>Management Console</span>
-                </div>
-
-                <i
-                className={`fa-solid ${
-                    managementOpen ? "fa-chevron-down" : "fa-chevron-right"
-                }`}
-                ></i>
+          <div
+            className="menu-header"
+            onClick={() => setManagementOpen(!managementOpen)}
+          >
+            <div>
+              <Users size={20} strokeWidth={1.8} />
+              <span>Management Console</span>
             </div>
 
-            {managementOpen && (
-                <ul className="submenu">
+            <i
+              className={`fa-solid ${
+                managementOpen ? "fa-chevron-down" : "fa-chevron-right"
+              }`}
+            ></i>
+          </div>
 
-                <li>
-                    <NavLink
-                    to="/organization-management"
-                    className={({ isActive }) =>
-                        isActive ? "active-link" : ""
-                    }
-                    >
-                    Organization Management
-                    </NavLink>
-                </li>
+          {managementOpen && (
+            <ul className="submenu">
 
-                <li>
-                    <NavLink
-                    to="/department-management"
-                    className={({ isActive }) =>
-                        isActive ? "active-link" : ""
-                    }
-                    >
-                    Department Management
-                    </NavLink>
-                </li>
+              <li>
+                <NavLink
+                  to="/organization-management"
+                  className={({ isActive }) =>
+                    isActive ? "active-link" : ""
+                  }
+                >
+                  Organization Management
+                </NavLink>
+              </li>
 
-                {/* User Management */}
-                <li>
-            <div
-                className="submenu-header"
-                onClick={() => setUserManagementOpen(!userManagementOpen)}
-            >
-                <div>
-                <i className="fa-regular fa-user"></i>
-                <span>User Management</span>
+              <li>
+                <NavLink
+                  to="/department-management"
+                  className={({ isActive }) =>
+                    isActive ? "active-link" : ""
+                  }
+                >
+                  Department Management
+                </NavLink>
+              </li>
+
+              <li>
+                <div
+                  className="submenu-header"
+                  onClick={() =>
+                    setUserManagementOpen(!userManagementOpen)
+                  }
+                >
+                  <div>
+                    <i className="fa-regular fa-user"></i>
+                    <span>User Management</span>
+                  </div>
+
+                  <i
+                    className={`fa-solid ${
+                      userManagementOpen
+                        ? "fa-chevron-down"
+                        : "fa-chevron-right"
+                    }`}
+                  ></i>
                 </div>
 
-                <i
-                className={`fa-solid ${
-                    userManagementOpen ? "fa-chevron-down" : "fa-chevron-right"
-                }`}
-                ></i>
-            </div>
+                {userManagementOpen && (
+                  <ul className="nested-submenu">
+                    <li>
+                      <NavLink
+                        to="/external-users"
+                        className={({ isActive }) =>
+                          isActive ? "active-link" : ""
+                        }
+                      >
+                        External Users
+                      </NavLink>
+                    </li>
 
-            {userManagementOpen && (
-                <ul className="nested-submenu">
-                <li>
-                    <NavLink
-                    to="/external-users"
-                    className={({ isActive }) =>
-                        isActive ? "active-link" : ""
-                    }
-                    >
-                    External Users
-                    </NavLink>
-                </li>
+                    <li>
+                      <NavLink
+                        to="/internal-users"
+                        className={({ isActive }) =>
+                          isActive ? "active-link" : ""
+                        }
+                      >
+                        Internal Users
+                      </NavLink>
+                    </li>
+                  </ul>
+                )}
+              </li>
 
-                <li>
-                    <NavLink
-                    to="/internal-users"
-                    className={({ isActive }) =>
-                        isActive ? "active-link" : ""
-                    }
-                    >
-                    Internal Users
-                    </NavLink>
-                </li>
-                </ul>
-            )}
-            </li>
+            </ul>
+          )}
+        </li>
 
-                </ul>
-            )}
-            </li>
-
-        {/* Credits Management */}
+        {/* Credits */}
         <li className="menu-item">
           <NavLink
             to="/credits-management"
@@ -132,7 +195,7 @@ function Sidebar() {
           </NavLink>
         </li>
 
-        {/* Generate API Key */}
+        {/* API Key */}
         <li className="menu-item">
           <NavLink
             to="/generate-api-key"
@@ -140,7 +203,7 @@ function Sidebar() {
               isActive ? "active-link" : ""
             }
           >
-            <i className="fa-solid fa-key"></i>
+            <KeyRound size={20} strokeWidth={1.8} />
             <span>Generate API Key</span>
           </NavLink>
         </li>
@@ -149,26 +212,23 @@ function Sidebar() {
         <li>
           <div
             className="menu-header"
-            onClick={() =>
-              setReportsOpen(!reportsOpen)
-            }
+            onClick={() => setReportsOpen(!reportsOpen)}
           >
             <div>
-              <i className="fa-solid fa-chart-column"></i>
+              <BarChart3 size={20} strokeWidth={1.8} />
               <span>Reports</span>
             </div>
 
             <i
               className={`fa-solid ${
-                reportsOpen
-                  ? "fa-chevron-down"
-                  : "fa-chevron-right"
+                reportsOpen ? "fa-chevron-down" : "fa-chevron-right"
               }`}
             ></i>
           </div>
 
           {reportsOpen && (
             <ul className="submenu">
+
               <li>
                 <NavLink
                   to="/delivery-report"
@@ -201,6 +261,7 @@ function Sidebar() {
                   Campaign Report
                 </NavLink>
               </li>
+
             </ul>
           )}
         </li>
@@ -213,35 +274,32 @@ function Sidebar() {
               isActive ? "active-link" : ""
             }
           >
-            <i className="fa-regular fa-file-lines"></i>
+            <FileText size={20} strokeWidth={1.8} />
             <span>DR Summary</span>
           </NavLink>
         </li>
 
-        {/* Routing Management */}
+        {/* Routing */}
         <li>
           <div
             className="menu-header"
-            onClick={() =>
-              setRoutingOpen(!routingOpen)
-            }
+            onClick={() => setRoutingOpen(!routingOpen)}
           >
             <div>
-              <i className="fa-solid fa-shuffle"></i>
+              <ArrowLeftRight size={20} strokeWidth={1.8} />
               <span>Routing Management</span>
             </div>
 
             <i
               className={`fa-solid ${
-                routingOpen
-                  ? "fa-chevron-down"
-                  : "fa-chevron-right"
+                routingOpen ? "fa-chevron-down" : "fa-chevron-right"
               }`}
             ></i>
           </div>
 
           {routingOpen && (
             <ul className="submenu">
+
               <li>
                 <NavLink
                   to="/manage-connect"
@@ -296,11 +354,12 @@ function Sidebar() {
                   SMPP Session Management
                 </NavLink>
               </li>
+
             </ul>
           )}
         </li>
 
-        {/* Operator Summary */}
+        {/* Operator Traffic */}
         <li className="menu-item">
           <NavLink
             to="/operator-traffic"
@@ -308,7 +367,7 @@ function Sidebar() {
               isActive ? "active-link" : ""
             }
           >
-            <i className="fa-regular fa-window-maximize"></i>
+            <Monitor size={20} strokeWidth={1.8} />
             <span>Operator Traffic</span>
           </NavLink>
         </li>
@@ -317,26 +376,23 @@ function Sidebar() {
         <li>
           <div
             className="menu-header"
-            onClick={() =>
-              setConfigOpen(!configOpen)
-            }
+            onClick={() => setConfigOpen(!configOpen)}
           >
             <div>
-              <i className="fa-solid fa-gear"></i>
+              <Settings size={20} strokeWidth={1.8} />
               <span>Config</span>
             </div>
 
             <i
               className={`fa-solid ${
-                configOpen
-                  ? "fa-chevron-down"
-                  : "fa-chevron-right"
+                configOpen ? "fa-chevron-down" : "fa-chevron-right"
               }`}
             ></i>
           </div>
 
           {configOpen && (
             <ul className="submenu">
+
               <li>
                 <NavLink
                   to="/global-blacklist"
@@ -358,6 +414,7 @@ function Sidebar() {
                   User Premium Routing
                 </NavLink>
               </li>
+
             </ul>
           )}
         </li>
@@ -370,21 +427,8 @@ function Sidebar() {
               isActive ? "active-link" : ""
             }
           >
-            <i className="fa-regular fa-message"></i>
+            <Image size={20} strokeWidth={1.8} />
             <span>Logo Upload</span>
-          </NavLink>
-        </li>
-
-        {/* Error Code */}
-        <li className="menu-item">
-          <NavLink
-            to="/error-code"
-            className={({ isActive }) =>
-              isActive ? "active-link" : ""
-            }
-          >
-            <i className="fa-solid fa-triangle-exclamation"></i>
-            <span>Error Code</span>
           </NavLink>
         </li>
 

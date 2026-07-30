@@ -1,0 +1,278 @@
+.external-user {
+  padding: 10px;
+  min-height: 100vh;
+}
+
+/* Header */
+.external-user-header h1 {
+  margin: 0;
+  color: #373435;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.external-user-header p {
+  margin-top: 6px;
+  color: #808080;
+  font-size: 14px;
+  text-align: left;
+}
+
+.wrap-add-external-user-btn {
+    display: flex;
+    width: 100%;
+    justify-content: right;
+    margin-bottom: 20px;
+}
+
+.wrap-add-external-user-btn .add-external-user-btn{
+    border: none;
+    outline: none;
+    background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
+    color: #111;
+    padding: 12px 22px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: .25s;
+    box-shadow: 0 8px 18px rgba(247, 181, 0, .35);
+}
+
+/* Card */
+.external-card {
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(0,0,0,.08);
+}
+
+/* Toolbar */
+
+.external-toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 20px;
+    border-bottom:1px solid #ececec;
+}
+
+/* Left Side */
+.external-toolbar-left{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+
+.external-toolbar .search-box{
+    width:280px;
+    height:40px;
+    border:1px solid #e3e7ef;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    padding:0 14px;
+    background:#fff;
+}
+
+.external-toolbar .search-box i{
+    color:#9aa3b2;
+    font-size:15px;
+}
+
+.external-toolbar .search-box input{
+    flex:1;
+    border:none;
+    outline:none;
+    margin-left:10px;
+    font-size:15px;
+    background:transparent;
+}
+
+.external-toolbar .search-box input::placeholder{
+    color:#808080;
+}
+
+.external-toolbar select{
+    width:180px;
+    height:40px;
+    border:1px solid #e3e7ef;
+    border-radius:12px;
+    padding:0 16px;
+    font-size:15px;
+    color:#374151;
+    background:#fff;
+    outline:none;
+    cursor:pointer;
+}
+
+/* Right Side */
+.external-toolbar-right{
+    font-size:15px;
+    color:#7b8698;
+    white-space:nowrap;
+}
+
+/* ================= TABLE ================= */
+
+.external-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.external-table thead{
+    background:#fff;
+}
+
+.external-table th{
+    padding:16px 14px;
+    text-align:left;
+    font-size:14px;
+    font-weight:600;
+    color:#7d8799;
+    border-bottom:1px solid #ececec;
+}
+
+.external-table td{
+    padding:18px 14px;
+    border-bottom:1px solid #f0f2f6;
+    vertical-align:middle;
+}
+
+/* User */
+
+.user-info{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.user-avatar{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    background:#fff3d6;
+    color:#a77500;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.user-name{
+    font-weight:600;
+    color:#1f2937;
+}
+
+/* Contact */
+
+.contact-info{
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+}
+
+.mobile{
+    color:#111827;
+}
+
+.email{
+    font-size:14px;
+    color:#7d8799;
+}
+
+/* Badges */
+
+.badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:6px 14px;
+    border-radius:50px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.badge-admin{
+    background:#efe5ff;
+    color:#7c3aed;
+}
+
+.badge-api{
+    background:#e8efff;
+    color:#2563eb;
+}
+
+/* Status */
+
+.status{
+    display:inline-flex;
+    padding:6px 14px;
+    border-radius:30px;
+    font-size:14px;
+    font-weight:600;
+}
+
+.status.active{
+    background:#e8f8ee;
+    color:#0f9d58;
+}
+
+/* Action */
+
+.action-btn{
+    width:38px;
+    height:38px;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    background:#fff;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.action-btn:hover{
+    background:#f8f9fb;
+}
+
+/* ================= FOOTER ================= */
+
+.table-footer{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 20px;
+}
+
+.table-footer span{
+    color:#7d8799;
+    font-size:15px;
+}
+
+/* Pagination */
+
+.pagination{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.page-btn{
+    width:38px;
+    height:38px;
+    border-radius:10px;
+    border:1px solid #e4e7ee;
+    background:#fff;
+    cursor:pointer;
+    font-weight:600;
+    color:#374151;
+}
+
+.page-btn.active{
+    background:#ffe8a6;
+    border-color:#f4cb4f;
+}

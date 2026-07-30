@@ -1,0 +1,194 @@
+.new-user-routing {
+  padding: 10px;
+  min-height: 100vh;
+}
+
+/* Header */
+.new-user-routing-header h1 {
+  margin: 0;
+  color: #373435;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.new-user-routing-header p {
+  margin-top: 6px;
+  color: #808080;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* Routing Card */
+.routing-card {
+  width: 665px;
+  margin-top: 26px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.08);
+}
+
+.routing-card h2{
+  margin:0;
+  font-size:18px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.routing-subtitle{
+  margin-top:8px;
+  color:#7b8192;
+  text-align: left;
+  font-size: 16px;
+}
+
+/* Form */
+.new-routing-form-group {
+  margin-top: 10px;
+}
+
+.new-routing-form-group label {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+.new-routing-form-group select {
+  width: 100%;
+  height: 40px;
+  border: 1px solid #d9dee8;
+  border-radius: 14px;
+  padding: 0 18px;
+  font-size: 15px;
+  color: #374151;
+  background: #f7f9fc;
+  outline: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.new-routing-form-group select:focus {
+  border-color: #ffcc29;
+  background: #fff;
+}
+
+.new-routing-form-group select:disabled {
+  background: #f2f2f2;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Radio */
+.routing-radio-box {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  min-height: 45px;
+  border: 1px solid #d9dee8;
+  border-radius: 14px;
+  padding: 0 16px;
+  background: #f7f9fc;
+}
+
+.radio-item {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  margin: 0 !important;
+  font-weight: 500 !important;
+  cursor: pointer;
+}
+
+.radio-item input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #ffcc29;
+  cursor: pointer;
+}
+
+/* Error state for inputs & selects */
+.input-error {
+  border: 1px solid #ff4d4f !important;
+  background-color: #fff6f6 !important;
+}
+
+/* Error state for radio container */
+.routing-radio-box.input-error {
+  border: 1px solid #ff4d4f !important;
+  background-color: #fff6f6 !important;
+}
+
+/* Error message */
+.field-error {
+  margin-top: 8px;
+  color: #ff4d4f;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.field-error i {
+  font-size: 12px;
+}
+
+.field-note {
+  color: #8a8f9e;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* Divider */
+
+.routing-divider {
+  margin-top: 26px;
+  border-top: 1px solid #ececec;
+}
+
+/* Buttons */
+
+.routing-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.routing-actions .reset-btn {
+  width: 82px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid #d8dde8;
+  background: #fff;
+  color: #4b5563;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.routing-actions .reset-btn:hover {
+  background: #f7f7f7;
+}
+
+.routing-actions .save-btn {
+  width: 72px;
+  height: 42px;
+  border: none;
+  border-radius: 12px;
+  background: #ffc107;
+  color: #202020;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(255, 193, 7, 0.35);
+  transition: 0.2s;
+}
+
+.routing-actions .save-btn:hover {
+  background: #ffb300;
+}

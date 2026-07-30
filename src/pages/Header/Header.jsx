@@ -98,10 +98,6 @@ const lastLoginIp =
 
                 <div>
                   <h4>{username}</h4>
-
-                  <p>
-                    vinod@onextel.com
-                  </p>
                 </div>
               </div>
 

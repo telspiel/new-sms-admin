@@ -13,6 +13,7 @@ import CreditsManagement from "./components/CreditsManagement/CreditsManagement"
 import GenerateApiKey from "./components/GenerateApiKey/GenerateApiKey";
 import DRSummary from "./components/DRSummary/DRSummary";
 import ManageConnect from "./components/ManageConnect/ManageConnect";
+import NewUserRouting from "./components/NewUserRouting/NewUserRouting";
 import OperatorTraffic from "./components/OperatorTraffic/OperatorTraffic";
 import GlobalBlacklist from "./components/GlobalBlacklist/GlobalBlacklist";
 import UserPremiumRouting from "./components/UserPremiumRouting/UserPremiumRouting";
@@ -76,6 +77,11 @@ function App() {
           <Route
             path="/manage-connect"
             element={<ManageConnect />}
+          />
+
+          <Route
+            path="/new-user-routing"
+            element={<NewUserRouting />}
           />
 
           <Route

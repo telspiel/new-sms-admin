@@ -101,6 +101,8 @@
 
 .submenu a:hover {
   color: #44a67e;
+  background: #f3f5f9;
+  opacity: 0.5;
 }
 
 .submenu .active-link {

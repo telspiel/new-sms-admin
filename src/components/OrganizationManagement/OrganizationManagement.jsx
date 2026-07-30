@@ -647,8 +647,10 @@ const editOrganization = async () => {
                 ))
             ) : (
                 <tr>
-                <td colSpan="5" className="no-data">
+                <td colSpan="5" className="no-org-data">
+                    <p>
                     No organizations found.
+                    </p>
                 </td>
                 </tr>
             )}

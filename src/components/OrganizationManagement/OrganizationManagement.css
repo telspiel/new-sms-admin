@@ -173,12 +173,12 @@
     font-size:15px;
 }
 
-td h4{
+.org-data-table td h4{
     margin:0;
     font-size: 14px;
 }
 
-td p{
+.org-data-table td p{
     color:#788396;
     font-size:14px;
 }
@@ -228,7 +228,13 @@ td p{
     cursor:pointer;
 }
 
-/*  */
+.no-org-data p {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+
 /* Overlay */
 .org-management .drawer-overlay {
   position:fixed;
@@ -238,7 +244,6 @@ td p{
 }
 
 /* Drawer */
-
 .organization-drawer {
   position: fixed;
   top: 0;
@@ -310,7 +315,6 @@ td p{
 /* ===========================
    Drawer Form
 =========================== */
-
 .org-form-row {
   display: flex;
   gap: 18px;
@@ -414,7 +418,6 @@ td p{
 }
 
 /* Improve drawer scrolling */
-
 .drawer-body {
   flex: 1;
   overflow-y: auto;
@@ -422,7 +425,6 @@ td p{
 }
 
 /* Optional scrollbar */
-
 .drawer-body::-webkit-scrollbar {
   width: 6px;
 }
