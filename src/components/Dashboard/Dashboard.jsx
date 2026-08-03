@@ -30,7 +30,7 @@ ChartJS.register(
   Filler
 );
 
-function Dashboard() {
+function Dashboard() { 
 
   const { userData } = useContext(AuthContext);
 
