@@ -1,0 +1,197 @@
+.smpp-management {
+  padding: 10px;
+  min-height: 100vh;
+}
+
+/* Header */
+.smpp-management-header h1 {
+  margin: 0;
+  color: #373435;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.smpp-management-header p {
+  margin-top: 6px;
+  color: #808080;
+  font-size: 14px;
+  text-align: left;
+}
+
+.smpp-card {
+  margin-top: 26px;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  padding: 20px;
+  border: 1px solid #edf2f7;
+}
+
+.smpp-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #666;
+}
+
+.entries-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.entries-selector select {
+  padding: 6px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #333;
+  outline: none;
+  cursor: pointer;
+}
+
+.smpp-controls .search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.smpp-controls .search-box input {
+  padding: 8px 14px;
+  border: 1px solid #edf2f7;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  width: 220px;
+  outline: none;
+  font-size: 13px;
+}
+
+.smpp-controls .search-box input::placeholder {
+  color: #a0aec0;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.smpp-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.smpp-table th {
+  padding: 14px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #718096;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #edf2f7;
+  white-space: nowrap;
+}
+
+.smpp-table th span {
+  font-size: 10px;
+  margin-left: 4px;
+  color: #a0aec0;
+}
+
+.smpp-table td {
+  padding: 14px 12px;
+  font-size: 13px;
+  color: #2d3748;
+  border-bottom: 1px solid #f7fafc;
+  white-space: nowrap;
+}
+
+.smpp-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.btn-detail {
+  background: transparent;
+  border: 1px solid #e2e8f0;
+  color: #4a5568;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-detail:hover {
+  background-color: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+.btn-unbind {
+  background: transparent;
+  border: 1px solid #fed7d7;
+  color: #e53e3e;
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-unbind:hover {
+  background-color: #fff5f5;
+  border-color: #feb2b2;
+}
+
+.smpp-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  font-size: 13px;
+  color: #a0aec0;
+}
+
+.smpp-footer.pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.smpp-page-btn {
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #4a5568;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.smpp-page-btn .smpp-text-btn {
+  color: #a0aec0;
+  padding: 0 8px;
+}
+
+.smpp-page-btn.active {
+  background-color: #fefcbf;
+  color: #b7791f;
+  font-weight: 700;
+}
+
+.smpp-page-btn:not(.active):hover {
+  background-color: #edf2f7;
+}
+
+.smpp-dots {
+  color: #a0aec0;
+  padding: 0 4px;
+}

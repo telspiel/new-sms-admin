@@ -29,7 +29,7 @@
 .wrap-add-org-btn .add-org-btn{
     border: none;
     outline: none;
-    background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
+    background: linear-gradient(to right, #ffcc29, #e0a800);
     color: #111;
     padding: 12px 22px;
     border-radius: 14px;
@@ -459,7 +459,7 @@
     flex: 1;
     height: 40px;
     border: none;
-    background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
+    background: linear-gradient(to right, #ffcc29, #e0a800);
     color: #111;
     border-radius: 12px;
     cursor: pointer;

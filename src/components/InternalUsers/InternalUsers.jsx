@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import "./InternalUsers.css";
 import Endpoints from "../../api/endpoint";
 import { AuthContext } from "../../context/AuthContext";
+import { CircleHelp } from "lucide-react";
 
 const InternalUsers = () => {
     const { userData } = useContext(AuthContext);
@@ -16,6 +17,29 @@ const InternalUsers = () => {
 
     const [showAddInternalUser, setShowAddInternalUser] = useState(false);
     const [userType, setUserType] = useState("");
+
+    const [seniorAccountManagers, setSeniorAccountManagers] = useState([]);
+    const [selectedSeniorManager, setSelectedSeniorManager] = useState("");
+
+    const [regionalManagers, setRegionalManagers] = useState([]);
+    const [selectedRegionalManager, setSelectedRegionalManager] = useState("");
+
+    const [username, setUsername] = useState("");
+    const [usernameMessage, setUsernameMessage] = useState("");
+    const [usernameAvailable, setUsernameAvailable] = useState(false);
+    const [checkingUsername, setCheckingUsername] = useState(false);
+
+    //States to add new Internal User
+    const [status, setStatus] = useState("active");
+    const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("");
+    const [mobile, setMobile] = useState("");
+
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [loadingCreate, setLoadingCreate] = useState(false);
+    const [toastMessage, setToastMessage] = useState("");
+
+    const [errors, setErrors] = useState({});
 
     //Get all Internal User Data API
     const getInternalUsers = async () => {
@@ -43,9 +67,100 @@ const InternalUsers = () => {
      }
     };
 
+    //API to get all the sr. Account Manager list
+    const getSeniorAccountManagers = async () => {
+    try {
+        const payload = {
+        loggedInUserName: userData.username,
+        };
+
+    const response = await Endpoints.post(
+      "listSeniorAccountManagers",
+      payload,
+      userData.authJwtToken
+    );
+
+    // API returns an array directly
+    setSeniorAccountManagers(Array.isArray(response) ? response : []);
+  } catch (error) {
+    console.error(error);
+    setSeniorAccountManagers([]);
+  }
+};
+
+    //API to get all the Regional Managers 
+    const getRegionalManagers = async () => {
+    try {
+        const payload = {
+        loggedInUserName: userData.username,
+        };
+
+        const response = await Endpoints.post(
+        "regionalManagersList",
+        payload,
+        userData.authJwtToken
+        );
+
+        // API returns an array directly
+        setRegionalManagers(Array.isArray(response) ? response : []);
+    } catch (error) {
+        console.error(error);
+        setRegionalManagers([]);
+    }
+    };
+
     useEffect(() => {
       getInternalUsers();
+      getSeniorAccountManagers();
+      getRegionalManagers();
     }, []);
+
+   //API call to check available username 
+   const checkUsernameAvailability = async (value) => {
+    try {
+        setCheckingUsername(true);
+
+        const payload = {
+        loggedInUserName: userData.username,
+        operation: "internal user",
+        userName: value,
+        };
+
+        const response = await Endpoints.post(
+        "saveInternalUser",
+        payload,
+        userData.authJwtToken
+        );
+
+        if (response.code === 9001) {
+        setUsernameAvailable(true);
+        setUsernameMessage(response.message);
+        } else {
+        setUsernameAvailable(false);
+        setUsernameMessage(response.message);
+        }
+    } catch (error) {
+        console.error(error);
+        setUsernameAvailable(false);
+        setUsernameMessage("");
+    } finally {
+        setCheckingUsername(false);
+    }
+    }; 
+
+    useEffect(() => {
+        if (username.trim().length < 4) {
+            setUsernameMessage("");
+            setUsernameAvailable(false);
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            checkUsernameAvailability(username.trim());
+        }, 500); // waits until user stops typing
+
+        return () => clearTimeout(timer);
+    }, [username]);
     
     //To get unique dropdown values
     const userTypes = [
@@ -89,8 +204,105 @@ const InternalUsers = () => {
     indexOfLastUser
     );
 
+   //========Validation to create new internal user===========
+   const validateForm = () => {
+    const newErrors = {};
+
+    if (!userType) {
+        newErrors.userType = "User Type is required.";
+    }
+
+    if (userType === "Account Manager") {
+        if (!selectedSeniorManager) {
+        newErrors.seniorManager = "Sr. Account Manager is required.";
+        }
+
+        if (!selectedRegionalManager) {
+        newErrors.regionalManager = "Regional Manager is required.";
+        }
+    }
+
+    if (!username.trim()) {
+        newErrors.username = "Username is required.";
+    } else if (!usernameAvailable) {
+        newErrors.username = "Username is not available.";
+    }
+
+    if (!password.trim()) {
+        newErrors.password = "Password is required.";
+    }
+
+    if (!email.trim()) {
+        newErrors.email = "Email ID is required.";
+    }
+
+    if (!mobile.trim()) {
+        newErrors.mobile = "Mobile Number is required.";
+    } else if (mobile.length !== 10) {
+        newErrors.mobile = "Please enter a valid Mobile Number.";
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+    };
+
+const saveInternalUser = async () => {
+    try {
+        setLoadingCreate(true);
+
+        const payload = {
+            loggedInUserName: userData.username,
+            operation: "addInternalUser",
+            userRole: "internaluser",
+            userName: username,
+            userPassword: password,
+            email: email,
+            mobile: mobile,
+            status: status,
+            userExpiryDate: "",
+        };
+
+        if (userType === "Account Manager") {
+            payload.customerType = "accountmanager";
+            payload.amId = selectedSeniorManager;
+            payload.rmId = selectedRegionalManager;
+        } else if (userType === "Regional Manager") {
+            payload.customerType = "regionalmanager";
+        } else {
+            payload.customerType = "support";
+        }
+
+        const response = await Endpoints.post(
+            "saveInternalUser",
+            payload,
+            userData.authJwtToken
+        );
+
+        if (response.code === 9001) {
+            setToastMessage(response.message);
+            setShowCreateModal(false);
+            setShowAddInternalUser(false);
+
+            getInternalUsers();
+        } else {
+            setToastMessage(response.message);
+        }
+    } catch (err) {
+        console.error(err);
+    } finally {
+        setLoadingCreate(false);
+    }
+};
+
   return (
     <div className="internal-user">
+         {toastMessage && (
+        <div className="toast-message">
+            <i className="fa-solid fa-circle-check"></i>
+            {toastMessage}
+        </div>
+        )}
          <div className="internal-user-header">
             <div>
             <h1>Internal Users</h1>
@@ -135,28 +347,47 @@ const InternalUsers = () => {
             <h3 className="internal-section-title">USER ACCOUNT</h3>
 
             <div className="internal-form-row">
-               <div className="internal-form-group">
+              <div className="internal-form-group">
                 <label>
                     User Type <span>*</span>
                 </label>
 
                 <select
                     value={userType}
-                    onChange={(e) => setUserType(e.target.value)}
+                    onChange={(e) => {
+                    setUserType(e.target.value);
+
+                    if (errors.userType) {
+                        setErrors((prev) => ({
+                        ...prev,
+                        userType: "",
+                        }));
+                    }
+                    }}
+                    className={errors.userType ? "input-error" : ""}
                 >
                     <option value="">-- Select --</option>
                     <option value="Account Manager">Account Manager</option>
                     <option value="Regional Manager">Regional Manager</option>
                     <option value="Support">Support</option>
                 </select>
+
+                {errors.userType && (
+                    <div className="field-error">
+                    ⚠ {errors.userType}
+                    </div>
+                )}
                 </div>
 
                 <div className="internal-form-group">
                 <label>Status</label>
 
-                <select>
-                    <option>Active</option>
-                    <option>Inactive</option>
+                <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
                 </select>
                 </div>
             </div>
@@ -164,88 +395,227 @@ const InternalUsers = () => {
             {userType === "Account Manager" && (
             <div className="internal-form-row">
 
-                <div className="internal-form-group">
-                <label>Sr. Account Manager</label>
+               <div className="internal-form-group">
+            <label>
+                Sr. Account Manager <span>*</span>
+            </label>
 
-                <select>
-                    <option value="">-- select --</option>
-                    <option>Sr Manager 1</option>
-                    <option>Sr Manager 2</option>
-                </select>
+            <select
+                value={selectedSeniorManager}
+                onChange={(e) => {
+                setSelectedSeniorManager(Number(e.target.value));
+
+                if (errors.seniorManager) {
+                    setErrors((prev) => ({
+                    ...prev,
+                    seniorManager: "",
+                    }));
+                }
+                }}
+                className={errors.seniorManager ? "input-error" : ""}
+            >
+                <option value="">-- Select --</option>
+
+                {seniorAccountManagers.map((manager) => (
+                <option key={manager.userId} value={manager.userId}>
+                    {manager.userName}
+                </option>
+                ))}
+            </select>
+
+            {errors.seniorManager && (
+                <div className="field-error">
+                ⚠ {errors.seniorManager}
                 </div>
+            )}
+            </div>
 
                 <div className="internal-form-group">
-                <label>Regional Manager</label>
+            <label>
+                Regional Manager <span>*</span>
+            </label>
 
-                <select>
-                    <option value="">-- select --</option>
-                    <option>North Region</option>
-                    <option>South Region</option>
-                </select>
+            <select
+                value={selectedRegionalManager}
+                onChange={(e) => {
+                setSelectedRegionalManager(Number(e.target.value));
+
+                if (errors.regionalManager) {
+                    setErrors((prev) => ({
+                    ...prev,
+                    regionalManager: "",
+                    }));
+                }
+                }}
+                className={errors.regionalManager ? "input-error" : ""}
+            >
+                <option value="">-- Select --</option>
+
+                {regionalManagers.map((manager) => (
+                <option key={manager.userId} value={manager.userId}>
+                    {manager.userName}
+                </option>
+                ))}
+            </select>
+
+            {errors.regionalManager && (
+                <div className="field-error">
+                ⚠ {errors.regionalManager}
                 </div>
+            )}
+            </div>
 
             </div>
             )}
 
             {/* Username */}
-            <div className="internal-form-group">
-                <label>
+           <div className="internal-form-group">
+            <label>
                 Username <span>*</span>
-                </label>
+            </label>
 
-                <input
+            <input
                 type="text"
                 placeholder="Enter username"
-                />
+                value={username}
+                onChange={(e) => {
+                setUsername(e.target.value);
 
-                <small>
+                if (errors.username) {
+                    setErrors((prev) => ({
+                    ...prev,
+                    username: "",
+                    }));
+                }
+                }}
+                className={errors.username ? "input-error" : ""}
+            />
+
+            {errors.username && (
+                <div className="field-error">
+                ⚠ {errors.username}
+                </div>
+            )}
+
+            {checkingUsername && (
+                <div className="username-checking">
+                Checking username...
+                </div>
+            )}
+
+            {!checkingUsername && !errors.username && usernameMessage && (
+                <div
+                className={`username-status ${
+                    usernameAvailable ? "success" : "error"
+                }`}
+                >
+                {usernameAvailable ? "✓ " : "✗ "}
+                {usernameMessage}
+                </div>
+            )}
+
+            <small>
                 4-20 characters · letters, numbers, "." and "_" only · must start with a
                 letter
-                </small>
+            </small>
             </div>
 
             {/* Password */}
             <div className="internal-form-group">
-                <label>
+            <label>
                 Password <span>*</span>
-                </label>
+            </label>
 
-                <input
+            <input
                 type="password"
                 placeholder="Enter password"
-                />
+                value={password}
+                onChange={(e) => {
+                setPassword(e.target.value);
 
-                <small>6-20 characters · no spaces</small>
+                if (errors.password) {
+                    setErrors((prev) => ({
+                    ...prev,
+                    password: "",
+                    }));
+                }
+                }}
+                className={errors.password ? "input-error" : ""}
+            />
+
+            {errors.password && (
+                <div className="field-error">
+                ⚠ {errors.password}
+                </div>
+            )}
+
+            <small>6-20 characters · no spaces</small>
             </div>
 
             {/* Email + Mobile */}
             <div className="internal-form-row">
 
-                <div className="internal-form-group">
-                <label>
-                    Email ID <span>*</span>
-                </label>
+              <div className="internal-form-group">
+            <label>
+                Email ID <span>*</span>
+            </label>
 
-                <input
-                    type="email"
-                    placeholder="name@company.com"
-                />
+            <input
+                type="email"
+                placeholder="name@company.com"
+                value={email}
+                onChange={(e) => {
+                setEmail(e.target.value);
+
+                if (errors.email) {
+                    setErrors((prev) => ({
+                    ...prev,
+                    email: "",
+                    }));
+                }
+                }}
+                className={errors.email ? "input-error" : ""}
+            />
+
+            {errors.email && (
+                <div className="field-error">
+                ⚠ {errors.email}
                 </div>
+            )}
+            </div>
 
-                <div className="internal-form-group">
-                <label>
-                    Mobile Number <span>*</span>
-                </label>
+               <div className="internal-form-group">
+            <label>
+                Mobile Number <span>*</span>
+            </label>
 
-                <input
-                    type="text"
-                    placeholder="10-digit mobile number"
-                    maxLength={10}
-                />
+            <input
+                type="text"
+                placeholder="10-digit mobile number"
+                maxLength={10}
+                value={mobile}
+                onChange={(e) => {
+                setMobile(e.target.value.replace(/\D/g, ""));
+
+                if (errors.mobile) {
+                    setErrors((prev) => ({
+                    ...prev,
+                    mobile: "",
+                    }));
+                }
+                }}
+                className={errors.mobile ? "input-error" : ""}
+            />
+
+            {errors.mobile && (
+                <div className="field-error">
+                ⚠ {errors.mobile}
                 </div>
+            )}
+            </div>
 
-            </div>
-            </div>
+          </div>
+        </div>
 
             <div className="drawer-footer-internal">
                 <button
@@ -255,8 +625,15 @@ const InternalUsers = () => {
                 Cancel
                 </button>
 
-                <button className="create-btn">
-                Create User
+                <button
+                    className="create-btn"
+                    onClick={() => {
+                        if (validateForm()) {
+                            setShowCreateModal(true);
+                        }
+                    }}
+                >
+                    Create User
                 </button>
             </div>
 
@@ -264,6 +641,49 @@ const InternalUsers = () => {
         </div>
         )}
          </div>
+         {showCreateModal && (
+        <div className="internal-modal-overlay">
+        <div className="create-internal-modal">
+
+            <div className="create-internal-header">
+
+                <div className="create-internal-icon">
+                    <CircleHelp size={22} strokeWidth={2.2} />
+                </div>
+
+                <h2>Create this internal user?</h2>
+
+                </div>
+
+                <div className="create-internal-body">
+
+                    You're about to create a new{" "}
+                    <b>{userType}</b> staff account.
+
+                </div>
+
+                <div className="create-internal-footer">
+
+                <button
+                    className="cancel-btn"
+                    onClick={() => setShowCreateModal(false)}
+                >
+                    Cancel
+                </button>
+
+                <button
+                    className="create-btn"
+                    onClick={saveInternalUser}
+                    disabled={loadingCreate}
+                >
+                    {loadingCreate ? "Creating..." : "Create User"}
+                    </button>
+
+                </div>
+
+                </div>
+            </div>
+        )}
 
          <div className="internal-card">
          <div className="internal-toolbar">

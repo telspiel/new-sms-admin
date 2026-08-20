@@ -1,0 +1,215 @@
+.appearance-branding {
+  padding: 10px;
+  min-height: 100vh;
+}
+
+/* Header */
+.appearance-branding-header h1 {
+  margin: 0;
+  color: #373435;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.appearance-branding-header p {
+  margin-top: 6px;
+  color: #808080;
+  font-size: 14px;
+  text-align: left;
+}
+
+.appearance-branding-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.appearance-save-btn {
+  height: 42px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: none;
+  border-radius: 12px;
+  background: #f6d56f;
+  color: #8b7b4b;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+
+.branding-card {
+  width: 650px;
+  padding: 26px 27px;
+  margin-top: 26px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow:
+    0 8px 25px rgba(30, 41, 59, 0.07),
+    0 1px 3px rgba(30, 41, 59, 0.04);
+}
+
+.branding-card-header {
+  margin-bottom: 23px;
+}
+
+.branding-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.branding-title svg {
+  color: #f2b900;
+}
+
+.branding-title h2 {
+  margin: 0;
+  color: #14213d;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.branding-card-header p {
+  margin: 5px 0 0;
+  color: #7b8499;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+
+.branding-field {
+  margin-bottom: 20px;
+}
+
+.branding-field > label {
+  display: block;
+  margin-bottom: 5px;
+  text-align: left;
+  color: #263957;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.branding-field input {
+  width: 100%;
+  height: 40px;
+  padding: 0 13px;
+  box-sizing: border-box;
+  border: 1px solid #dce2ec;
+  border-radius: 10px;
+  background: #f2f4f8;
+  color: #263957;
+  font-size: 14px;
+  outline: none;
+}
+
+.upload-box {
+  width: 100%;
+  min-height: 100px;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  border: 1px dashed #d7deea;
+  border-radius: 13px;
+  background: #fbfcfe;
+}
+
+
+.upload-box .upload-icon {
+  width: 65px;
+  height: 65px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: #f7c20b;
+  color: #ffffff;
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.upload-content h3 {
+  margin: 0 0 4px;
+
+  color: #17233b;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.upload-content p {
+  margin: 0 0 9px;
+
+  color: #7a8498;
+
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.choose-file-btn {
+  height: 33px;
+
+  padding: 0 12px;
+
+  border: 1px solid #dbe1eb;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #263957;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.favicon-field {
+  margin-bottom: 0;
+}
+
+
+@media (max-width: 768px) {
+
+  .appearance-branding-header {
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .branding-card {
+    width: 100%;
+  }
+
+}
+
+@media (max-width: 520px) {
+
+  .appearance-branding-header h1 {
+    font-size: 22px;
+  }
+
+  .upload-box {
+    align-items: flex-start;
+  }
+
+  .upload-icon {
+    width: 58px;
+    height: 58px;
+  }
+
+  .upload-content p {
+    font-size: 11px;
+  }
+
+}

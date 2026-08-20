@@ -30,10 +30,19 @@
   display: flex;
   align-items: center;
   gap: 20px;
-
   box-shadow:
     0 4px 15px rgba(0, 0, 0, 0.05);
 }
+
+.stat-card.available-credits {
+  background: linear-gradient(to right, #ffcc29, #e0a800);
+}
+
+/* When available credits are 0 */
+.stat-card.available-credits.credits-zero {
+  background: linear-gradient(to right, #ff6b6b, #dc3545);
+}
+
 
 .stat-icon {
   width: 62px;
@@ -64,8 +73,9 @@
 }
 
 .stat-card h2 {
-  font-size: 30px;
+  font-size: 25px;
   color: #373435;
+  font-weight: 800;
 }
 
 .stat-info {

@@ -1,0 +1,360 @@
+.detailed-mis {
+  padding: 10px;
+  min-height: 100vh;
+}
+
+/* Header */
+.detailed-mis-header h1 {
+  margin: 0;
+  color: #373435;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.detailed-mis-header p {
+  margin-top: 6px;
+  color: #808080;
+  font-size: 14px;
+  text-align: left;
+}
+
+
+.detailed-mis-filter-card {
+  margin-top: 26px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20px 22px;
+  background: #fff7dc;
+  border: 1px solid #f0d98b;
+  border-radius: 16px;
+}
+
+.detailed-mis-filter-grid {
+  display: flex;
+  gap: 50px;
+  align-items: end;
+}
+
+.wrap-detailed-mis-input {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 10px;
+  width: 80%;
+}
+
+/* Each field */
+.wrap-detailed-mis-input .detailed-mis-field {
+  flex: 1;
+  min-width: 0;
+}
+
+/* User / Client field should be slightly wider */
+.wrap-detailed-mis-input .user-client-field {
+  flex: 1.5;
+}
+
+/* Date fields */
+.wrap-detailed-mis-input .date-field {
+  flex: 0.9;
+}
+
+/* Labels */
+.wrap-detailed-mis-input .detailed-mis-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #373435;
+}
+
+/* Inputs */
+.wrap-detailed-mis-input .detailed-mis-input,
+.wrap-detailed-mis-input .detailed-mis-select {
+  height: 40px;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    background: #ffffff;
+    border: 1px solid #d9dee7;
+    border-radius: 11px;
+    color: #7c8490;
+    font-size: 14px;
+}
+
+
+.detailed-mis-field label {
+  display: block;
+  margin-bottom: 5px;
+  color: #373435;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.detailed-mis-field label span {
+  color: #e53935;
+}
+
+.date-range-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #4d5560;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.date-range-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+.detailed-mis-select,
+.detailed-mis-input {
+  height: 40px;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  background: #ffffff;
+  border: 1px solid #d9dee7;
+  border-radius: 11px;
+  color: #7c8490;
+  font-size: 14px;
+}
+
+.detailed-mis-select {
+  cursor: pointer;
+}
+
+
+.user-client-field {
+  position: relative;
+}
+
+.user-client-search-input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #4d5560;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.user-client-search-input::placeholder {
+  color: #7c8490;
+}
+
+/* Toggle button */
+.select-arrow {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: #7b8490;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.select-arrow:hover {
+  color: #373435;
+}
+
+.client-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin-top: 5px;
+  background: #ffffff;
+  border: 1px solid #d9dee7;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.10);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+/* Dropdown option */
+.client-dropdown-option {
+  padding: 10px 14px;
+  color: #373435;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.client-dropdown-option:hover {
+  background: #fff7dc;
+  border-radius: 15px;
+}
+
+/* No result */
+.client-dropdown-no-result {
+  padding: 12px 14px;
+  color: #8a94a3;
+  font-size: 14px;
+}
+
+.date-input {
+  color: #4d5560;
+}
+
+.calendar-icon {
+  color: #111;
+  font-size: 16px;
+}
+
+.detailed-mis-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 0;
+}
+
+.detailed-mis-actions button {
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 11px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.detailed-mis-reset-btn {
+  background: #ffffff;
+  color: #373435;
+  border: 1px solid #e0e3e8;
+}
+
+.detailed-mis-search-btn {
+  background: #f8c400;
+  color: #111;
+  border: 1px solid #f8c400;
+  box-shadow: 0 6px 14px rgba(248, 196, 0, 0.25);
+}
+
+
+.detailed-mis-results-card {
+  margin-top: 34px;
+  min-height: 282px;
+  background: #ffffff;
+  border: 1px solid #e5e8ee;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(31, 41, 55, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.detailed-mis-empty-state {
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Search Icon */
+.detailed-mis-search-icon {
+  position: relative;
+  width: 55px;
+  height: 55px;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  background: #fff5d5;
+}
+
+.search-circle {
+  position: absolute;  
+  width: 38px;
+  height: 38px;
+  top: 10px;
+  left: 10px;
+  border: 5px solid #e5a900;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.search-handle {
+  position: absolute;
+  width: 18px;
+  height: 5px;
+  background: #e5a900;
+  border-radius: 5px;
+  transform: rotate(48deg);
+  top: 43px;
+  left: 38px;
+}
+
+.detailed-mis-empty-state h3 {
+  margin: 0;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.detailed-mis-empty-state p {
+  max-width: 450px;
+  color: #8a94a3;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+
+@media (max-width: 1200px) {
+  .detailed-mis-filter-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .detailed-mis-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .detailed-mis {
+    padding: 10px;
+  }
+
+  .detailed-mis-filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detailed-mis-actions {
+    width: 100%;
+  }
+
+  .detailed-mis-actions button {
+    flex: 1;
+  }
+
+  .detailed-mis-results-card {
+    min-height: 260px;
+  }
+
+  .detailed-mis-empty-state {
+    padding: 30px 20px;
+  }
+}

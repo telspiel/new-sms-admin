@@ -57,7 +57,7 @@ function Dashboard() {
         if (response.code === 1000) {
         setDashboardData(response.data);
         } else {
-        alert(response.message);
+        console.log(response.message);
         }
     } catch (error) {
         console.error(error);
@@ -80,7 +80,7 @@ function Dashboard() {
         if (response.code === 14000) {
         setHourlyGrid(response.data.grid || []);
         } else {
-        alert(response.message);
+        console.log(response.message || "Unable to fetch hourly report data");
         }
     } catch (error) {
         console.error(error);
@@ -165,7 +165,7 @@ const hasHourlyData = hourlyGrid.some(
         if (response.code === 14000) {
         setSummaryReportData(response.data);
         } else {
-        alert(response.message || "Unable to fetch Summary Report");
+        console.log(response.message || "Unable to fetch Summary Report");
         }
     } catch (error) {
         console.error("Summary Report Error:", error);
@@ -185,6 +185,15 @@ const chartValues = [
 
 const hasSummaryData = chartValues.some(value => value > 0);
 
+const summaryColors = [
+  "#ffcc29", // Request
+  "#7c5cff", // Rejected
+  "#5c6575", // Submit
+  "#44a67e", // Delivered
+  "#ff6b6b", // Failed
+  "#f8b84e", // Awaited
+];
+
 const summaryData = {
   labels: [
     "Request",
@@ -194,19 +203,42 @@ const summaryData = {
     "Failed",
     "Awaited",
   ],
+
   datasets: [
     {
       data: chartValues,
-      backgroundColor: [
-        "#ffcc29",
-        "#7c5cff",
-        "#5c6575",
-        "#44a67e",
-        "#ff6b6b",
-        "#f8b84e",
-      ],
-      borderRadius: 8,
-      maxBarThickness: 40,
+
+      backgroundColor: (context) => {
+        const chart = context.chart;
+        const { ctx, chartArea } = chart;
+
+        if (!chartArea) {
+          return summaryColors[context.dataIndex];
+        }
+
+        const color = summaryColors[context.dataIndex];
+
+        const gradient = ctx.createLinearGradient(
+          0,
+          chartArea.top,
+          0,
+          chartArea.bottom
+        );
+
+        gradient.addColorStop(0, color);
+
+        gradient.addColorStop(0.35, `${color}CC`);
+
+        gradient.addColorStop(0.7, `${color}55`);
+
+        gradient.addColorStop(1, `${color}15`);
+
+        return gradient;
+      },
+
+      borderRadius: 10,
+      borderSkipped: false,
+      maxBarThickness: 55,
     },
   ],
 };
@@ -260,11 +292,11 @@ const AnimatedNumber = ({ value, duration = 1200 }) => {
       {/* Top Cards */}
 
       <div className="stats-grid">
+
         <div className="stat-card">
           <div className="stat-icon yellow">
             <i className="fa-regular fa-clock"></i>
           </div>
-
           <div className="stat-info">
             <h4>SMS Count Today</h4>
             <h2>
@@ -287,26 +319,37 @@ const AnimatedNumber = ({ value, duration = 1200 }) => {
             <AnimatedNumber value={dashboardData.totalSmsMonth ?? 0} />
             </h2>
             <span className="success-text">
-              June 2026
-            </span>
+            {new Date().toLocaleDateString("en-US", {
+              month: "long",
+              year: "numeric",
+            })}
+          </span>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon yellow">
-            <i className="fa-solid fa-wallet"></i>
-          </div>
+       <div
+        className={`stat-card available-credits ${
+          Number(dashboardData.availableCredits ?? 0) === 0
+            ? "credits-zero"
+            : ""
+        }`}
+      >
+        <div className="stat-icon yellow">
+          <i className="fa-solid fa-wallet"></i>
+        </div>
 
-          <div className="stat-info">
-            <h4>Available Credits</h4>
-            <h2>
+        <div className="stat-info">
+          <h4>Available Credits</h4>
+
+          <h2>
             <AnimatedNumber value={dashboardData.availableCredits ?? 0} />
-            </h2>
-            <span className="success-text">
-              Balance remaining
-            </span>
-          </div>
+          </h2>
+
+          <span className="success-text">
+            Balance remaining
+          </span>
         </div>
+      </div>
       </div>
 
       {/* Charts */}

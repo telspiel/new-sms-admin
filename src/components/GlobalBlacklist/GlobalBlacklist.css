@@ -29,7 +29,7 @@
 .wrap-add-button .add-btn {
   border: none;
   outline: none;
-  background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
+  background: linear-gradient(to right, #ffcc29, #e0a800);
   color: #111;
   padding: 12px 22px;
   border-radius: 14px;
@@ -51,7 +51,11 @@
     display: flex;
     gap: 10px;
     padding: 15px 10px;
-    margin-top: 15px
+    margin-top: 15px;
+    border-radius: 20px 20px 0 0;
+    background: #fafbfc;
+    align-items: center;
+     border-bottom: 1px solid #e5e7eb;
 }
 
 .search-section .search-box {
@@ -80,12 +84,12 @@
 
 .search-section .country-code {
   margin-left: 12px;
-  margin-right: 10px;
   color: #444;
   font-weight: 600;
+  font-size: 15px;
 }
 
-.search-sectio .search-box input {
+.search-section .search-box input {
   flex: 1;
   border: none;
   outline: none;
@@ -95,7 +99,7 @@
 
 .search-section .search-btn {
     border: none;
-    background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
+    background: linear-gradient(to right, #ffcc29, #e0a800);
     color: #111;
     height: 40px;
     padding: 0 20px;
@@ -107,6 +111,15 @@
     box-shadow: 0 8px 18px rgba(247, 181, 0, .35);
 }
 
+.search-section .match-count {
+  margin-left: auto;
+  padding-right: 0;
+  color: #718096;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
@@ -114,7 +127,7 @@
 
 .blacklist-table {
   width: 100%;
-  border-radius: 20px;
+  border-radius: 0 0 20px 20px;
   border-collapse: collapse;
   background: #fafbfc;
 }
@@ -144,7 +157,7 @@
 }
 
 .empty-state-blacklist {
-  height: 350px;
+  height: 300px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -180,7 +193,38 @@
   line-height: 1.6;
 }
 
-.delete-btn {
+.phone-number-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.phone-number-cell .country-code {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff4d6;
+  color: #9a6b00;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.phone-number-cell .phone-number {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.blacklist-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.blacklist-action-buttons .delete-btn {
   background: transparent;
   border: none;
   outline: none;
@@ -191,13 +235,13 @@
   justify-content: center;
 }
 
-.delete-btn i {
+.blacklist-action-buttons .delete-btn i {
   color: #ef4444;
   font-size: 18px;
   transition: color 0.2s ease;
 }
 
-.delete-btn:hover i {
+.blacklist-action-buttons .delete-btn:hover i {
   color: #dc2626;
 }
 

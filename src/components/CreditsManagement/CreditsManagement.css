@@ -65,7 +65,7 @@
 /* Body */
 
 .credit-content {
-  padding: 34px 28px;
+  padding: 20px 26px;
 }
 
 .credit-content h2 {
@@ -86,7 +86,7 @@
 
 .field label {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   font-weight: 600;
   color: #4a5568;
   text-align: left;
@@ -130,8 +130,8 @@
 }
 
 
-.helper-text {
-  margin: 15px 0;
+.credit-helper-text {
+  margin: 10px 0;
   color: #848c99;
   font-style: italic;
   text-align: left;
@@ -179,7 +179,7 @@
 }
 
 .balance-card h3 {
-  margin: 12px 0 8px;
+  margin: 5px 0;
   font-size: 28px;
   color: #232d3f;
 }
@@ -191,7 +191,7 @@
 
 /* Credit */
 .credit-input-section {
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .credit-input {
@@ -674,7 +674,7 @@
 /* a==================================== */
 
 .history-empty {
-  min-height: 320px;
+  min-height: 200px;
   display: flex;
   justify-content: center;
   align-items: center;

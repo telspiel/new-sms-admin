@@ -136,7 +136,7 @@
   border-bottom: 1px solid #ececec;
 }
 
-.search-box {
+.traffic-table-card .search-box {
   width: 320px;
   height: 52px;
   border-radius: 14px;
@@ -147,12 +147,12 @@
   padding: 0 18px;
 }
 
-.search-box i {
+.traffic-table-card .search-box i {
   color: #8d96a7;
   font-size: 18px;
 }
 
-.search-box input {
+.traffic-table-card .search-box input {
   flex: 1;
   border: none;
   background: transparent;
@@ -245,7 +245,7 @@
 /* Traffic History */
 .history-filter-card{
     margin-top:25px;
-    background: linear-gradient(to bottom, #fff8e6, #ffffff);
+    background: linear-gradient(to bottom, #fff6da, #fffdf5);
     border:1px solid #f1d17b;
     border-radius:18px;
     padding:22px 24px;
@@ -320,7 +320,7 @@
     padding:0 28px;
     border:none;
     border-radius:12px;
-    background:#ffcc29;
+    background: linear-gradient(to right, #ffcc29, #e0a800);
     font-weight:700;
     cursor:pointer;
     transition:.25s;

@@ -82,6 +82,10 @@
   cursor: not-allowed;
 }
 
+.new-routing-form-group .mandatory {
+    color: red;
+}
+
 /* Radio */
 .routing-radio-box {
   display: flex;

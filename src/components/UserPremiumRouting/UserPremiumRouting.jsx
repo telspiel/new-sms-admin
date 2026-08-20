@@ -763,195 +763,201 @@ const handleReset = () => {
         </div>
        )}
         <table className="routing-table">
+          {hasSearched && filteredRoutingData.length > 0 && (
             <thead>
-            <tr>
+              <tr>
                 <th>
-                <input
-                type="checkbox"
-                checked={
-                    filteredRoutingData.length > 0 &&
-                    selectedRows.length === filteredRoutingData.length
-                }
-                onChange={(e) => {
-                    if (e.target.checked) {
-                    setSelectedRows(filteredRoutingData);
-                    } else {
-                    setSelectedRows([]);
+                  <input
+                    type="checkbox"
+                    checked={
+                      filteredRoutingData.length > 0 &&
+                      selectedRows.length === filteredRoutingData.length
                     }
-                }}
-                />
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedRows(filteredRoutingData);
+                      } else {
+                        setSelectedRows([]);
+                      }
+                    }}
+                  />
                 </th>
+
                 <th>User Premium Number</th>
                 <th>Description</th>
                 <th>Created Date</th>
                 <th>Updated Date</th>
                 <th>Actions</th>
-            </tr>
+              </tr>
             </thead>
+          )}
 
-            <tbody>
+          <tbody>
             {loading ? (
-                <tr>
+              <tr>
                 <td colSpan="6">
-                    <div className="table-loader">
+                  <div className="table-loader">
                     <div className="spinner"></div>
                     <p>Searching routing list...</p>
-                    </div>
+                  </div>
                 </td>
-                </tr>
+              </tr>
             ) : !hasSearched ? (
-                <tr>
+              <tr>
                 <td colSpan="6" className="empty-table-cell">
-                    <div className="empty-state">
+                  <div className="empty-state">
                     <div className="empty-icon">
-                        <i className="fa-solid fa-magnifying-glass"></i>
+                      <i className="fa-solid fa-magnifying-glass"></i>
                     </div>
 
                     <h2>Search to view premium routing entries</h2>
 
                     <p>
-                        This list can hold millions of entries, so it isn't loaded by
-                        <br />
-                        default. Search or filter by user, number, or description to
-                        <br />
-                        view matching entries.
+                      This list can hold millions of entries, so it isn't loaded by
+                      <br />
+                      default. Search or filter by user, number, or description to
+                      <br />
+                      view matching entries.
                     </p>
-                    </div>
+                  </div>
                 </td>
-                </tr>
+              </tr>
             ) : filteredRoutingData.length === 0 ? (
-                <tr>
+              <tr>
                 <td colSpan="6" className="empty-table-cell">
-                    <div className="empty-state">
+                  <div className="empty-state">
                     <h2>No data found</h2>
 
                     <p>No data found for the selected user.</p>
-                    </div>
+                  </div>
                 </td>
-                </tr>
+              </tr>
             ) : (
-                filteredRoutingData.map((item, index) => (
+              filteredRoutingData.map((item, index) => (
                 <tr key={index}>
-                    <td>
+                  <td>
                     <input
-                    type="checkbox"
-                    checked={selectedRows.some(
+                      type="checkbox"
+                      checked={selectedRows.some(
                         (row) =>
-                        row.mobileNumber === item.mobileNumber &&
-                        row.userid === item.userid
-                    )}
-                    onChange={() => handleRowSelect(item)}
+                          row.mobileNumber === item.mobileNumber &&
+                          row.userid === item.userid
+                      )}
+                      onChange={() => handleRowSelect(item)}
                     />
-                    </td>
+                  </td>
 
-                    <td>
+                  <td>
                     <div className="premium-number">
-                        <span className="country-code">+91</span>
+                      <span className="country-code">+91</span>
 
-                        <div className="premium-number-info">
+                      <div className="premium-number-info">
                         <div className="mobile-number">
-                            {item.mobileNumber.slice(-10)}
+                          {item.mobileNumber.slice(-10)}
                         </div>
 
                         <span className="user-name">
-                            {selectedUserName}
+                          {selectedUserName}
                         </span>
-                        </div>
+                      </div>
                     </div>
-                    </td>
+                  </td>
 
-                    <td>{item.description}</td>
+                  <td>{item.description}</td>
 
-                    <td>
-                    {item.createddate.split(" ")[0].split("-").reverse().join("-")}
-                    </td>
+                  <td>
+                    {item.createddate
+                      .split(" ")[0]
+                      .split("-")
+                      .reverse()
+                      .join("-")}
+                  </td>
 
-                    <td>
-                    {item.updateddate.split(" ")[0].split("-").reverse().join("-")}
-                    </td>
+                  <td>
+                    {item.updateddate
+                      .split(" ")[0]
+                      .split("-")
+                      .reverse()
+                      .join("-")}
+                  </td>
 
-                    <td>
+                  <td>
                     <div className="user-action-buttons">
-                        <button className="action-btn edit-btn">
+                      <button className="action-btn edit-btn">
                         <i className="fa-regular fa-pen-to-square"></i>
-                        </button>
+                      </button>
 
-                    <button
-                    className="action-btn delete-btn"
-                    onClick={() => {
-                        setSelectedRows([item]);
-                        setShowDeleteModal(true);
-                    }}
-                    >
-                    <i className="fa-regular fa-trash-can"></i>
-                    </button>
+                      <button
+                        className="action-btn delete-btn"
+                        onClick={() => {
+                          setSelectedRows([item]);
+                          setShowDeleteModal(true);
+                        }}
+                      >
+                        <i className="fa-regular fa-trash-can"></i>
+                      </button>
                     </div>
-                    </td>
+                  </td>
                 </tr>
-                ))
+              ))
             )}
+
             {showDeleteModal && (
-            <>
+              <>
                 <div
-                className="user-delete-modal-overlay"
-                onClick={() => setShowDeleteModal(false)}
+                  className="user-delete-modal-overlay"
+                  onClick={() => setShowDeleteModal(false)}
                 ></div>
 
                 <div className="user-delete-modal">
-
-                <div className="user-delete-header">
-
+                  <div className="user-delete-header">
                     <div className="user-delete-icon">
-                    <i className="fa-regular fa-trash-can"></i>
+                      <i className="fa-regular fa-trash-can"></i>
                     </div>
 
                     <h2>Remove this routing entry?</h2>
+                  </div>
 
-                </div>
+                  <div className="user-delete-body">
+                    <p>
+                      {selectedRows.length === 1 ? (
+                        <>
+                          Remove{" "}
+                          <strong>+{selectedRows[0].mobileNumber}</strong>{" "}
+                          (<strong>{selectedUserName}</strong>) from premium routing?
+                          This action cannot be undone.
+                        </>
+                      ) : (
+                        <>
+                          Remove{" "}
+                          <strong>{selectedRows.length}</strong> selected routing
+                          {selectedRows.length > 1 ? " entries" : " entry"}?
+                          This action cannot be undone.
+                        </>
+                      )}
+                    </p>
+                  </div>
 
-                <div className="user-delete-body">
-                <p>
-                    {selectedRows.length === 1 ? (
-                    <>
-                        Remove{" "}
-                        <strong>+{selectedRows[0].mobileNumber}</strong>{" "}
-                        (<strong>{selectedUserName}</strong>) from premium routing?
-                        This action cannot be undone.
-                    </>
-                    ) : (
-                    <>
-                        Remove{" "}
-                        <strong>{selectedRows.length}</strong> selected routing
-                        {selectedRows.length > 1 ? " entries" : " entry"}?
-                        This action cannot be undone.
-                    </>
-                    )}
-                </p>
-                </div>
-
-                <div className="user-delete-footer">
-
+                  <div className="user-delete-footer">
                     <button
-                    className="cancel-delete-btn"
-                    onClick={() => setShowDeleteModal(false)}
+                      className="cancel-delete-btn"
+                      onClick={() => setShowDeleteModal(false)}
                     >
-                    Cancel
+                      Cancel
                     </button>
 
                     <button
-                    className="confirm-delete-btn"
-                    onClick={deleteSelectedRows}
+                      className="confirm-delete-btn"
+                      onClick={deleteSelectedRows}
                     >
-                    Remove
+                      Remove
                     </button>
-
+                  </div>
                 </div>
-
-                </div>
-            </>
+              </>
             )}
-            </tbody>
-            </table>
+          </tbody>
+        </table>
             {routingData.length > 0 && (
                 <div className="routing-table-footer">
                     <span>

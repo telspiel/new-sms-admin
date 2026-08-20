@@ -1,0 +1,351 @@
+.userwise-routing {
+  padding: 10px;
+  min-height: 100vh;
+}
+
+/* Header */
+.userwise-routing-header h1 {
+  margin: 0;
+  color: #373435;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.userwise-routing-header p {
+  margin-top: 6px;
+  color: #808080;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* Filter Card */
+
+.userwise-filter-card {
+  margin-top: 26px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 22px 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.userwise-filter-row {
+  display: flex;
+  gap: 28px;
+  align-items: flex-end;
+}
+
+.userwise-field {
+  width: 245px;
+}
+
+.userwise-field label {
+  display: flex;
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  text-align: left;
+}
+
+/* Select */
+.userwise-field select {
+  width: 100%;
+  height: 40px;
+  border: 1px solid #d9dee8;
+  border-radius: 12px;
+  background: #f7f9fc;
+  padding: 0 16px;
+  font-size: 15px;
+  outline: none;
+}
+
+.userwise-field select:focus {
+  border-color: #ffcc29;
+  background: #fff;
+}
+
+.userwise-field select:disabled {
+  background: #f2f2f2;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Radio */
+.userwise-radio-box {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 40px;
+  border: 1px solid #d9dee8;
+  border-radius: 12px;
+  background: #f7f9fc;
+  padding: 0 14px;
+}
+
+.userwise-radio-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.userwise-radio-item input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #ffcc29;
+}
+
+.wrap-add-routing-btn {
+    display: flex;
+    width: 100%;
+    justify-content: right;
+    margin-top: 20px;
+}
+
+.wrap-add-routing-btn .add-routing-btn{
+    border: none;
+    outline: none;
+    background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
+    color: #111;
+    padding: 12px 22px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: .25s;
+    box-shadow: 0 8px 18px rgba(247, 181, 0, .35);
+}
+
+/* Empty Card */
+.userwise-empty-card {
+  margin-top: 15px;
+  background: #fff;
+  border-radius: 20px;
+  min-height: 280px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.userwise-empty-card svg {
+  color: #cfd6e4;
+  margin-bottom: 18px;
+}
+
+.userwise-empty-card h2 {
+  margin: 0;
+  color: #374151;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.userwise-empty-card p {
+  margin-top: 10px;
+  color: #8b93a6;
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 500px;
+}
+
+.userwise-table-card {
+  margin-top: 15px;
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0,0,0,.08);
+}
+
+.userwise-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.userwise-table thead {
+  background: #f8f9fb;
+}
+
+.userwise-table th {
+  padding: 18px;
+  text-align: left;
+  font-size: 13px;
+  color: #7b8192;
+  font-weight: 700;
+  border-bottom: 1px solid #ececec;
+}
+
+.userwise-table td {
+  padding: 16px 18px;
+  font-size: 14px;
+  color: #373435;
+  border-bottom: 1px solid #f2f2f2;
+  text-align: left;
+}
+
+.userwise-table .type-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.userwise-table .trans-badge {
+  background: #edf3ff;
+  color: #2962ff;
+}
+
+.userwise-table .promo-badge {
+  background: #fff6da;
+  color: #8a6a00;
+}
+
+.userwise-table .edit-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d9dee8;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.userwise-table .edit-btn:hover {
+  background: #f8f9fb;
+  border-color: #ffcc29;
+}
+
+.mandatory {
+    color: red;
+}
+
+/* Add Routing Modal Style */
+.routing-modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+.routing-modal{
+  width:450px;
+  background:#fff;
+  border-radius:20px;
+  overflow:hidden;
+}
+
+.routing-modal-header{
+  padding:20px 28px;
+  border-bottom:1px solid #ececec;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.routing-modal-header h2{
+  margin:0;
+  font-size:22px;
+  font-weight:700;
+}
+
+.close-modal-btn{
+  background:none;
+  border:none;
+  font-size:18px;
+  cursor:pointer;
+  color:#8b93a6;
+}
+
+.routing-modal-body{
+  padding: 20px 28px;
+}
+
+.routing-modal-field{
+  margin-bottom:10px;
+}
+
+.routing-modal-field label{
+  display:block;
+  margin-bottom:5px;
+  font-weight:600;
+  text-align: left;
+  font-size: 16px;
+}
+
+.routing-modal-field select{
+  width:100%;
+  height:40px;
+  border:1px solid #d9dee8;
+  border-radius:12px;
+  padding:0 16px;
+  background:#f8f9fb;
+}
+
+.selected-type-box{
+  height:48px;
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  border:1px solid #d9dee8;
+  border-radius:12px;
+  background:#f8f9fb;
+}
+
+.selected-type-box .trans-badge {
+  background: #edf3ff;
+  color: #2962ff;
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.selected-type-box .promo-badge {
+  background: #fff6da;
+  color: #8a6a00;
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.routing-modal-footer{
+  display:flex;
+  gap:16px;
+  padding:20px 28px;
+  border-top:1px solid #ececec;
+}
+
+.routing-modal-footer button{
+  flex:1;
+}
+
+.routing-modal-footer .save-btn {
+    background: #ffc107;
+    color: #202020;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 8px 18px rgba(255, 193, 7, 0.35);
+}
+
+.routing-modal-footer .cancel-btn {
+    background: #fff;
+    color: #4b5563;
+    border-radius: 12px;
+    border: 1px solid #d9dee8 !important;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+}

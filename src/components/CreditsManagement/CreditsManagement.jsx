@@ -352,7 +352,7 @@ const selectedName =
 
   return (
     <div className="credits-management">
-         {loading && (
+         {/* {loading && (
         <div className="page-loader">
 
         <div className="loader-content">
@@ -364,7 +364,7 @@ const selectedName =
         </div>
 
         </div>
-        )}  
+        )}   */}
 
         {toastMessage && (
         <div className="toast-message">
@@ -515,7 +515,7 @@ const selectedName =
                 </div>
             </div>
             ) : (
-            <p className="helper-text">
+            <p className="credit-helper-text">
                 Select an account above to view its credit — add credit to it below if needed.
             </p>
             )}
@@ -561,6 +561,11 @@ const selectedName =
                 value={creditToAdd}
                 onChange={(e) => setCreditToAdd(e.target.value)}
                 placeholder="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-" || e.key === "e") {
+                    e.preventDefault();
+                  }
+                }}
                 disabled={!isUserSelected}
                 />
 
@@ -722,7 +727,7 @@ const selectedName =
                 </div>
             </div>
             ) : (
-            <p className="helper-text">
+            <p className="credit-helper-text">
                 Select an account above to view its credit — add credit to it below if needed.
             </p>
             )}
@@ -768,6 +773,11 @@ const selectedName =
                 value={creditToDeduct}
                 onChange={(e) => setCreditToDeduct(e.target.value)}
                 placeholder="0"
+                onKeyDown={(e) => {
+                  if (e.key === "-" || e.key === "e") {
+                    e.preventDefault();
+                  }
+                }}
                 disabled={!isUserSelected}
                 />
 
@@ -946,6 +956,7 @@ const selectedName =
                 <input
                 type="date"
                 value={fromDate}
+                max={new Date().toISOString().split("T")[0]}
                 onChange={(e) =>
                     setFromDate(e.target.value)
                 }
@@ -957,6 +968,7 @@ const selectedName =
                 <input
                 type="date"
                 value={toDate}
+                max={new Date().toISOString().split("T")[0]}
                 onChange={(e) =>
                     setToDate(e.target.value)
                 }
@@ -1048,86 +1060,79 @@ const selectedName =
             </div>
 
             {/* Table / Empty State */}
-            {creditHistory.length > 0 ? (
-
             <div className="history-table-card">
-
+            {loading ? (
+              <div className="table-loader">
+                <div className="spinner"></div>
+                <p>Loading Credit History...</p>
+              </div>
+            ) : creditHistory.length > 0 ? (
               <table className="credit-history-table">
-
                 <thead>
-
-                    <tr>
+                  <tr>
                     <th>CREATED DATE</th>
                     <th>CREDIT</th>
                     <th>STATUS</th>
                     <th>UPDATED CREDIT</th>
                     <th>UPDATED BY</th>
                     <th>COMMENT</th>
-                    </tr>
-
+                  </tr>
                 </thead>
 
                 <tbody>
-                {filteredHistory.map((item, index) => (
+                  {filteredHistory.map((item, index) => (
                     <tr key={index}>
-                    <td>{item.createdDate}</td>
+                      <td>{item.createdDate}</td>
 
-                   <td
-                    className={`credit-amount ${
-                        Number(item.credit) >= 0 ? "credit" : "debit"
-                    }`}
-                    >
-                    {Number(item.credit).toLocaleString()}
-                    </td>
-
-                    <td>
-                    <span
-                        className={`status-badge ${
-                        item.status === "Add" ? "credit" : "debit"
+                      <td
+                        className={`credit-amount ${
+                          Number(item.credit) >= 0 ? "credit" : "debit"
                         }`}
-                    >
-                        {item.status}
-                    </span>
-                    </td>
+                      >
+                        {Number(item.credit).toLocaleString()}
+                      </td>
 
-                    <td className="updated-credit">
+                      <td>
+                        <span
+                          className={`status-badge ${
+                            item.status === "Add" ? "credit" : "debit"
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+
+                      <td className="updated-credit">
                         {Number(item.updatedCredit).toLocaleString()}
-                    </td>
+                      </td>
 
-                    <td className="updated-by">
+                      <td className="updated-by">
                         {item.updatedBy}
-                    </td>
+                      </td>
 
-                    <td className="comment-text">
+                      <td className="comment-text">
                         {item.comment}
-                    </td>
+                      </td>
                     </tr>
-                ))}
+                  ))}
                 </tbody>
-
-                </table>
-
-            </div>
-
+              </table>
             ) : (
-
-            <div className="history-empty">
-
+              <div className="history-empty">
                 <div className="history-empty-icon">
-                <i className="fa-solid fa-dollar-sign"></i>
+                  <i className="fa-solid fa-dollar-sign"></i>
                 </div>
 
                 <h3>No history in this range</h3>
 
                 <p>
-                No credit was added or deducted for this account within
-                <br />
-                the selected dates.
+                  No credit was added or deducted for this account within
+                  <br />
+                  the selected dates.
                 </p>
-
-            </div>
-
+              </div>
             )}
+          </div>
 
         </>
         )}

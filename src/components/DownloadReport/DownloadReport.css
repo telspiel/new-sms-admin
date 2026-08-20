@@ -1,0 +1,359 @@
+.download-report {
+  padding: 10px;
+  min-height: 100vh;
+}
+
+/* Header */
+.download-report-header h1 {
+  margin: 0;
+  color: #373435;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.download-report-header p {
+  margin-top: 6px;
+  color: #808080;
+  font-size: 14px;
+  text-align: left;
+}
+
+.download-filter-card {
+  width: 100%;
+  min-height: 115px;
+  margin-top: 26px;
+  padding: 23px 22px 21px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-end;
+  gap: 15px;
+  background: #fff6d9;
+  border: 1px solid #f1dda0;
+  border-radius: 15px;
+}
+
+.download-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.download-filter-field label {
+  color: #293247;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.download-filter-field label span {
+  color: #ef3b2d;
+}
+
+.client-field {
+  width: 248px;
+}
+
+.date-field {
+  width: 248px;
+}
+
+.download-select,
+.download-date-input {
+  width: 100%;
+  height: 40px;
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid #d9dfeb;
+  border-radius: 11px;
+}
+
+.download-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Search input */
+.download-select input {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 0 38px 0 14px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #26364d;
+  font-size: 14px;
+  font-family: inherit;
+  border-radius: 11px;
+}
+
+.download-select input::placeholder {
+  color: #929bab;
+}
+
+.download-select input:focus {
+  background: transparent;
+}
+
+/* Dropdown arrow */
+.download-select > i {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #7e8998;
+  font-size: 11px;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* Dropdown */
+.client-dropdown {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  width: 100%;
+  max-height: 220px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background: #fff;
+  border: 1px solid #d9dfeb;
+  border-radius: 11px;
+  box-shadow: 0 8px 20px rgba(38, 54, 77, 0.10);
+  z-index: 100;
+}
+
+/* Dropdown scrollbar */
+.client-dropdown::-webkit-scrollbar {
+  width: 5px;
+}
+
+.client-dropdown::-webkit-scrollbar-thumb {
+  background: #d9dfeb;
+  border-radius: 10px;
+}
+
+/* Dropdown options */
+.client-dropdown-option {
+  padding: 10px 14px;
+  color: #26364d;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.client-dropdown-option:hover {
+  background: #f5f7fa;
+}
+
+.client-dropdown-option.selected {
+  background: #fff8d9;
+  font-weight: 600;
+}
+
+/* No result */
+.client-no-result {
+  padding: 12px 14px;
+  color: #929bab;
+  background: #fff;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Date input */
+.download-date-input input {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #26364d;
+  font-size: 14px;
+  font-family: inherit;
+  border-radius: 11px;
+}
+
+.download-date-input input::-webkit-calendar-picker-indicator {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.download-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.generate-download-btn,
+.download-reset-btn {
+  height: 41px;
+  padding: 0 19px;
+  border-radius: 11px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.generate-download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 239px;
+  border: 1px solid #f4b900;
+  background: #fbc400;
+  color: #171717;
+  box-shadow: 0 5px 12px rgba(242, 187, 0, 0.18);
+}
+
+.generate-download-btn i {
+  font-size: 14px;
+}
+
+.download-reset-btn {
+  min-width: 79px;
+  border: 1px solid #dce1e9;
+  background: #fff;
+  color: #37445a;
+}
+
+.download-table-wrapper {
+  width: 100%;
+  margin-top: 20px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e4e8ef;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(20, 34, 55, 0.05);
+}
+
+.download-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.download-table thead {
+  background: #f8f9fc;
+}
+
+.download-table th {
+  height: 43px;
+  padding: 0 15px;
+  color: #718097;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-align: left;
+  border-bottom: 1px solid #e5e9ef;
+}
+
+.download-table th:nth-child(1) {
+  width: 18%;
+}
+
+.download-table th:nth-child(2) {
+  width: 18%;
+}
+
+.download-table th:nth-child(3) {
+  width: 15%;
+}
+
+.download-table th:nth-child(4) {
+  width: 15%;
+}
+
+.download-table th:nth-child(5) {
+  width: 34%;
+}
+
+.download-table td {
+  height: 49px;
+  padding: 0 15px;
+  color: #36506f;
+  font-size: 14px;
+  text-align: left;
+  border-bottom: 1px solid #e8ebf0;
+}
+
+.download-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.download-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 58px;
+  height: 24px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  background: #e2f6eb;
+  color: #149447;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #e9a900;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.csv-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 21px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: #4d7cf3;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .download-filter-card {
+    flex-wrap: wrap;
+  }
+
+  .client-field,
+  .date-field {
+    width: calc(50% - 8px);
+  }
+
+  .download-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .download-table {
+    min-width: 900px;
+  }
+}
+
+@media (max-width: 600px) {
+  .client-field,
+  .date-field {
+    width: 100%;
+  }
+
+  .download-action-buttons {
+    flex-wrap: wrap;
+  }
+}

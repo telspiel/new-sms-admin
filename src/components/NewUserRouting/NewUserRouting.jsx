@@ -198,7 +198,7 @@ const handleResetRouting = () => {
 
         <div className="new-routing-form-group">
         <label>
-            User List <span>*</span>
+            User List <span className="mandatory">*</span>
         </label>
 
          <select
@@ -226,7 +226,7 @@ const handleResetRouting = () => {
 
         <div className="new-routing-form-group">
           <label>
-            Type <span>*</span>
+            Type <span className="mandatory">*</span>
           </label>
 
           <div className={`routing-radio-box ${errors.type ? "input-error" : ""}`}>
@@ -271,7 +271,7 @@ const handleResetRouting = () => {
 
         <div className="new-routing-form-group">
         <label>
-            Group List <span>*</span>
+            Group List <span className="mandatory">*</span>
         </label>
 
        <select

@@ -11,7 +11,7 @@ import {
   ArrowLeftRight,
   Monitor,
   Settings,
-  Image,
+  Waypoints, 
   TriangleAlert,
   ChevronRight,
   ChevronDown,
@@ -46,9 +46,10 @@ function Sidebar() {
     // Reports
     setReportsOpen(
       [
-        "/delivery-report",
+        "/detailed-mis",
         "/summary-report",
-        "/campaign-report",
+        "/error-code-report",
+        "/download-report",
       ].includes(location.pathname)
     );
 
@@ -231,12 +232,12 @@ function Sidebar() {
 
               <li>
                 <NavLink
-                  to="/delivery-report"
+                  to="/detailed-mis"
                   className={({ isActive }) =>
                     isActive ? "active-link" : ""
                   }
                 >
-                  Delivery Report
+                  Detailed MIS
                 </NavLink>
               </li>
 
@@ -253,12 +254,23 @@ function Sidebar() {
 
               <li>
                 <NavLink
-                  to="/campaign-report"
+                  to="/error-code-report"
                   className={({ isActive }) =>
                     isActive ? "active-link" : ""
                   }
                 >
-                  Campaign Report
+                  Error Code Wise Report
+                </NavLink>
+              </li>
+
+              <li>
+                <NavLink
+                  to="/download-report"
+                  className={({ isActive }) =>
+                    isActive ? "active-link" : ""
+                  }
+                >
+                  Download Report
                 </NavLink>
               </li>
 
@@ -422,13 +434,13 @@ function Sidebar() {
         {/* Logo Upload */}
         <li className="menu-item">
           <NavLink
-            to="/logo-upload"
+            to="/appearance-branding"
             className={({ isActive }) =>
               isActive ? "active-link" : ""
             }
           >
-            <Image size={20} strokeWidth={1.8} />
-            <span>Logo Upload</span>
+            <Waypoints size={20} strokeWidth={1.8} />
+            <span>Appearance & Branding</span>
           </NavLink>
         </li>
 

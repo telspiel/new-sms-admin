@@ -98,7 +98,7 @@ const DepartmentManagement = () => {
     if (response.code === 4003) {
       setDepartmentList(response.data.departmentList || []);
     } else {
-      alert(response.message || "Unable to fetch departments.");
+      console.log(response.message || "Unable to fetch departments.");
     }
   } catch (error) {
     console.error(error);

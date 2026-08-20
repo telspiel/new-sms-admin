@@ -262,18 +262,16 @@ const GlobalBlacklist = () => {
       {/* Main Card */}
       <div className="blacklist-card">
 
-        {/* Search */}
+        {/* Search section*/}
         <div className="search-section">
         <div className="search-box">
 
             <i className="fa-solid fa-magnifying-glass"></i>
 
-            <span className="country-code">+91</span>
-
             <input
             type="text"
             value={mobileNumber}
-            placeholder="Enter 10 digit number"
+            placeholder="Search Number"
             maxLength={10}
             onChange={(e) => {
                 const value = e.target.value.replace(/\D/g, "");
@@ -290,6 +288,12 @@ const GlobalBlacklist = () => {
         >
             {loading ? "Searching..." : "Search"}
         </button>
+
+        {searched && blacklistData && blacklistData.phoneNumber !== null && (
+            <div className="match-count">
+            1 number matched
+            </div>
+        )}
         </div>
 
         <div className="divider"></div>
@@ -336,80 +340,100 @@ const GlobalBlacklist = () => {
         {/* Table */}
         <div className="table-wrapper">
             <table className="blacklist-table">
-            <thead>
+            {blacklistData && blacklistData.phoneNumber !== null && (
+                <thead>
                 <tr>
-                <th>Phone Number</th>
-                <th>Description</th>
-                <th>Created Date</th>
-                <th>Action</th>
+                    <th>Phone Number</th>
+                    <th>Description</th>
+                    <th>Created Date</th>
+                    <th>Action</th>
                 </tr>
-            </thead>
+                </thead>
+            )}
 
             <tbody>
-            {loading ? (
+                {loading ? (
                 <tr>
-                <td colSpan="4">
+                    <td colSpan="4">
                     <div className="table-loader">
-                    <div className="spinner"></div>
-                    <p>Loading Blacklist Number...</p>
+                        <div className="spinner"></div>
+                        <p>Loading Blacklist Number...</p>
                     </div>
-                </td>
+                    </td>
                 </tr>
-            ) : !searched || !blacklistData ? (
+                ) : !searched || !blacklistData ? (
                 <tr>
-                <td colSpan="4" className="empty-table-blacklist">
+                    <td colSpan="4" className="empty-table-blacklist">
                     <div className="empty-state-blacklist">
-                    <div className="empty-icon">
+                        <div className="empty-icon">
                         <i className="fa-solid fa-magnifying-glass"></i>
-                    </div>
+                        </div>
 
-                    <h2>Search to view blacklisted numbers</h2>
+                        <h2>Search to view blacklisted numbers</h2>
 
-                    <p>
+                        <p>
                         The global blacklist can hold millions of numbers, so it isn't
                         <br />
                         loaded by default. Search by phone number or description
                         <br />
                         to view matching entries.
-                    </p>
+                        </p>
                     </div>
-                </td>
+                    </td>
                 </tr>
-            ) : blacklistData.phoneNumber === null ? (
+                ) : blacklistData.phoneNumber === null ? (
                 <tr>
-                <td
+                    <td
                     colSpan="4"
                     style={{
-                    textAlign: "center",
-                    padding: "24px",
-                    color: "#6b7280",
-                    fontWeight: "600",
-                    }}
-                >
-                    {blacklistData.description}
-                </td>
-                </tr>
-            ) : (
-                <tr>
-                <td>+{blacklistData.phoneNumber}</td>
-
-                <td>{blacklistData.description}</td>
-
-                <td>{blacklistData.createdDate}</td>
-
-                <td>
-                    <button
-                    className="delete-btn"
-                    onClick={() => {
-                        setSelectedNumber(blacklistData.phoneNumber);
-                        setShowDeleteModal(true);
+                        textAlign: "center",
+                        padding: "24px",
+                        color: "#6b7280",
+                        fontWeight: "600",
                     }}
                     >
-                    <i className="fa-solid fa-trash"></i>
-                    </button>
-                </td>
+                    {blacklistData.description}
+                    </td>
                 </tr>
-            )}
+                ) : (
+                <tr>
+                    <td>
+                    <div className="phone-number-cell">
+                        <span className="country-code">+91</span>
+                        <span className="phone-number">
+                        {blacklistData.phoneNumber}
+                        </span>
+                    </div>
+                    </td>
+
+                    <td>{blacklistData.description}</td>
+
+                    <td>{blacklistData.createdDate}</td>
+
+                    <td>
+                    <div className="blacklist-action-buttons">
+                        <button
+                        className="action-btn edit-btn"
+                        onClick={() => {
+                            setSelectedNumber(blacklistData.phoneNumber);
+                        }}
+                        >
+                        <i className="fa-regular fa-pen-to-square"></i>
+                        </button>
+
+                        <button
+                        className="action-btn delete-btn"
+                        onClick={() => {
+                            setSelectedNumber(blacklistData.phoneNumber);
+                            setShowDeleteModal(true);
+                        }}
+                        >
+                        <i className="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>
+                    </td>
+                </tr>
+                )}
             </tbody>
             </table>
         </div>

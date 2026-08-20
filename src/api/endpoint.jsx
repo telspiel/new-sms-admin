@@ -3,24 +3,35 @@ class Endpoints {
     this.serverAddresses = {
       primary: "https://backend1.quicksmart.in/resellerservices",
       secondary: "https://backend7.quicksmart.in/telco-summary-manager",
+      newAdmin: "https://backendnewadmin.quicksmart.in/resellerservices",
     };
 
     this.endpoints = {
       login: { path: "reseller/login", server: "primary"},
-    
+      verifyOtp: { path: "reseller/verifyotp", server: "primary" },
+
+      profileDetails: { path: "userProfile/userProfileDetails", server: "primary" },
+      creditAlertNotification: { path: "creditNotification", server: "primary" },
+  
       dashboard: { path: "reseller/dashboard", server: "primary"},
       getHourlyReport: { path: "reportService/getHourlySummaryReport", server: "primary" },
       summaryReport: { path: "reportService/summaryReport", server: "primary" },
 
-      getAllOrganization: { path: "organisationService/getAllOrganisationsList", server: "primary" },
+      getAllOrganization: { path: "organisationService/getAllOrganisationsList", server: "newAdmin" },
       saveOrganization: { path: "organisationService/saveOrganisation", server: "primary" },
 
       //Department Management
-      getAlldepartment: { path: "departmentService/getAllDepartmentsList", server: "primary" },
+      getAlldepartment: { path: "departmentService/getAllDepartmentsList", server: "newAdmin" },
       saveDepartment: { path: "departmentService/saveDepartment", server: "primary" },
 
       //Internal User
       listInternalusers: { path: "userService/getAllInternalUsersList", server: "primary" },
+      saveInternalUser: { path: "userService/saveInternalUser", server: "primary" },
+      listSeniorAccountManagers: { path: "userService/getAllAccManagers", server: "primary" },
+      regionalManagersList: { path: "userService/getAllRegionalManagers", server: "primary" },
+
+      //External User
+      externalListUser: { path: "staticService/getAllChildUserDetails", server: "primary" },
 
       getUserApiKey: { path: "pushApiKeyService/getUserApiKey", server: "primary" },
       generateNewApiKey: { path: "pushApiKeyService/generateUserApiKey", server: "primary" },
@@ -41,6 +52,17 @@ class Endpoints {
       //New User Routing
       unroutedUserlist: { path: "reseller/unroutedUsers", server: "primary"},
       saveNewUserRouting: { path: "reseller/newUserRouting", server: "primary"},
+
+      //Switch Gateway
+      getAllOperatorsName: { path: "reseller/operatorNames", server: "primary" }, 
+      switchGatewayOperator: { path: "reseller/operatorChange", server: "primary"},
+
+      //Userwise Routing
+     userwiseMessageType: { path: "reseller/routedUsers", server: "primary"},
+     userListDataOptions: { path: "reseller/routingDetails", server: "primary"},
+     editUserRoutingData: { path: "reseller/editRouting", server: "primary"},
+     addNewUserRouting: { path: "reseller/addRouting", server: "primary"},
+     updatedUserRouting: { path: "reseller/updateRouting", server: "primary"},
 
       currentTelcoSummary: { path: "getUserConnectSummaryForDate", server: "secondary" },
       connectSummary: { path: "connectSummaryService/connectSummary", server: "primary" },

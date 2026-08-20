@@ -1,0 +1,291 @@
+.switch-gateway {
+  padding: 10px;
+  min-height: 100vh;
+}
+
+/* Header */
+.switch-gateway-header h1 {
+  margin: 0;
+  color: #373435;
+  font-size: 25px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.switch-gateway-header p {
+  margin-top: 6px;
+  color: #808080;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* Connect Card */
+.switch-card {
+  width: 660px;
+  margin-top: 26px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.08);
+}
+
+.switch-card h2{
+  margin:0;
+  font-size:18px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.switch-card-subtitle{
+  margin-top:8px;
+  color:#7b8192;
+  text-align: left;
+  font-size: 16px;
+}
+
+/* Warning Box */
+
+.gateway-warning {
+  margin-top: 20px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: #fff7e0;
+  border: 1px solid #ffd979;
+  border-radius: 14px;
+}
+
+.gateway-warning i {
+  color: #b57900;
+  font-size: 18px;
+  margin-top: 2px;
+}
+
+.gateway-warning span {
+  color: #9b6a00;
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: left;
+}
+
+/* Row */
+
+.gateway-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+/* Field */
+
+.gateway-field {
+  flex: 1;
+}
+
+.gateway-field label {
+  display: block;
+  margin-bottom: 10px;
+  color: #374151;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.gateway-field span {
+  color: #ef4444;
+}
+
+.gateway-field select {
+  width: 100%;
+  height: 40px;
+  border: 1px solid #d9dee8;
+  border-radius: 14px;
+  padding: 0 16px;
+  background: #f7f9fc;
+  font-size: 15px;
+  outline: none;
+  cursor: pointer;
+}
+
+.gateway-field select:focus {
+  border-color: #ffcc29;
+  background: #fff;
+}
+
+.gateway-field select:disabled {
+  background: #f2f2f2;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Switch Icon */
+.gateway-switch-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #d9dee8;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.gateway-switch-icon svg {
+  color: #6b7280;
+  transition: transform 0.5s ease;
+}
+
+.gateway-switch-icon:hover {
+  border-color: #ffcc29;
+  box-shadow: 0 4px 12px rgba(255, 204, 41, 0.2);
+}
+
+.gateway-switch-icon:hover svg {
+  transform: rotate(180deg);
+}
+
+/* Divider */
+.gateway-divider {
+  margin-top: 26px;
+  border-top: 1px solid #ececec;
+}
+
+/* Buttons */
+.gateway-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.gateway-actions .reset-btn {
+  width: 82px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid #d9dee8;
+  background: #fff;
+  color: #4b5563;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gateway-actions .reset-btn:hover {
+  background: #f8f8f8;
+}
+
+.gateway-actions .save-btn {
+  width: 72px;
+  height: 42px;
+  border: none;
+  border-radius: 12px;
+  background: #ffc107;
+  color: #202020;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(255, 193, 7, 0.35);
+}
+
+.gateway-actions .save-btn:hover {
+  background: #ffb300;
+}
+
+/* Modal Screen */
+.switch-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 25, 35, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.switch-modal {
+  width: 420px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 30px;
+  animation: modalPop .25s ease;
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.switch-modal-icon {
+  width: 50px;
+  height: 50px;
+  margin: auto;
+  border-radius: 50%;
+  background: #fff0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.switch-modal-icon i {
+  color: #ef4444;
+  font-size: 25px;
+}
+
+.switch-modal h2 {
+  margin: 14px 0;
+  text-align: center;
+  font-size: 25px;
+  font-weight: 700;
+  color: #222;
+}
+
+.switch-modal p {
+  text-align: center;
+  color: #6b7280;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+.switch-modal p strong {
+  color: #222;
+}
+
+.switch-modal-actions {
+  margin-top: 28px;
+  display: flex;
+  gap: 14px;
+}
+
+.modal-cancel-btn,
+.modal-confirm-btn {
+  flex: 1;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modal-cancel-btn {
+  border: 1px solid #d8dde8;
+  background: #fff;
+}
+
+.modal-confirm-btn {
+  border: none;
+  background: #e5484d;
+  color: #fff;
+}
+
+.modal-confirm-btn:hover {
+  background: #dc2626;
+}

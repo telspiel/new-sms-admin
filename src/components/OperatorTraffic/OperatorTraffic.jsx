@@ -302,9 +302,7 @@ const totals =
       </div>
 
       <div className="traffic-table-card">
-
         <div className="table-toolbar">
-
           <div className="search-box">
 
             <i className="fa-solid fa-magnifying-glass"></i>
