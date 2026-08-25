@@ -1,549 +1,387 @@
 import React, { useContext, useMemo, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import Endpoints from "../../api/endpoint";
 import {
-  RefreshCw,
-  Check,
   Search,
-  X,
   TriangleAlert,
-  Sparkles,
-  Plus,
+  TrendingDown,
 } from "lucide-react";
 
 import "./CreditNotifications.css";
 
 const CreditNotifications = () => {
-  const {
-    creditNotifications,
-    setCreditNotifications,
-  } = useContext(AuthContext);
+  const { creditNotifications = [], userData } = useContext(AuthContext);
 
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedNotifications, setSelectedNotifications] =
-    useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  // Modal & API States
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [selectedUserCreditData, setSelectedUserCreditData] = useState(null);
+  const [amountToAdd, setAmountToAdd] = useState("");
 
   const allCount = creditNotifications.length;
-
   const criticalCount = creditNotifications.filter(
-    (notification) =>
-      Number(notification.availableCredit) === 0
+    (n) => Number(n.availableCredit) === 0
   ).length;
-
   const lowCount = creditNotifications.filter(
-    (notification) =>
-      Number(notification.availableCredit) > 0
+    (n) => Number(n.availableCredit) > 0
   ).length;
-
 
   const filteredNotifications = useMemo(() => {
     let filtered = [...creditNotifications];
 
-
     if (activeTab === "critical") {
-      filtered = filtered.filter(
-        (notification) =>
-          Number(notification.availableCredit) === 0
-      );
+      filtered = filtered.filter((n) => Number(n.availableCredit) === 0);
+    } else if (activeTab === "low") {
+      filtered = filtered.filter((n) => Number(n.availableCredit) > 0);
     }
-
-    if (activeTab === "low") {
-      filtered = filtered.filter(
-        (notification) =>
-          Number(notification.availableCredit) > 0
-      );
-    }
-
 
     if (searchTerm.trim()) {
-      const search = searchTerm
-        .toLowerCase()
-        .trim();
-
-      filtered = filtered.filter((notification) =>
-        notification.userName
-          ?.toLowerCase()
-          .includes(search)
+      const search = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter((n) =>
+        n.userName?.toLowerCase().includes(search)
       );
     }
 
     return filtered;
-  }, [
-    creditNotifications,
-    activeTab,
-    searchTerm,
-  ]);
+  }, [creditNotifications, activeTab, searchTerm]);
 
+  // Pagination bounds
+  const totalPages = Math.ceil(filteredNotifications.length / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedNotifications = filteredNotifications.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
-  const handleSelectNotification = (userName) => {
-    setSelectedNotifications((previous) => {
-      if (previous.includes(userName)) {
-        return previous.filter(
-          (item) => item !== userName
-        );
-      }
+  // State to track the active row item selected when opening the modal
+const [selectedNotification, setSelectedNotification] = useState(null);
 
-      return [...previous, userName];
+const [toastMessage, setToastMessage] = useState("");
+
+// Update handleAddCredits to save the selected notification item
+const handleAddCredits = async (notification) => {
+  setSelectedNotification(notification);
+  setIsModalOpen(true);
+  setModalLoading(true);
+  setAmountToAdd("");
+
+  try {
+    const url = Endpoints.get("viewCreditForUser");
+
+    const loggedInUser =
+      userData?.username ||
+      JSON.parse(sessionStorage.getItem("userData") || "{}")?.username ||
+      JSON.parse(localStorage.getItem("userData") || "{}")?.username ||
+      "";
+
+    const token =
+      userData?.authJwtToken ||
+      JSON.parse(sessionStorage.getItem("userData") || "{}")?.authJwtToken ||
+      JSON.parse(localStorage.getItem("userData") || "{}")?.authJwtToken ||
+      "";
+
+    const role = notification.userRole?.toLowerCase();
+
+    const payload = {
+      loggedInUserName: loggedInUser,
+      ...(role === "client" && { clientName: notification.userName }),
+      ...(role === "reseller" && { resellerName: notification.userName }),
+      ...(role === "user" && { userName: notification.userName }),
+    };
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
     });
-  };
 
+    const resData = await response.json();
 
-  const handleSelectAll = () => {
-    const visibleUsernames =
-      filteredNotifications.map(
-        (notification) =>
-          notification.userName
-      );
-
-    const allSelected =
-      visibleUsernames.length > 0 &&
-      visibleUsernames.every((userName) =>
-        selectedNotifications.includes(userName)
-      );
-
-    if (allSelected) {
-      setSelectedNotifications((previous) =>
-        previous.filter(
-          (userName) =>
-            !visibleUsernames.includes(userName)
-        )
-      );
+    if (resData?.code === 8007 || resData?.result === "Success") {
+      setSelectedUserCreditData(resData.data?.userCredit);
     } else {
-      setSelectedNotifications((previous) => [
-        ...new Set([
-          ...previous,
-          ...visibleUsernames,
-        ]),
-      ]);
+      alert(resData?.message || "Failed to fetch credit details.");
     }
-  };
+  } catch (err) {
+    console.error("Error fetching credit data:", err);
+    alert("Error fetching user credit details");
+  } finally {
+    setModalLoading(false);
+  }
+};
 
 
-  const isAllSelected =
-    filteredNotifications.length > 0 &&
-    filteredNotifications.every(
-      (notification) =>
-        selectedNotifications.includes(
-          notification.userName
-        )
-    );
+const handleModalSubmit = async (e) => {
+  e.preventDefault();
 
+  if (!amountToAdd || Number(amountToAdd) <= 0) {
+    alert("Please enter a valid credit amount.");
+    return;
+  }
 
-  const handleRefresh = () => {
-    setSearchTerm("");
-    setActiveTab("all");
-  };
+  try {
+    const url = Endpoints.get("updateCredit");
 
+    const loggedInUser =
+      userData?.username ||
+      JSON.parse(sessionStorage.getItem("userData") || "{}")?.username ||
+      JSON.parse(localStorage.getItem("userData") || "{}")?.username ||
+      "";
 
-  const handleMarkAllRead = () => {
-    setSelectedNotifications([]);
-  };
+    const token =
+      userData?.authJwtToken ||
+      JSON.parse(sessionStorage.getItem("userData") || "{}")?.authJwtToken ||
+      JSON.parse(localStorage.getItem("userData") || "{}")?.authJwtToken ||
+      "";
 
+    const role = selectedNotification?.userRole?.toLowerCase();
 
-  const handleRemoveNotification = (
-    userName
-  ) => {
-    const updatedNotifications =
-      creditNotifications.filter(
-        (notification) =>
-          notification.userName !== userName
-      );
+    const payload = {
+      loggedInUserName: loggedInUser,
+      creditToBeAdded: Number(amountToAdd),
+      operation: "addCredit",
+      ...(role === "client" && { clientName: selectedNotification?.userName }),
+      ...(role === "reseller" && { resellerName: selectedNotification?.userName }),
+      ...(role === "user" && { userName: selectedNotification?.userName }),
+    };
 
-    setCreditNotifications(
-      updatedNotifications
-    );
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-    localStorage.setItem(
-      "creditNotifications",
-      JSON.stringify(
-        updatedNotifications
-      )
-    );
+    const resData = await response.json();
 
-    setSelectedNotifications((previous) =>
-      previous.filter(
-        (item) => item !== userName
-      )
-    );
-  };
+    if (resData?.code === 8007 || resData?.result === "Success") {
+      setToastMessage("Credits added successfully!");
+      
+      // Close the modal instantly on success
+      setIsModalOpen(false);
 
+      // Auto-clear toast after 3 seconds
+      setTimeout(() => setToastMessage(""), 3000);
 
-  const handleAddCredits = (userName) => {
-    console.log(
-      "Add credits for:",
-      userName
-    );
-
-  };
-
+      
+    } else {
+      alert(resData?.message || "Failed to add credits.");
+    }
+  } catch (err) {
+    console.error("Error updating credit:", err);
+    alert("An error occurred while updating credits.");
+  }
+};
 
   return (
     <div className="credit-notifications">
-
-
-      <div className="credit-notifications-header">
-
-        <div>
-          <h1>
-            Notifications
-          </h1>
-
-          <p>
-            Home / Notifications · Users with low or depleted credit
-          </p>
+       {toastMessage && (
+        <div className="toast-message">
+            <i className="fa-solid fa-circle-check"></i>
+            {toastMessage}
         </div>
-
-
-        <div className="credit-notification-actions">
-
-          <button
-            className="refresh-btn"
-            onClick={handleRefresh}
-          >
-            <RefreshCw
-              size={17}
-              strokeWidth={2}
-            />
-
-            <span>
-              Refresh
-            </span>
-          </button>
-
-
-          {/* <button
-            className="mark-all-btn"
-            onClick={handleMarkAllRead}
-          >
-            <Check
-              size={17}
-              strokeWidth={2.5}
-            />
-
-            <span>
-              Mark all read
-            </span>
-          </button> */}
-
-        </div>
-
+        )}
+      <div className="credits-management-header">
+        <h1>Notifications</h1>
+        <p>Home / Notifications · Users with low or depleted credit</p>
       </div>
 
       <div className="credit-notifications-card">
-
+        {/* Top Filter Bar */}
         <div className="notification-filter-bar">
-
           <div className="notification-tabs">
-
             <button
-              className={`notification-tab ${
-                activeTab === "all"
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() =>
-                setActiveTab("all")
-              }
+              className={`notification-tab ${activeTab === "all" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("all");
+                setCurrentPage(1);
+              }}
             >
-              <span>
-                All
-              </span>
-
-              <span className="tab-count all-count">
-                {allCount}
-              </span>
+              All <span className="tab-count">{allCount}</span>
             </button>
 
-
             <button
-              className={`notification-tab ${
-                activeTab === "critical"
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() =>
-                setActiveTab("critical")
-              }
+              className={`notification-tab ${activeTab === "critical" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("critical");
+                setCurrentPage(1);
+              }}
             >
-              <span>
-                Critical
-              </span>
-
-              <span className="tab-count critical-count">
-                {criticalCount}
-              </span>
+              Critical <span className="tab-count">{criticalCount}</span>
             </button>
 
-
             <button
-              className={`notification-tab ${
-                activeTab === "low"
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() =>
-                setActiveTab("low")
-              }
+              className={`notification-tab ${activeTab === "low" ? "active" : ""}`}
+              onClick={() => {
+                setActiveTab("low");
+                setCurrentPage(1);
+              }}
             >
-              <span>
-                Low
-              </span>
-
-              <span className="tab-count low-count">
-                {lowCount}
-              </span>
+              Low <span className="tab-count">{lowCount}</span>
             </button>
-
           </div>
-
-
-          {/* Search */}
-
-          <div className="notification-search">
-
-            <Search
-              size={18}
-              strokeWidth={1.8}
-            />
-
-            <input
-              type="text"
-              placeholder="Search by username..."
-              value={searchTerm}
-              onChange={(e) =>
-                setSearchTerm(
-                  e.target.value
-                )
-              }
-            />
-
-          </div>
-
         </div>
 
-        <div className="notification-table-header">
-
-          <div className="notification-checkbox">
-
-            <input
-              type="checkbox"
-              checked={isAllSelected}
-              onChange={handleSelectAll}
-            />
-
-          </div>
-
-          <div className="notification-user-heading">
-            USER NAME
-          </div>
-
-        </div>
-
+        {/* Rows List */}
         <div className="notification-table-body">
-
-          {filteredNotifications.length === 0 ? (
-
+          {paginatedNotifications.length === 0 ? (
             <div className="empty-notifications">
-
-              <div className="empty-icon">
-                <Search
-                  size={24}
-                />
-              </div>
-
-              <h3>
-                No notifications found
-              </h3>
-
-              <p>
-                No credit notifications
-                match your current filter.
-              </p>
-
+              <Search size={24} />
+              <h3>No notifications found</h3>
             </div>
-
           ) : (
+            paginatedNotifications.map((notification, index) => {
+              const isOutOfCredits = Number(notification.availableCredit) === 0;
 
-            filteredNotifications.map(
-              (notification, index) => {
+              return (
+                <div
+                  className="notification-table-row"
+                  key={`${notification.userName}-${index}`}
+                >
+                  {/* Status Dot */}
+                  <span className="row-status-dot"></span>
 
-                const isOutOfCredits =
-                  Number(
-                    notification.availableCredit
-                  ) === 0;
-
-                const isSelected =
-                  selectedNotifications.includes(
-                    notification.userName
-                  );
-
-                const notificationTime =
-                  notification.notificationTime ||
-                  notification.updatedAt ||
-                  notification.createdAt ||
-                  "";
-
-                const notifyBelow =
-                  notification.notifyBelow ||
-                  notification.threshold ||
-                  "";
-
-                return (
+                  {/* Icon */}
                   <div
-                    className={`notification-table-row ${
-                      isSelected
-                        ? "notification-row-selected"
-                        : ""
+                    className={`credit-alert-icon ${
+                      isOutOfCredits ? "credit-alert-danger" : "credit-alert-warning"
                     }`}
-                    key={`${notification.userName}-${index}`}
                   >
-
-                    {/* Checkbox */}
-
-                    <div className="notification-checkbox">
-
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() =>
-                          handleSelectNotification(
-                            notification.userName
-                          )
-                        }
-                      />
-
-                    </div>
-
-
-                    {/* Alert Icon */}
-
-                    <div
-                      className={`credit-alert-icon ${
-                        isOutOfCredits
-                          ? "credit-alert-danger"
-                          : "credit-alert-warning"
-                      }`}
-                    >
-
-                      {isOutOfCredits ? (
-                        <TriangleAlert
-                          size={20}
-                          strokeWidth={2}
-                        />
-                      ) : (
-                        <Sparkles
-                          size={19}
-                          strokeWidth={2}
-                        />
-                      )}
-
-                    </div>
-
-
-                    {/* Main Content */}
-
-                    <div className="notification-row-content">
-
-                      <div className="notification-title">
-
-                        <strong>
-                          {notification.userName}
-                        </strong>
-
-                        <span>
-                          {" "}
-                          {isOutOfCredits
-                            ? "has run out of credits"
-                            : "has a low credit balance"}
-                        </span>
-
-                      </div>
-
-
-                      <div className="notification-meta">
-
-                        <span className="low-credit-label">
-                          Low Available Credit
-                        </span>
-
-                        <span
-                          className={`credit-value ${
-                            isOutOfCredits
-                              ? "credit-value-danger"
-                              : "credit-value-warning"
-                          }`}
-                        >
-                          {
-                            notification.availableCredit
-                          }{" "}
-                          credits
-                        </span>
-
-
-                        {notifyBelow && (
-                          <span className="notify-threshold">
-                            Notify below{" "}
-                            {Number(
-                              notifyBelow
-                            ).toLocaleString()}{" "}
-                            credits
-                          </span>
-                        )}
-
-                      </div>
-
-                    </div>
-
-
-                    {/* Right Side */}
-
-                    <div className="notification-row-actions">
-
-                      {notificationTime && (
-                        <span className="notification-time">
-                          {notificationTime}
-                        </span>
-                      )}
-
-
-                      <button
-                        className="add-credits-btn"
-                        onClick={() =>
-                          handleAddCredits(
-                            notification.userName
-                          )
-                        }
-                      >
-                        Add credits
-                      </button>
-
-
-                      <button
-                        className="remove-notification-btn"
-                        onClick={() =>
-                          handleRemoveNotification(
-                            notification.userName
-                          )
-                        }
-                        title="Remove notification"
-                      >
-                        <X
-                          size={18}
-                          strokeWidth={1.8}
-                        />
-                      </button>
-
-                    </div>
-
+                    {isOutOfCredits ? (
+                      <TriangleAlert size={16} />
+                    ) : (
+                      <TrendingDown size={16} />
+                    )}
                   </div>
-                );
-              }
-            )
 
+                  {/* Content */}
+                  <div className="notification-row-content">
+                    <div className="notification-title">
+                      <strong>{notification.userName}</strong>
+                      <span>
+                        {isOutOfCredits
+                          ? " has run out of credits"
+                          : " has a low credit balance"}
+                      </span>
+                    </div>
+
+                    <div className="notification-meta">
+                      <span className="low-credit-label">Low Available Credit</span>
+                      <span
+                        className={`credit-value ${
+                          isOutOfCredits
+                            ? "credit-value-danger"
+                            : "credit-value-warning"
+                        }`}
+                      >
+                        {notification.availableCredit} credits
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right Actions */}
+                  <div className="notification-row-actions">
+                    {/* <span className="notification-time">
+                      {notification.notificationTime || "Just now"}
+                    </span> */}
+                    <button
+                      className="add-credits-btn"
+                      onClick={() => handleAddCredits(notification)}
+                    >
+                      Add credits
+                    </button>
+                  </div>
+                </div>
+              );
+            })
           )}
-
         </div>
       </div>
+
+      {/* Add Credits Popup Modal */}
+      {isModalOpen && (
+        <div className="notification-modal-overlay">
+          <div className="modal-container">
+            <div className="notification-modal-header">
+              <h2>Add credits</h2>
+              <p>Top up the balance for this account</p>
+            </div>
+
+            {modalLoading ? (
+              <div className="modal-loading">Loading account details...</div>
+            ) : (
+              <form onSubmit={handleModalSubmit}>
+                <div className="credit-modal-body">
+                  <div className="credit-modal-info-row">
+                    <span className="modal-label">User Name</span>
+                    <strong className="modal-value">
+                      {selectedUserCreditData?.userName || "--"}
+                    </strong>
+                  </div>
+
+                  <div className="credit-modal-info-row">
+                    <span className="modal-label">Current balance</span>
+                    <strong className="modal-value">
+                      {Number(
+                        selectedUserCreditData?.userAvailableCredit || 0
+                      ).toLocaleString()}{" "}
+                      credits
+                    </strong>
+                  </div>
+
+                  <div className="credit-modal-info-row">
+                    <span className="modal-label">Your Available Credit</span>
+                    <strong className="modal-value">
+                      {Number(
+                        selectedUserCreditData?.loggedInUserCredit || 0
+                      ).toLocaleString()}{" "}
+                      credits
+                    </strong>
+                  </div>
+
+                  <div className="credit-modal-input-group">
+                    <label>
+                      Amount to add <span className="required-asterisk">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={amountToAdd}
+                      onChange={(e) => setAmountToAdd(e.target.value)}
+                      onKeyDown={(e) => ["-", "e", "E", "+"].includes(e.key) && e.preventDefault()}
+                      required
+                      min="1"
+                    />
+                  </div>
+                </div>
+
+                <div className="notification-modal-footer">
+                  <button
+                    type="button"
+                    className="modal-cancel-btn"
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="modal-submit-btn">
+                    Add credits
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

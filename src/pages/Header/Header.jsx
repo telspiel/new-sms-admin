@@ -12,6 +12,30 @@ function Header() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
+  // Refs to track container elements
+  const profileRef = useRef(null);
+  const notificationRef = useRef(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      ) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
 
   const logout = () => {
     localStorage.clear();
@@ -20,33 +44,32 @@ function Header() {
 
   const { userData, creditNotifications } = useContext(AuthContext);
 
-const username =
-  userData?.username || "User";
+  const username = userData?.username || "User";
 
-const lastLoginTime =
-  userData?.lastLoginTime || "-";
+  const lastLoginTime = userData?.lastLoginTime || "-";
 
-const lastLoginIp =
-  userData?.lastLoginIp || "-";
+  const lastLoginIp = userData?.lastLoginIp || "-";
 
-const logoUrl =
-  userData?.logoUrl || "-";
+  const logoUrl = userData?.logoUrl || "-";
+
+  const brandName = userData?.brandName || "-";
 
   return (
     <header className="header">
-
       <div className="header-left">
          <div className="user-logo">
           <img
             src={logoUrl}
-            alt="Company Logo"
+            alt="Brand Logo"
             className="header-logo"
           />
+        </div>
+        <div className="brand-name">
+          <span>{brandName}</span>
         </div>
       </div>
 
       <div className="header-right">
-
         <div className="header-info">
             <span className="header-label">
             Last Login:
@@ -67,7 +90,7 @@ const logoUrl =
             </span>
         </div>
 
-       <div className="notification-wrapper">
+       <div className="notification-wrapper" ref={notificationRef}>
           <div
             className={`notification ${
               showNotifications
@@ -228,7 +251,7 @@ const logoUrl =
           )}
         </div>
 
-        <div className="profile-wrapper">
+        <div className="profile-wrapper" ref={profileRef}>
 
           <div
             className="profile-section"
@@ -259,7 +282,6 @@ const logoUrl =
             <div className="profile-dropdown">
 
               {/* User Info */}
-
               <div className="profile-top">
                 <div className="avatar large">
                     {username?.charAt(0).toUpperCase()}
@@ -307,9 +329,7 @@ const logoUrl =
 
             </div>
           )}
-
         </div>
-
       </div>
     </header>
   );

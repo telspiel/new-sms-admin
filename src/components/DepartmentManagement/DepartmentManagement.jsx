@@ -202,7 +202,7 @@ const editDepartmentData = async () => {
   try {
     const payload = {
       loggedInUserName: userData.username,
-      operation: "editOrganisation", // as per your API
+      operation: "editDepartment",
       deptId: editDeptForm.deptId,
       orgId: editDeptForm.orgId,
       deptName: editDeptForm.deptName,
@@ -217,10 +217,8 @@ const editDepartmentData = async () => {
       userData.authJwtToken
     );
 
-    // Success response:
-    // { code:0,result:null,message:null,data:null }
-
-    if (response.code === 0) {
+    // Updated code check from 0 to 6001
+    if (response.code === 6001) {
       setToastMessage("Changes Saved");
 
       setTimeout(() => {
@@ -231,7 +229,7 @@ const editDepartmentData = async () => {
 
       getDepartmentList();
     } else {
-      alert(response.message || "Unable to save changes.");
+      alert(response.message);
     }
   } catch (error) {
     console.error(error);

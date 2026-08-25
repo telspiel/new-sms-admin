@@ -327,7 +327,6 @@ text-align: center;
 
 .premium-number{
     display:flex;
-    align-items:center;
     gap:12px;
 }
 
@@ -388,7 +387,7 @@ text-align: center;
     top:0;
     right:0;
     width:530px;
-    height:100vh;
+    height:111vh;
     background:#fff;
     z-index:999;
     display:flex;

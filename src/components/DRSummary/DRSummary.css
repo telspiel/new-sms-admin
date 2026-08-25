@@ -109,7 +109,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 18px 20px;
-  border-bottom: 1px solid #e9ecf2;
 }
 
 .table-card .search-box {
@@ -134,13 +133,13 @@
 }
 
 .dr-summary-table thead {
-  background: #fafbfd;
+  background: #fff;
   border: 1px solid #e3e6ef;
 }
 
 .dr-summary-table th,
 .dr-summary-table td {
-  padding: 16px 20px;
+  padding: 12px 20px;
   text-align: left;
   vertical-align: middle;
 }

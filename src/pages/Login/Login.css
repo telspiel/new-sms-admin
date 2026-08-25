@@ -13,7 +13,6 @@
     );
 
   background-size: 30px 30px;
-
   display: flex;
   justify-content: center;
   align-items: center;
@@ -54,6 +53,7 @@
   position: relative;
   z-index: 2;
 
+  transform: scale(0.8);
   box-shadow:
     0 15px 40px rgba(55, 52, 53, 0.08);
 }

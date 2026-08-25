@@ -352,20 +352,6 @@ const selectedName =
 
   return (
     <div className="credits-management">
-         {/* {loading && (
-        <div className="page-loader">
-
-        <div className="loader-content">
-
-            <div className="spinner"></div>
-
-            <p>Loading Credit Management...</p>
-
-        </div>
-
-        </div>
-        )}   */}
-
         {toastMessage && (
         <div className="toast-message">
             <i className="fa-solid fa-circle-check"></i>
@@ -426,87 +412,117 @@ const selectedName =
 
             <div className="credit-form">
             <div className="field">
-                <label>Admin name</label>
-                <Select className="field-select" classNamePrefix="react-select"
+              <label>Admin name</label>
+              <Select
+                className="field-select"
+                classNamePrefix="react-select"
                 options={toOptions(userLists.adminList)}
                 value={selectedUser.admin}
+                isDisabled={Boolean(selectedUser.reseller || selectedUser.seller || selectedUser.client)}
+                isClearable={true}
                 onChange={(value) => {
-                setSelectedUser({
-                    admin: value,
-                    reseller: null,
-                    seller: null,
-                    client: null,
-                });
-
-                getViewCreditForUser("adminName", value?.value);
+                  if (!value) {
+                    setSelectedUser({ admin: null, reseller: null, seller: null, client: null });
+                    getViewCreditForUser("adminName", null);
+                  } else {
+                    setSelectedUser({
+                      admin: value,
+                      reseller: null,
+                      seller: null,
+                      client: null,
+                    });
+                    getViewCreditForUser("adminName", value?.value);
+                  }
                 }}
                 placeholder="Search Admin..."
                 isSearchable
-                />
+              />
             </div>
 
             <div className="field">
-                <label>Reseller name</label>
-                <Select className="field-select" classNamePrefix="react-select"
+              <label>Reseller name</label>
+              <Select
+                className="field-select"
+                classNamePrefix="react-select"
                 options={toOptions(userLists.resellerList)}
                 value={selectedUser.reseller}
+                isDisabled={Boolean(selectedUser.admin || selectedUser.seller || selectedUser.client)}
+                isClearable={true}
                 onChange={(value) => {
-                setSelectedUser({
-                    admin: null,
-                    reseller: value,
-                    seller: null,
-                    client: null,
-                });
-
-                getViewCreditForUser("resellerName", value?.value);
+                  if (!value) {
+                    setSelectedUser({ admin: null, reseller: null, seller: null, client: null });
+                    getViewCreditForUser("resellerName", null);
+                  } else {
+                    setSelectedUser({
+                      admin: null,
+                      reseller: value,
+                      seller: null,
+                      client: null,
+                    });
+                    getViewCreditForUser("resellerName", value?.value);
+                  }
                 }}
                 placeholder="Search Reseller..."
                 isSearchable
-                />
+              />
             </div>
 
             <div className="field">
-                <label>Seller name</label>
-
-                <Select className="field-select" classNamePrefix="react-select"
+              <label>Seller name</label>
+              <Select
+                className="field-select"
+                classNamePrefix="react-select"
                 options={toOptions(userLists.sellerList)}
                 value={selectedUser.seller}
+                isDisabled={Boolean(selectedUser.admin || selectedUser.reseller || selectedUser.client)}
+                isClearable={true}
                 onChange={(value) => {
-                setSelectedUser({
-                    admin: null,
-                    reseller: null,
-                    seller: value,
-                    client: null,
-                });
-
-                getViewCreditForUser("sellerName", value?.value);
+                  if (!value) {
+                    setSelectedUser({ admin: null, reseller: null, seller: null, client: null });
+                    getViewCreditForUser("sellerName", null);
+                  } else {
+                    setSelectedUser({
+                      admin: null,
+                      reseller: null,
+                      seller: value,
+                      client: null,
+                    });
+                    getViewCreditForUser("sellerName", value?.value);
+                  }
                 }}
                 placeholder="Search Seller..."
                 isSearchable
-                />
+              />
             </div>
 
             <div className="field">
-                <label>Client name</label>
-
-                <Select className="field-select" classNamePrefix="react-select"
+              <label>Client name</label>
+              <Select
+                className="field-select"
+                classNamePrefix="react-select"
                 options={toOptions(userLists.clientList)}
                 value={selectedUser.client}
+                isDisabled={Boolean(selectedUser.admin || selectedUser.reseller || selectedUser.seller)}
+                isClearable={true}
                 onChange={(value) => {
-                setSelectedUser({
-                    admin: null,
-                    reseller: null,
-                    seller: null,
-                    client: value,
-                });
-
-                getViewCreditForUser("clientName", value?.value);
+                  if (!value) {
+                    setSelectedUser({ admin: null, reseller: null, seller: null, client: null });
+                    getViewCreditForUser("clientName", null);
+                  } else {
+                    setSelectedUser({
+                      admin: null,
+                      reseller: null,
+                      seller: null,
+                      client: value,
+                    });
+                    getViewCreditForUser("clientName", value?.value);
+                  }
                 }}
                 placeholder="Search Client..."
                 isSearchable
-                />
+              />
             </div>
-            </div>
+          </div>
 
             {selectedName ? (
             <div className="selected-user-wrapper">
@@ -626,98 +642,149 @@ const selectedName =
             <h2>Deduct Credit</h2>
 
             <div className="credit-form">
-
-            <div className="field">
+              {/* Admin Name */}
+              <div className="field">
                 <label>Admin name</label>
-
                 <Select
-                className="field-select"
-                classNamePrefix="react-select"
-                options={toOptions(userLists.adminList)}
-                value={selectedUser.admin}
-                onChange={(value) => {
-                setSelectedUser({
-                    admin: value,
-                    reseller: null,
-                    seller: null,
-                    client: null,
-                });
-
-                getViewCreditForUser("adminName", value?.value);
-                }}
-                placeholder="Search Admin..."
-                isSearchable
+                  className="field-select"
+                  classNamePrefix="react-select"
+                  options={toOptions(userLists.adminList)}
+                  value={selectedUser.admin}
+                  isDisabled={Boolean(
+                    selectedUser.reseller || selectedUser.seller || selectedUser.client
+                  )}
+                  isClearable={true}
+                  onChange={(value) => {
+                    if (!value) {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: null,
+                        seller: null,
+                        client: null,
+                      });
+                      getViewCreditForUser("adminName", null);
+                    } else {
+                      setSelectedUser({
+                        admin: value,
+                        reseller: null,
+                        seller: null,
+                        client: null,
+                      });
+                      getViewCreditForUser("adminName", value?.value);
+                    }
+                  }}
+                  placeholder="Search Admin..."
+                  isSearchable
                 />
-            </div>
+              </div>
 
-            <div className="field">
+              {/* Reseller Name */}
+              <div className="field">
                 <label>Reseller name</label>
-
                 <Select
-                className="field-select"
-                classNamePrefix="react-select"
-                options={toOptions(userLists.resellerList)}
-                value={selectedUser.reseller}
-                onChange={(value) => {
-                setSelectedUser({
-                    admin: null,
-                    reseller: value,
-                    seller: null,
-                    client: null,
-                });
-
-                getViewCreditForUser("resellerName", value?.value);
-                }}
-                placeholder="Search Reseller..."
-                isSearchable
+                  className="field-select"
+                  classNamePrefix="react-select"
+                  options={toOptions(userLists.resellerList)}
+                  value={selectedUser.reseller}
+                  isDisabled={Boolean(
+                    selectedUser.admin || selectedUser.seller || selectedUser.client
+                  )}
+                  isClearable={true}
+                  onChange={(value) => {
+                    if (!value) {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: null,
+                        seller: null,
+                        client: null,
+                      });
+                      getViewCreditForUser("resellerName", null);
+                    } else {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: value,
+                        seller: null,
+                        client: null,
+                      });
+                      getViewCreditForUser("resellerName", value?.value);
+                    }
+                  }}
+                  placeholder="Search Reseller..."
+                  isSearchable
                 />
-            </div>
+              </div>
 
-            <div className="field">
+              {/* Seller Name */}
+              <div className="field">
                 <label>Seller name</label>
-
                 <Select
-                className="field-select"
-                classNamePrefix="react-select"
-                options={toOptions(userLists.sellerList)}
-                value={selectedUser.seller}
-                onChange={(value) => {
-                setSelectedUser({
-                    admin: null,
-                    reseller: null,
-                    seller: value,
-                    client: null,
-                });
-
-                getViewCreditForUser("sellerName", value?.value);
-                }}
-                placeholder="Search Seller..."
-                isSearchable
+                  className="field-select"
+                  classNamePrefix="react-select"
+                  options={toOptions(userLists.sellerList)}
+                  value={selectedUser.seller}
+                  isDisabled={Boolean(
+                    selectedUser.admin || selectedUser.reseller || selectedUser.client
+                  )}
+                  isClearable={true}
+                  onChange={(value) => {
+                    if (!value) {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: null,
+                        seller: null,
+                        client: null,
+                      });
+                      getViewCreditForUser("sellerName", null);
+                    } else {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: null,
+                        seller: value,
+                        client: null,
+                      });
+                      getViewCreditForUser("sellerName", value?.value);
+                    }
+                  }}
+                  placeholder="Search Seller..."
+                  isSearchable
                 />
-            </div>
+              </div>
 
-            <div className="field">
+              {/* Client Name */}
+              <div className="field">
                 <label>Client name</label>
-
                 <Select
-                className="field-select"
-                classNamePrefix="react-select"
-                options={toOptions(userLists.clientList)}
-                value={selectedUser.client}
-                onChange={(value) => {
-                setSelectedUser({
-                    admin: null,
-                    reseller: null,
-                    seller: null,
-                    client: value,
-                });
-
-                getViewCreditForUser("clientName", value?.value);
-                }}
-                placeholder="Search Client..."
-                isSearchable
+                  className="field-select"
+                  classNamePrefix="react-select"
+                  options={toOptions(userLists.clientList)}
+                  value={selectedUser.client}
+                  isDisabled={Boolean(
+                    selectedUser.admin || selectedUser.reseller || selectedUser.seller
+                  )}
+                  isClearable={true}
+                  onChange={(value) => {
+                    if (!value) {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: null,
+                        seller: null,
+                        client: null,
+                      });
+                      getViewCreditForUser("clientName", null);
+                    } else {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: null,
+                        seller: null,
+                        client: value,
+                      });
+                      getViewCreditForUser("clientName", value?.value);
+                    }
+                  }}
+                  placeholder="Search Client..."
+                  isSearchable
                 />
-            </div>
+              </div>
             </div>
 
             {selectedName ? (
@@ -835,117 +902,152 @@ const selectedName =
 
         {activeTab === "history" && (
         <>
-            <h2>Credit History</h2>
+           <h2>Credit History</h2>
 
-           <div className="credit-form">
-
-            <div className="field">
+            <div className="credit-form">
+              {/* Admin Name */}
+              <div className="field">
                 <label>Admin name</label>
-
                 <Select
-                className="field-select"
-                classNamePrefix="react-select"
-                options={toOptions(userLists.adminList)}
-                value={selectedUser.admin}
-                onChange={(value) => {
-                setSelectedUser({
-                    admin: value,
-                    reseller: null,
-                    seller: null,
-                    client: null,
-                });
-
-                getViewCreditForUser(
-                "adminName",
-                value?.value,
-                true
-                );
-                }}
-                placeholder="Search Admin..."
-                isSearchable
+                  className="field-select"
+                  classNamePrefix="react-select"
+                  options={toOptions(userLists.adminList)}
+                  value={selectedUser.admin}
+                  isDisabled={Boolean(
+                    selectedUser.reseller || selectedUser.seller || selectedUser.client
+                  )}
+                  isClearable={true}
+                  onChange={(value) => {
+                    if (!value) {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: null,
+                        seller: null,
+                        client: null,
+                      });
+                      getViewCreditForUser("adminName", null, true);
+                    } else {
+                      setSelectedUser({
+                        admin: value,
+                        reseller: null,
+                        seller: null,
+                        client: null,
+                      });
+                      getViewCreditForUser("adminName", value?.value, true);
+                    }
+                  }}
+                  placeholder="Search Admin..."
+                  isSearchable
                 />
-            </div>
+              </div>
 
-            <div className="field">
+              {/* Reseller Name */}
+              <div className="field">
                 <label>Reseller name</label>
-
                 <Select
-                className="field-select"
-                classNamePrefix="react-select"
-                options={toOptions(userLists.resellerList)}
-                value={selectedUser.reseller}
-                onChange={(value) => {
-                setSelectedUser({
-                    admin: null,
-                    reseller: value,
-                    seller: null,
-                    client: null,
-                });
-
-                getViewCreditForUser(
-                "resellerName",
-                value?.value,
-                true
-                );
-                }}
-                placeholder="Search Reseller..."
-                isSearchable
+                  className="field-select"
+                  classNamePrefix="react-select"
+                  options={toOptions(userLists.resellerList)}
+                  value={selectedUser.reseller}
+                  isDisabled={Boolean(
+                    selectedUser.admin || selectedUser.seller || selectedUser.client
+                  )}
+                  isClearable={true}
+                  onChange={(value) => {
+                    if (!value) {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: null,
+                        seller: null,
+                        client: null,
+                      });
+                      getViewCreditForUser("resellerName", null, true);
+                    } else {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: value,
+                        seller: null,
+                        client: null,
+                      });
+                      getViewCreditForUser("resellerName", value?.value, true);
+                    }
+                  }}
+                  placeholder="Search Reseller..."
+                  isSearchable
                 />
-            </div>
+              </div>
 
-            <div className="field">
+              {/* Seller Name */}
+              <div className="field">
                 <label>Seller name</label>
-
                 <Select
-                className="field-select"
-                classNamePrefix="react-select"
-                options={toOptions(userLists.sellerList)}
-                value={selectedUser.seller}
-               onChange={(value) => {
-                setSelectedUser({
-                    admin: null,
-                    reseller: null,
-                    seller: value,
-                    client: null,
-                });
-
-                getViewCreditForUser(
-                "sellerName",
-                value?.value,
-                true
-                );
-                }}
-                placeholder="Search Seller..."
-                isSearchable
+                  className="field-select"
+                  classNamePrefix="react-select"
+                  options={toOptions(userLists.sellerList)}
+                  value={selectedUser.seller}
+                  isDisabled={Boolean(
+                    selectedUser.admin || selectedUser.reseller || selectedUser.client
+                  )}
+                  isClearable={true}
+                  onChange={(value) => {
+                    if (!value) {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: null,
+                        seller: null,
+                        client: null,
+                      });
+                      getViewCreditForUser("sellerName", null, true);
+                    } else {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: null,
+                        seller: value,
+                        client: null,
+                      });
+                      getViewCreditForUser("sellerName", value?.value, true);
+                    }
+                  }}
+                  placeholder="Search Seller..."
+                  isSearchable
                 />
-            </div>
+              </div>
 
-            <div className="field">
+              {/* Client Name */}
+              <div className="field">
                 <label>Client name</label>
-
                 <Select
-                className="field-select"
-                classNamePrefix="react-select"
-                options={toOptions(userLists.clientList)}
-                value={selectedUser.client}
-                onChange={(value) => {
-                setSelectedUser({
-                    admin: null,
-                    reseller: null,
-                    seller: null,
-                    client: value,
-                });
-
-                getViewCreditForUser(
-                "clientName",
-                value?.value,
-                true
-                );
-                }}
-                placeholder="Search Client..."
-                isSearchable
+                  className="field-select"
+                  classNamePrefix="react-select"
+                  options={toOptions(userLists.clientList)}
+                  value={selectedUser.client}
+                  isDisabled={Boolean(
+                    selectedUser.admin || selectedUser.reseller || selectedUser.seller
+                  )}
+                  isClearable={true}
+                  onChange={(value) => {
+                    if (!value) {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: null,
+                        seller: null,
+                        client: null,
+                      });
+                      getViewCreditForUser("clientName", null, true);
+                    } else {
+                      setSelectedUser({
+                        admin: null,
+                        reseller: null,
+                        seller: null,
+                        client: value,
+                      });
+                      getViewCreditForUser("clientName", value?.value, true);
+                    }
+                  }}
+                  placeholder="Search Client..."
+                  isSearchable
                 />
-            </div>
+              </div>
             </div>
 
             {/* Filters */}

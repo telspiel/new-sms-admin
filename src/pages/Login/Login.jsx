@@ -26,327 +26,210 @@ function Login() {
   const [otpMessage, setOtpMessage] = useState("");
   const [otpMessageType, setOtpMessageType] = useState("");
 
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
   const otpRefs = useRef([]);
 
+  // OTP Expiry Countdown
   useEffect(() => {
-  if (!showOtpScreen || otpExpiryTime <= 0) {
-    return;
-  }
+    if (!showOtpScreen || otpExpiryTime <= 0) return;
 
-  const timer = setInterval(() => {
-    setOtpExpiryTime((prev) => {
-      if (prev <= 1) {
-        clearInterval(timer);
-        return 0;
+    const timer = setInterval(() => {
+      setOtpExpiryTime((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [showOtpScreen, otpExpiryTime]);
+
+  // Login handler
+  const login = async (e) => {
+    e.preventDefault();
+    let hasError = false;
+
+    setLoginError("");
+
+    if (!username.trim()) {
+      setUsernameError("Username is required.");
+      hasError = true;
+    } else {
+      setUsernameError("");
+    }
+
+    if (!password.trim()) {
+      setPasswordError("Password is required.");
+      hasError = true;
+    } else {
+      setPasswordError("");
+    }
+
+    if (hasError) return;
+
+    setIsLoggingIn(true);
+
+    try {
+      const payload = { username, password };
+      const response = await Endpoints.post("login", payload);
+
+      if (response.code === 1000) {
+        setLoginError("");
+
+        if (response.otpRequired === true) {
+          setOtp(["", "", "", ""]);
+          setOtpExpiryTime(response.otpExpiryTime || 50);
+          setShowOtpScreen(true);
+
+          setTimeout(() => {
+            otpRefs.current[0]?.focus();
+          }, 100);
+
+          setIsLoggingIn(false);
+          return;
+        }
+
+        await completeLogin(response);
+      } else {
+        setLoginError(response.message || "Login Failed");
+        setIsLoggingIn(false);
       }
+    } catch (error) {
+      setLoginError(error?.message || "Something went wrong");
+      setIsLoggingIn(false);
+    }
+  };
 
-      return prev - 1;
-    });
-  }, 1000);
+  const verifyOtp = async () => {
+    const enteredOtp = otp.join("");
 
-  return () => clearInterval(timer);
-}, [showOtpScreen, otpExpiryTime]);
+    if (enteredOtp.length !== 4) {
+      alert("Please enter the complete OTP");
+      return;
+    }
 
+    setIsVerifyingOtp(true);
+    setOtpMessage("");
+    setOtpMessageType("");
 
- //===========Login API Call==============
- const login = async (e) => {
-  e.preventDefault();
+    try {
+      const payload = { password, userOtp: enteredOtp, username };
+      const response = await Endpoints.post("verifyOtp", payload);
 
-  let hasError = false;
+      if (response.code === 1000) {
+        setOtpMessage("OTP verified. Signing you in...");
+        setOtpMessageType("success");
+        await completeLogin(response);
+      } else {
+        const attemptsRemaining =
+          response.attemptsRemaining ?? response.data?.attemptsRemaining ?? 0;
 
-  setLoginError("");
+        setOtpMessage("Incorrect OTP Entered");
 
-  if (!username.trim()) {
-    setUsernameError("Username is required.");
-    hasError = true;
-  } else {
-    setUsernameError("");
-  }
-
-  if (!password.trim()) {
-    setPasswordError("Password is required.");
-    hasError = true;
-  } else {
-    setPasswordError("");
-  }
-
-  if (hasError) {
-    return;
-  }
-
-  try {
-    const payload = {
-      username,
-      password,
-    };
-
-    const response = await Endpoints.post(
-      "login",
-      payload
-    );
-
-    console.log("Login Response:", response);
-
-    if (response.code === 1000) {
-      setLoginError("");
-
-      if (response.otpRequired === true) {
+        setOtpMessageType("error");
         setOtp(["", "", "", ""]);
-        setOtpExpiryTime(
-          response.otpExpiryTime || 50
-        );
-        setShowOtpScreen(true);
 
         setTimeout(() => {
           otpRefs.current[0]?.focus();
         }, 100);
-
-        return;
       }
-
-      await completeLogin(response);
-    } else {
-      setLoginError(
-        response.message || "Login Failed"
-      );
-    }
-  } catch (error) {
-    console.error("Login Error:", error);
-
-    setLoginError(
-      error?.message ||
-      "Something went wrong"
-    );
-  }
-};
-
- const verifyOtp = async () => {
-  const enteredOtp = otp.join("");
-
-  if (enteredOtp.length !== 4) {
-    alert("Please enter the complete OTP");
-    return;
-  }
-
-  setIsVerifyingOtp(true);
-  setOtpMessage("");
-  setOtpMessageType("");
-
-  try {
-    const payload = {
-      password,
-      userOtp: enteredOtp,
-      username,
-    };
-
-    const response = await Endpoints.post(
-      "verifyOtp",
-      payload
-    );
-
-    console.log("Verify OTP Response:", response);
-
-    if (response.code === 1000) {
-      setOtpMessage(
-        "OTP verified. Signing you in..."
-      );
-      setOtpMessageType("success");
-
-      await completeLogin(response);
-    } else {
-      const attemptsRemaining =
-        response.attemptsRemaining ??
-        response.data?.attemptsRemaining ??
-        0;
-
-      setOtpMessage(
-        `Incorrect OTP. ${attemptsRemaining} ${
-          attemptsRemaining === 1
-            ? "attempt"
-            : "attempts"
-        } remaining.`
-      );
-
+    } catch (error) {
+      setOtpMessage("Unable to verify OTP. Please try again.");
       setOtpMessageType("error");
-
-      setOtp([ "", "", "", "", ]);
-
-      setTimeout(() => {
-        otpRefs.current[0]?.focus();
-      }, 100);
+    } finally {
+      setIsVerifyingOtp(false);
     }
-  } catch (error) {
-    console.error(
-      "Verify OTP Error:",
-      error
-    );
+  };
 
-    setOtpMessage(
-      "Unable to verify OTP. Please try again."
-    );
+  const resendOtp = async () => {
+    if (otpExpiryTime > 0) return;
 
-    setOtpMessageType("error");
-  } finally {
-    setIsVerifyingOtp(false);
-  }
-};
+    try {
+      const payload = { username, password };
+      const response = await Endpoints.post("login", payload);
 
-const resendOtp = async () => {
-  if (otpExpiryTime > 0) {
-    return;
-  }
+      if (response.code === 1000 && response.otpRequired === true) {
+        setOtp(["", "", "", ""]);
+        setOtpMessage("");
+        setOtpMessageType("");
+        setOtpExpiryTime(response.otpExpiryTime || 50);
 
-  try {
-    const payload = {
-      username,
-      password,
-    };
-
-    const response = await Endpoints.post(
-      "login",
-      payload
-    );
-
-    console.log(
-      "Resend OTP Response:",
-      response
-    );
-
-    if (
-      response.code === 1000 &&
-      response.otpRequired === true
-    ) {
-      setOtp([ "", "", "", "", ]);
-
-      setOtpMessage("");
-      setOtpMessageType("");
-
-      setOtpExpiryTime(
-        response.otpExpiryTime || 50
-      );
-
-      setTimeout(() => {
-        otpRefs.current[0]?.focus();
-      }, 100);
-    } else {
-      alert(
-        response.message ||
-        "Unable to resend OTP"
-      );
+        setTimeout(() => {
+          otpRefs.current[0]?.focus();
+        }, 100);
+      } else {
+        alert(response.message || "Unable to resend OTP");
+      }
+    } catch (error) {
+      alert("Unable to resend OTP");
     }
-  } catch (error) {
-    console.error(
-      "Resend OTP Error:",
-      error
-    );
-
-    alert(
-      "Unable to resend OTP"
-    );
-  }
-};
+  };
 
   const completeLogin = async (response) => {
     try {
-      const userData = {
+      const rawToken = response.authJwtToken || response.data?.authJwtToken || "";
+      const formattedToken = rawToken.startsWith("Bearer ")
+        ? rawToken
+        : `Bearer ${rawToken}`;
+
+      const userDataObj = {
         username: response.data?.username || username,
         role: response.data?.role,
         lastLoginTime: response.data?.lastLoginTime,
         lastLoginIp: response.data?.lastLoginIp,
         logoUrl: response.data?.logoUrl,
+        brandName: response.data?.brandName,
         otpRequired: false,
-        authJwtToken: response.authJwtToken,
+        authJwtToken: formattedToken,
       };
 
-      localStorage.setItem(
-        "userData",
-        JSON.stringify(userData)
-      );
+      // Set initial timestamp for 1-minute inactivity check
+      sessionStorage.setItem("lastActivityTime", Date.now().toString());
 
-      setUserData(userData);
+      localStorage.setItem("userData", JSON.stringify(userDataObj));
+      sessionStorage.setItem("userData", JSON.stringify(userDataObj));
+      setUserData(userDataObj);
 
       try {
-        const notificationUrl = Endpoints.get(
-          "creditAlertNotification"
-        );
-
+        const notificationUrl = Endpoints.get("creditAlertNotification");
         const notificationResponse = await fetch(
-          `${notificationUrl}?userName=${encodeURIComponent(
-            userData.username
-          )}`,
+          `${notificationUrl}?userName=${encodeURIComponent(userDataObj.username)}`,
           {
             method: "GET",
             headers: {
-              Authorization: userData.authJwtToken,
+              Authorization: formattedToken,
               "Content-Type": "application/json",
             },
           }
         );
 
-        const notificationData =
-          await notificationResponse.json();
+        const notificationData = await notificationResponse.json();
+        const notificationsList = Array.isArray(notificationData)
+          ? notificationData
+          : Array.isArray(notificationData?.data)
+          ? notificationData.data
+          : [];
 
-        console.log(
-          "Credit Alert Notification Response:",
-          notificationData
-        );
-
-        if (Array.isArray(notificationData)) {
-          setCreditNotifications(notificationData);
-
-          localStorage.setItem(
-            "creditNotifications",
-            JSON.stringify(notificationData)
-          );
-        } else if (
-          notificationData?.data &&
-          Array.isArray(notificationData.data)
-        ) {
-          setCreditNotifications(
-            notificationData.data
-          );
-
-          localStorage.setItem(
-            "creditNotifications",
-            JSON.stringify(notificationData.data)
-          );
-        } else {
-          setCreditNotifications([]);
-
-          localStorage.setItem(
-            "creditNotifications",
-            JSON.stringify([])
-          );
-        }
+        setCreditNotifications(notificationsList);
+        localStorage.setItem("creditNotifications", JSON.stringify(notificationsList));
+        sessionStorage.setItem("creditNotifications", JSON.stringify(notificationsList));
       } catch (notificationError) {
-        console.error(
-          "Credit Notification API Error:",
-          notificationError
-        );
-
         setCreditNotifications([]);
-
-        localStorage.setItem(
-          "creditNotifications",
-          JSON.stringify([])
-        );
+        localStorage.setItem("creditNotifications", JSON.stringify([]));
+        sessionStorage.setItem("creditNotifications", JSON.stringify([]));
       }
 
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (error) {
-      console.error(
-        "Complete Login Error:",
-        error
-      );
-
       alert("Unable to complete login");
     }
   };
 
   const handleOtpChange = (value, index) => {
-    if (!/^\d?$/.test(value)) {
-      return;
-    }
+    if (!/^\d?$/.test(value)) return;
 
     const newOtp = [...otp];
     newOtp[index] = value;
@@ -358,25 +241,27 @@ const resendOtp = async () => {
   };
 
   const handleOtpKeyDown = (e, index) => {
-  if (e.key === "Backspace" && !otp[index] && index > 0) {
-    otpRefs.current[index - 1]?.focus();
-  }
-
-  if (e.key === "Enter") {
-    e.preventDefault();
-
-    const enteredOtp = otp.join("");
-
-    if (enteredOtp.length === 4 && !isVerifyingOtp) {
-      verifyOtp();
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
     }
-  }
-};
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const enteredOtp = otp.join("");
+      if (enteredOtp.length === 4 && !isVerifyingOtp) {
+        verifyOtp();
+      }
+    }
+  };
 
   const backToLogin = () => {
     setShowOtpScreen(false);
     setOtp(["", "", "", ""]);
     setOtpExpiryTime(0);
+
+    // Resets the OTP error/success message
+    setOtpMessage("");
+    setOtpMessageType("");
   };
 
   if (showOtpScreen) {
@@ -384,18 +269,12 @@ const resendOtp = async () => {
       <div className="login-page">
         <div className="login-card otp-card">
           <div className="brand-section">
-            <img
-              src={telspielLogo}
-              alt="TelSpiel"
-              className="brand-logo"
-            />
+            <img src={telspielLogo} alt="TelSpiel" className="brand-logo" />
           </div>
 
           <h1>Verify it's you</h1>
-
           <p className="subtitle">
-            Two-factor authentication keeps
-            your account secure.
+            Two-factor authentication keeps your account secure.
           </p>
 
           {otpMessage ? (
@@ -407,42 +286,29 @@ const resendOtp = async () => {
               }`}
             >
               <span className="otp-message-icon">
-                {otpMessageType === "success"
-                  ? "✓"
-                  : "!"}
+                {otpMessageType === "success" ? "✓" : "!"}
               </span>
-
               <span>{otpMessage}</span>
             </div>
           ) : (
             <p className="otp-description">
-              Enter the OTP sent to your
-              registered number
+              Enter the OTP sent to your registered number
             </p>
           )}
-
 
           <div className="otp-input-container">
             {otp.map((digit, index) => (
               <input
                 key={index}
                 ref={(element) => {
-                  otpRefs.current[index] =
-                    element;
+                  otpRefs.current[index] = element;
                 }}
                 type="text"
                 inputMode="numeric"
                 maxLength={1}
                 value={digit}
-                onChange={(e) =>
-                  handleOtpChange(
-                    e.target.value,
-                    index
-                  )
-                }
-                onKeyDown={(e) =>
-                  handleOtpKeyDown(e, index)
-                }
+                onChange={(e) => handleOtpChange(e.target.value, index)}
+                onKeyDown={(e) => handleOtpKeyDown(e, index)}
                 className="otp-input"
               />
             ))}
@@ -452,25 +318,16 @@ const resendOtp = async () => {
             type="button"
             className="verify-otp-button"
             onClick={verifyOtp}
-            disabled={
-              isVerifyingOtp ||
-              otp.some((digit) => digit === "")
-            }
+            disabled={isVerifyingOtp || otp.some((digit) => digit === "")}
           >
             Verify OTP
           </button>
 
           <div className="otp-resend">
-            <span>
-              Not received yet?{" "}
-            </span>
-
+            <span>Not received yet? </span>
             {otpExpiryTime > 0 ? (
               <span>
-                Resend OTP in{" "}
-                <strong>
-                  {otpExpiryTime}s
-                </strong>
+                Resend OTP in <strong>{otpExpiryTime}s</strong>
               </span>
             ) : (
               <button
@@ -491,9 +348,7 @@ const resendOtp = async () => {
             ← Back to login
           </button>
 
-          <div className="copyright">
-            © All Rights Reserved
-          </div>
+          <div className="copyright">© All Rights Reserved</div>
         </div>
       </div>
     );
@@ -503,18 +358,11 @@ const resendOtp = async () => {
     <div className="login-page">
       <div className="login-card">
         <div className="brand-section">
-          <img
-            src={telspielLogo}
-            alt="Habitic Quicksmart"
-            className="brand-logo"
-          />
+          <img src={telspielLogo} alt="Habitic Quicksmart" className="brand-logo" />
         </div>
 
         <h1>Welcome back</h1>
-
-        <p className="subtitle">
-          Sign in to your admin dashboard.
-        </p>
+        <p className="subtitle">Sign in to your admin dashboard.</p>
 
         {loginError && (
           <div className="login-error">
@@ -524,77 +372,49 @@ const resendOtp = async () => {
         )}
 
         <form onSubmit={login}>
-         <div className="input-group">
-          <label>Username</label>
-
-          <div
-            className={`input-wrapper ${
-              usernameError ? "input-error" : ""
-            }`}
-          >
-            <input
-              type="text"
-              placeholder="Enter username"
-              value={username}
-              onChange={(e) => {
-                setUsername(e.target.value);
-
-                if (e.target.value.trim()) {
-                  setUsernameError("");
-                }
-              }}
-            />
-
-            <i className="fa-regular fa-user"></i>
-          </div>
-
-          {usernameError && (
-            <div className="login-field-error">
-              <span className="error-icon">!</span>
-              {usernameError}
+          <div className="input-group">
+            <label>Username</label>
+            <div className={`input-wrapper ${usernameError ? "input-error" : ""}`}>
+              <input
+                type="text"
+                placeholder="Enter username"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  if (e.target.value.trim()) setUsernameError("");
+                }}
+                disabled={isLoggingIn}
+              />
+              <i className="fa-regular fa-user"></i>
             </div>
-          )}
-        </div>
+            {usernameError && (
+              <div className="login-field-error">
+                <span className="error-icon">!</span>
+                {usernameError}
+              </div>
+            )}
+          </div>
 
           <div className="input-group">
             <label>Password</label>
-
-            <div
-              className={`input-wrapper ${
-                passwordError ? "input-error" : ""
-              }`}
-            >
+            <div className={`input-wrapper ${passwordError ? "input-error" : ""}`}>
               <input
-                type={
-                  showPassword
-                    ? "text"
-                    : "password"
-                }
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter password"
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
-
-                  if (e.target.value.trim()) {
-                    setPasswordError("");
-                  }
+                  if (e.target.value.trim()) setPasswordError("");
                 }}
+                disabled={isLoggingIn}
               />
-
               <i
                 className={`fa-solid ${
-                  showPassword
-                    ? "fa-eye"
-                    : "fa-eye-slash"
+                  showPassword ? "fa-eye" : "fa-eye-slash"
                 }`}
-                onClick={() =>
-                  setShowPassword(
-                    !showPassword
-                  )
-                }
+                onClick={() => setShowPassword(!showPassword)}
               ></i>
             </div>
-
             {passwordError && (
               <div className="login-field-error">
                 <span className="error-icon">!</span>
@@ -603,14 +423,16 @@ const resendOtp = async () => {
             )}
           </div>
 
-          <button type="submit" className="login-card-button">
-            Login
+          <button
+            type="submit"
+            className="login-card-button"
+            disabled={isLoggingIn}
+          >
+            {isLoggingIn ? "logging in..." : "Login"}
           </button>
         </form>
 
-        <div className="copyright">
-          © All Rights Reserved
-        </div>
+        <div className="copyright">© All Rights Reserved</div>
       </div>
     </div>
   );

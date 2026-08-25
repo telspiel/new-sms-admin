@@ -288,37 +288,37 @@
   line-height: 1.6;
 }
 
-.modal-buttons {
+.blacklist-modal-buttons {
   margin-top: 25px;
   display: flex;
-  justify-content: center;
   gap: 15px;
 }
 
-.cancel-btn,
-.confirm-btn {
-  min-width: 110px;
+.blacklist-modal-buttons .cancel-btn,
+.blacklist-modal-buttons .confirm-btn {
+  flex: 1;
+  min-width: 0;
   padding: 10px 18px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
   font-size: 15px;
+  box-sizing: border-box;
 }
 
-.cancel-btn {
+.blacklist-modal-buttons .cancel-btn {
   background: #e5e7eb;
 }
 
-.confirm-btn {
+.blacklist-modal-buttons .confirm-btn {
   background: #ef4444;
   color: white;
 }
 
-.confirm-btn:hover {
+.blacklist-modal-buttons .confirm-btn:hover {
   background: #dc2626;
 }
 
-/* Add and Upload style */
 /* Overlay */
 
 .global-blacklist .drawer-overlay{
@@ -329,12 +329,12 @@
 }
 
 /* Drawer */
-.add-drawer{
+.blacklist-add-drawer{
     position:fixed;
     top:0;
     right:0;
     width:530px;
-    height:100vh;
+    height:111vh;
     background:#fff;
     z-index:999;
     display:flex;
@@ -386,7 +386,6 @@
 }
 
 /* Tabs */
-
 .drawer-tabs{
     display:flex;
     gap:30px;
@@ -412,7 +411,6 @@
 }
 
 /* Body */
-
 .drawer-body{
     flex:1;
     overflow:auto;
@@ -514,7 +512,7 @@
     flex:1;
     height:40px;
     border:none;
-    background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
+    background: linear-gradient(to right, #ffcc29, #e0a800);
     color:#111;
     border-radius:12px;
     cursor:pointer;

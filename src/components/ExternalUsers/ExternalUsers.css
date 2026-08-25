@@ -29,7 +29,7 @@
 .wrap-add-external-user-btn .add-external-user-btn{
     border: none;
     outline: none;
-    background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
+    background: linear-gradient(to right, #ffcc29, #e0a800);
     color: #111;
     padding: 12px 22px;
     border-radius: 14px;
@@ -56,7 +56,7 @@
     top:0;
     right:0;
     width:530px;
-    height:100vh;
+    height:111vh;
     background:#fff;
     display:flex;
     flex-direction:column;

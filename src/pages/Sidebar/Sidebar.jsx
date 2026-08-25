@@ -15,6 +15,7 @@ import {
   TriangleAlert,
   ChevronRight,
   ChevronDown,
+  Banknote,
 } from "lucide-react";
 import "./Sidebar.css";
 
@@ -191,7 +192,7 @@ function Sidebar() {
               isActive ? "active-link" : ""
             }
           >
-            <i className="fa-solid fa-dollar-sign"></i>
+            <Banknote size={20} strokeWidth={1.8} />
             <span>Credits Management</span>
           </NavLink>
         </li>

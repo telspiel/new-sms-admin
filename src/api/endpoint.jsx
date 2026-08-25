@@ -7,79 +7,96 @@ class Endpoints {
     };
 
     this.endpoints = {
-      login: { path: "reseller/login", server: "primary"},
-      verifyOtp: { path: "reseller/verifyotp", server: "primary" },
+      login: { path: "reseller/login", server: "newAdmin"},
+      verifyOtp: { path: "reseller/verifyotp", server: "newAdmin" },
 
-      profileDetails: { path: "userProfile/userProfileDetails", server: "primary" },
-      creditAlertNotification: { path: "creditNotification", server: "primary" },
+      profileDetails: { path: "userProfile/userProfileDetails", server: "newAdmin" },
+      creditAlertNotification: { path: "creditNotification", server: "newAdmin" },
   
-      dashboard: { path: "reseller/dashboard", server: "primary"},
-      getHourlyReport: { path: "reportService/getHourlySummaryReport", server: "primary" },
-      summaryReport: { path: "reportService/summaryReport", server: "primary" },
+      dashboard: { path: "reseller/dashboard", server: "newAdmin"},
+      getHourlyReport: { path: "reportService/getHourlySummaryReport", server: "newAdmin" },
+      summaryReport: { path: "reportService/summaryReport", server: "newAdmin" },
 
       getAllOrganization: { path: "organisationService/getAllOrganisationsList", server: "newAdmin" },
-      saveOrganization: { path: "organisationService/saveOrganisation", server: "primary" },
+      saveOrganization: { path: "organisationService/saveOrganisation", server: "newAdmin" },
 
       //Department Management
       getAlldepartment: { path: "departmentService/getAllDepartmentsList", server: "newAdmin" },
-      saveDepartment: { path: "departmentService/saveDepartment", server: "primary" },
+      saveDepartment: { path: "departmentService/saveDepartment", server: "newAdmin" },
 
       //Internal User
-      listInternalusers: { path: "userService/getAllInternalUsersList", server: "primary" },
-      saveInternalUser: { path: "userService/saveInternalUser", server: "primary" },
-      listSeniorAccountManagers: { path: "userService/getAllAccManagers", server: "primary" },
-      regionalManagersList: { path: "userService/getAllRegionalManagers", server: "primary" },
+      listInternalusers: { path: "userService/getAllInternalUsersList", server: "newAdmin" },
+      saveInternalUser: { path: "userService/saveInternalUser", server: "newAdmin" },
+      listSeniorAccountManagers: { path: "userService/getAllAccManagers", server: "newAdmin" },
+      regionalManagersList: { path: "userService/getAllRegionalManagers", server: "newAdmin" },
 
       //External User
-      externalListUser: { path: "staticService/getAllChildUserDetails", server: "primary" },
+      externalListUser: { path: "staticService/getAllChildUserDetails", server: "newAdmin" },
 
-      getUserApiKey: { path: "pushApiKeyService/getUserApiKey", server: "primary" },
-      generateNewApiKey: { path: "pushApiKeyService/generateUserApiKey", server: "primary" },
+      getUserApiKey: { path: "pushApiKeyService/getUserApiKey", server: "newAdmin" },
+      generateNewApiKey: { path: "pushApiKeyService/generateUserApiKey", server: "newAdmin" },
 
-      getAllUsers: { path: "staticService/getAllChildsForUser", server: "primary" },
-      getCreditHistory: { path: "creditService/getCreditHistory", server: "primary" },
-      viewCreditForUser: { path: "creditService/getAvailableCreditForUser", server: "primary" },
-      updateCredit: { path: "creditService/updateCreditForUser", server: "primary" },
+      getAllUsers: { path: "staticService/getAllChildsForUser", server: "newAdmin" },
+      getCreditHistory: { path: "creditService/getCreditHistory", server: "newAdmin" },
+      viewCreditForUser: { path: "creditService/getAvailableCreditForUser", server: "newAdmin" },
+      updateCredit: { path: "creditService/updateCreditForUser", server: "newAdmin" },
 
-      drSummaryApi: { path: "reseller/drSummary", server: "primary"},
+      drSummaryApi: { path: "reseller/drSummary", server: "newAdmin"},
+
+
+      //Detailed MIS Report
+      detailedMisReport: { path: "reportService/detailedMis", server: "primary" },
+
+      //Summary Report
+      senderIdSummaryReport: { path: "reportService/senderIdSummaryReport", server: "primary" },
+
+      //Errorcode Report
+      errorcodeReport: {path: "reportService/errorCodeWiseReport", server: "newAdmin"},
 
       //Manage Connect
-      getUserRoutingGroups: { path: "reseller/getUserRoutingGroups", server: "primary" },
-      viewRoutingGroups: { path: "reseller/viewRoutingGroupDetails", server: "primary" },
-      getUserKennalList: { path: "reseller/getUserKannelList", server: "primary" },
-      updatedKennalGroupMap: { path: "reseller/updateKannelGroupMapping", server: "primary" },
+      getUserRoutingGroups: { path: "reseller/getUserRoutingGroups", server: "newAdmin" },
+      viewRoutingGroups: { path: "reseller/viewRoutingGroupDetails", server: "newAdmin" },
+      getUserKennalList: { path: "reseller/getUserKannelList", server: "newAdmin" },
+      updatedKennalGroupMap: { path: "reseller/updateKannelGroupMapping", server: "newAdmin" },
 
       //New User Routing
-      unroutedUserlist: { path: "reseller/unroutedUsers", server: "primary"},
-      saveNewUserRouting: { path: "reseller/newUserRouting", server: "primary"},
+      unroutedUserlist: { path: "reseller/unroutedUsers", server: "newAdmin"},
+      saveNewUserRouting: { path: "reseller/newUserRouting", server: "newAdmin"},
 
       //Switch Gateway
-      getAllOperatorsName: { path: "reseller/operatorNames", server: "primary" }, 
-      switchGatewayOperator: { path: "reseller/operatorChange", server: "primary"},
+      getAllOperatorsName: { path: "reseller/operatorNames", server: "newAdmin" }, 
+      switchGatewayOperator: { path: "reseller/operatorChange", server: "newAdmin"},
 
       //Userwise Routing
-     userwiseMessageType: { path: "reseller/routedUsers", server: "primary"},
-     userListDataOptions: { path: "reseller/routingDetails", server: "primary"},
-     editUserRoutingData: { path: "reseller/editRouting", server: "primary"},
-     addNewUserRouting: { path: "reseller/addRouting", server: "primary"},
-     updatedUserRouting: { path: "reseller/updateRouting", server: "primary"},
+      userwiseMessageType: { path: "reseller/routedUsers", server: "newAdmin"},
+      userListDataOptions: { path: "reseller/routingDetails", server: "newAdmin"},
+      editUserRoutingData: { path: "reseller/editRouting", server: "newAdmin"},
+      addNewUserRouting: { path: "reseller/addRouting", server: "newAdmin"},
+      updatedUserRouting: { path: "reseller/updateRouting", server: "newAdmin"},
+
+      //SMPP Management
+      smppStatus: { path: "reseller/getSmppStats", server: "primary" },
 
       currentTelcoSummary: { path: "getUserConnectSummaryForDate", server: "secondary" },
-      connectSummary: { path: "connectSummaryService/connectSummary", server: "primary" },
+      connectSummary: { path: "connectSummaryService/connectSummary", server: "newAdmin" },
 
-      searchMobileNumber: { path: "getGlobalBlackListMobileNumber", server: "primary" },
-      deleteBlacklistNumber: { path: "deleteNumberInDb", server: "primary" },
-      addBlacklistNumber: { path: "addSingleNumber", server: "primary" },
-      uploadBlacklistNumber: { path: "uploadFile", server: "primary" },
+      searchMobileNumber: { path: "getGlobalBlackListMobileNumber", server: "newAdmin" },
+      deleteBlacklistNumber: { path: "deleteNumberInDb", server: "newAdmin" },
+      addBlacklistNumber: { path: "addSingleNumber", server: "newAdmin" },
+      uploadBlacklistNumber: { path: "uploadFile", server: "newAdmin" },
+      editBlacklistNumber: { path: "editGlobalBlackListNumber", server: "newAdmin"},
 
       //User Premium Routing
-      getAllUsername: { path: "getallclient", server: "primary"},
-      getAllRoutingName: { path: "getgroupid", server: "primary"},
-      addPremiumNumber: { path: "addnumberinRouting", server: "primary" },
-      uploadPremiumNumber: { path: "uploadnumberrouting", server: "primary" },
-      usernameSearchSelect: { path: "searchbasedonnumber", server: "primary"},
-      descriptionByUsername: { path: "getdescription", server: "primary"},
-      deleteSelectedRows: { path: "delete", server: "primary"},
+      getAllUsername: { path: "getallclient", server: "newAdmin"},
+      getAllRoutingName: { path: "getgroupid", server: "newAdmin"},
+      addPremiumNumber: { path: "addnumberinRouting", server: "newAdmin" },
+      uploadPremiumNumber: { path: "uploadnumberrouting", server: "newAdmin" },
+      usernameSearchSelect: { path: "searchbasedonnumber", server: "newAdmin"},
+      descriptionByUsername: { path: "getdescription", server: "newAdmin"},
+      deleteSelectedRows: { path: "delete", server: "newAdmin"},
+
+      uploadLogo: { path: "reseller/uploadLogo", server: "newAdmin" },
+      uploadFavicon: { path: "reseller/getFavicon", server: "newAdmin" },
     };
   }
 

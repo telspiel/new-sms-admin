@@ -182,7 +182,7 @@ hr {
   padding: 0 22px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
+  background: linear-gradient(to right, #ffcc29, #e0a800);
   color: #111;
   font-size: 16px;
   font-weight: 600;

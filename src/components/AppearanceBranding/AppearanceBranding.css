@@ -32,11 +32,12 @@
   gap: 9px;
   border: none;
   border-radius: 12px;
-  background: #f6d56f;
-  color: #8b7b4b;
+  background: linear-gradient(to right, #ffcc29, #e0a800) !important;
+  color: #111 !important;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  opacity: 1;
 }
 
 
@@ -141,42 +142,184 @@
 
 .upload-content h3 {
   margin: 0 0 4px;
-
   color: #17233b;
-
   font-size: 14px;
   font-weight: 600;
 }
 
 .upload-content p {
   margin: 0 0 9px;
-
   color: #7a8498;
-
   font-size: 12px;
   line-height: 1.45;
+  text-align: left;
 }
 
 .choose-file-btn {
   height: 33px;
-
   padding: 0 12px;
-
   border: 1px solid #dbe1eb;
   border-radius: 8px;
-
   background: #ffffff;
-
   color: #263957;
-
   font-size: 13px;
   font-weight: 600;
-
   cursor: pointer;
 }
 
 .favicon-field {
   margin-bottom: 0;
+}
+
+/* Enabled/Disabled Save Button */
+.appearance-save-btn:disabled {
+  background: #f1e4b8;
+  color: #a89f81;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Preview Image in Upload Box */
+.upload-icon.preview-icon {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.upload-icon.preview-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Upload Actions (Choose / Remove) */
+.upload-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.remove-file-btn {
+  height: 33px;
+  padding: 0 12px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.remove-file-btn:hover {
+  background: #fef2f2;
+}
+
+/* Crop Modal */
+.crop-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crop-modal {
+  width: 520px;
+  max-width: 90vw;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.crop-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.crop-modal-header h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.crop-modal-header p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  text-align: left;
+}
+
+.crop-close-btn {
+  border: none;
+  background: #f1f5f9;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.cropper-container {
+  position: relative;
+  width: 100%;
+  height: 360px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #334155;
+}
+
+.crop-hint {
+  margin: 14px 0 20px;
+  color: #64748b;
+  font-size: 13px;
+  text-align: left;
+}
+
+.crop-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.use-whole-btn {
+  flex: 1;
+  height: 44px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #334155;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.apply-crop-btn {
+  flex: 1;
+  height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: #eab308;
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
 }
 
 

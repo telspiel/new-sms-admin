@@ -24,6 +24,11 @@ const GlobalBlacklist = () => {
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState("");
 
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editNumber, setEditNumber] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [editLoading, setEditLoading] = useState(false);
+
 
     //Add Blacklist number
     const [addMobileNumber, setAddMobileNumber] = useState("");
@@ -226,6 +231,59 @@ const GlobalBlacklist = () => {
         }
         };    
 
+    //=========API to update blacklist number============
+    const updateBlacklistNumber = async () => {
+
+        try {
+        setEditLoading(true);
+
+        const payload = {
+        phoneNumber: `${editNumber}`,
+        description: editDescription.trim(),
+        };
+
+        const response = await fetch(
+        `${Endpoints.get(
+            "editBlacklistNumber"
+        )}?mobNum=${selectedNumber}`,
+        {
+            method: "POST",
+            headers: {
+            Authorization: `${userData.authJwtToken}`,
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        }
+        );
+
+        if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`);
+        }
+
+        const data = await response.text();
+
+        console.log("Blacklist number updated:", data);
+
+        // Update the table data immediately
+        setBlacklistData((prev) => ({
+        ...prev,
+        phoneNumber: editNumber,
+        description: editDescription,
+        }));
+
+        // Close modal
+        setShowEditModal(false);
+
+        setEditNumber("");
+        setEditDescription("");
+
+    } catch (error) {
+        console.error("Update Failed", error);
+    } finally {
+        setEditLoading(false);
+    }
+    };    
+
   return (
     <div className="global-blacklist">
         {showToast && (
@@ -314,7 +372,7 @@ const GlobalBlacklist = () => {
                 <strong>+{selectedNumber}</strong> ?
             </p>
 
-            <div className="modal-buttons">
+            <div className="blacklist-modal-buttons">
 
                 <button
                 className="cancel-btn"
@@ -335,6 +393,98 @@ const GlobalBlacklist = () => {
 
             </div>
         </div>
+        )}
+       {showEditModal && (
+        <>
+            <div
+            className="drawer-overlay"
+            onClick={() => !editLoading && setShowEditModal(false)}
+            ></div>
+
+            <div className="blacklist-add-drawer">
+
+            <div className="drawer-header">
+                <div>
+                <h2>Edit Number</h2>
+                <p>Update the blacklisted number details</p>
+                </div>
+
+                <button
+                className="close-drawer"
+                onClick={() => setShowEditModal(false)}
+                >
+                <i className="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div className="drawer-body">
+
+                <div className="form-group">
+                <label>
+                    Mobile Number <span>*</span>
+                </label>
+
+                <div className="mobile-input">
+
+                    <input
+                    type="text"
+                    maxLength={12}
+                    placeholder="10-digit mobile number"
+                    value={editNumber}
+                    onChange={(e) =>
+                        setEditNumber(
+                        e.target.value.replace(/\D/g, "")
+                        )
+                    }
+                    disabled={editLoading}
+                    />
+                </div>
+                </div>
+
+                <div className="form-group">
+                <label>
+                    Description <span>*</span>
+                </label>
+
+                <input
+                    type="text"
+                    placeholder="Why is this number blocked?"
+                    value={editDescription}
+                    onChange={(e) =>
+                    setEditDescription(e.target.value)
+                    }
+                    disabled={editLoading}
+                />
+                </div>
+
+            </div>
+
+            <div className="drawer-footer">
+
+                <button
+                className="cancel-button"
+                onClick={() => {
+                    setShowEditModal(false);
+                    setEditNumber("");
+                    setEditDescription("");
+                }}
+                disabled={editLoading}
+                >
+                Cancel
+                </button>
+
+                <button
+                className="submit-button"
+                onClick={updateBlacklistNumber}
+                disabled={editLoading}
+                >
+                {editLoading ? "Updating..." : "Update Number"}
+                </button>
+
+            </div>
+
+            </div>
+        </>
         )}
 
         {/* Table */}
@@ -398,11 +548,13 @@ const GlobalBlacklist = () => {
                 ) : (
                 <tr>
                     <td>
-                    <div className="phone-number-cell">
-                        <span className="country-code">+91</span>
-                        <span className="phone-number">
-                        {blacklistData.phoneNumber}
-                        </span>
+                   <div className="phone-number-cell">
+                    <span className="country-code">+91</span>
+                    <span className="phone-number">
+                        {blacklistData.phoneNumber
+                        ? String(blacklistData.phoneNumber).replace(/^(\+?91)/, "")
+                        : ""}
+                    </span>
                     </div>
                     </td>
 
@@ -416,6 +568,9 @@ const GlobalBlacklist = () => {
                         className="action-btn edit-btn"
                         onClick={() => {
                             setSelectedNumber(blacklistData.phoneNumber);
+                            setEditNumber(blacklistData.phoneNumber);
+                            setEditDescription(blacklistData.description || "");
+                            setShowEditModal(true);
                         }}
                         >
                         <i className="fa-regular fa-pen-to-square"></i>
@@ -445,7 +600,7 @@ const GlobalBlacklist = () => {
         onClick={() => setShowAddDrawer(false)}
         ></div>
 
-        <div className="add-drawer">
+        <div className="blacklist-add-drawer">
 
        {/* Header */}
 

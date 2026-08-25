@@ -17,13 +17,16 @@ const ExternalUsers = () => {
 
   const [showAddExternalUser, setShowAddExternalUser] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const getExternalUsers = async () => {
     setLoading(true);
 
     try {
         const payload = {
         loggedInUserName: userData.username,
-        pageNumber: 1
+        // pageNumber: 1
         };
 
         const response = await Endpoints.post(
@@ -49,7 +52,7 @@ const ExternalUsers = () => {
     }, []);
 
   //Filter search table
-  const filteredExternalUsers = externalUsers.filter((user) => {
+ const filteredExternalUsers = externalUsers.filter((user) => {
   const search = searchTerm.toLowerCase().trim();
 
   const matchesSearch =
@@ -78,6 +81,40 @@ const ExternalUsers = () => {
     matchesStatus
   );
 });  
+
+  useEffect(() => {
+      setCurrentPage(1);
+    }, [searchTerm, selectedUserType, selectedAccountType, selectedStatus]);
+
+    // Calculate total pages based on filtered results
+    const totalPages = Math.ceil(filteredExternalUsers.length / itemsPerPage) || 1;
+
+    // Get current 10 items to display in the table
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentTableData = filteredExternalUsers.slice(indexOfFirstItem, indexOfLastItem);
+
+    // Helper to generate smart pagination numbers with ellipsis (...)
+    const getPageNumbers = () => {
+      const pageNumbers = [];
+      const maxVisibleButtons = 5;
+
+      if (totalPages <= maxVisibleButtons) {
+        for (let i = 1; i <= totalPages; i++) {
+          pageNumbers.push(i);
+        }
+      } else {
+        if (currentPage <= 3) {
+          pageNumbers.push(1, 2, 3, "...", totalPages);
+        } else if (currentPage >= totalPages - 2) {
+          pageNumbers.push(1, "...", totalPages - 2, totalPages - 1, totalPages);
+        } else {
+          pageNumbers.push(1, "...", currentPage, "...", totalPages);
+        }
+      }
+
+      return pageNumbers;
+    };
 
 const userTypeOptions = [
   ...new Set(
@@ -603,153 +640,130 @@ const statusOptions = [
     </div>
     <div>
     <table className="external-table">
-  <thead>
-    <tr>
-      <th>USER</th>
-      <th>CONTACT</th>
-      <th>USER TYPE</th>
-      <th>ACCOUNT TYPE</th>
-      <th>ORGANISATION</th>
-      <th>CREATED</th>
-      <th>STATUS</th>
-      <th>ACTIONS</th>
-    </tr>
-  </thead>
+      <thead>
+        <tr>
+          <th>USER</th>
+          <th>CONTACT</th>
+          <th>USER TYPE</th>
+          <th>ACCOUNT TYPE</th>
+          <th>ORGANISATION</th>
+          <th>CREATED</th>
+          <th>STATUS</th>
+          <th>ACTIONS</th>
+        </tr>
+      </thead>
 
-  <tbody>
-    {loading ? (
-      <tr>
-        <td colSpan="8">
-          <div className="table-loader">
-            <div className="spinner"></div>
-            <p>Loading External Users...</p>
-          </div>
-        </td>
-      </tr>
-    ) : externalUsers.length > 0 ? (
-      filteredExternalUsers.map((user, index) => {
-        // Get first letter for avatar
-        const avatarLetter = user.userName
-          ? user.userName.charAt(0).toUpperCase()
-          : "-";
+      <tbody>
+      {loading ? (
+        <tr>
+          <td colSpan="8">
+            <div className="table-loader">
+              <div className="spinner"></div>
+              <p>Loading External Users...</p>
+            </div>
+          </td>
+        </tr>
+      ) : currentTableData.length > 0 ? (
+        currentTableData.map((user, index) => {
+          const avatarLetter = user.userName
+            ? user.userName.charAt(0).toUpperCase()
+            : "-";
 
-        // Format creation date
-        const formattedDate = user.creationDate
-          ? user.creationDate.split(" ")[0].split("-").reverse().join("-")
-          : "-";
+          const formattedDate = user.creationDate
+            ? user.creationDate.split(" ")[0].split("-").reverse().join("-")
+            : "-";
 
-        // Account type
-        const accountType = user.userAccountType
-        ? user.userAccountType.toUpperCase()
-        : "-";
+          const accountType = user.userAccountType
+            ? user.userAccountType.toUpperCase()
+            : "-";
 
-        return (
-          <tr key={index}>
-
-            {/* USER */}
-            <td>
-              <div className="user-info">
-                <div className="user-avatar">
-                  {avatarLetter}
+          return (
+            <tr key={user.userId || index}>
+              {/* USER */}
+              <td>
+                <div className="user-info">
+                  <div className="user-avatar">{avatarLetter}</div>
+                  <div className="user-name">{user.userName || "-"}</div>
                 </div>
+              </td>
 
-                <div className="user-name">
-                  {user.userName || "-"}
+              {/* CONTACT */}
+              <td>
+                <div className="contact-info">
+                  <div className="mobile">{user.contactNumber || "-"}</div>
+                  <div className="email">{user.emailId || "-"}</div>
                 </div>
-              </div>
-            </td>
+              </td>
 
-            {/* CONTACT */}
-            <td>
-              <div className="contact-info">
-                <div className="mobile">
-                  {user.contactNumber || "-"}
-                </div>
+              {/* USER TYPE */}
+              <td>
+                <span
+                  className={`external-badge ${
+                    user.customerType
+                      ? `external-badge-${user.customerType.toLowerCase()}`
+                      : "external-badge-empty"
+                  }`}
+                >
+                  {user.customerType || "-"}
+                </span>
+              </td>
 
-                <div className="email">
-                  {user.emailId || "-"}
-                </div>
-              </div>
-            </td>
+              {/* ACCOUNT TYPE */}
+              <td>
+                <span
+                  className={`external-badge ${
+                    accountType !== "-"
+                      ? `external-badge-${accountType.toLowerCase()}`
+                      : "badge-empty"
+                  }`}
+                >
+                  {accountType}
+                </span>
+              </td>
 
-            {/* USER TYPE */}
-            <td>
-            <span
-                className={`external-badge ${
-                user.customerType
-                    ? `external-badge-${user.customerType.toLowerCase()}`
-                    : "external-badge-empty"
-                }`}
-            >
-                {user.customerType || "-"}
-            </span>
-            </td>
+              {/* ORGANISATION */}
+              <td>
+                <span className="organisation">{user.provider || "-"}</span>
+              </td>
 
-            {/* ACCOUNT TYPE */}
-            <td>
-            <span
-                className={`external-badge ${
-                accountType !== "-"
-                    ? `external-badge-${accountType.toLowerCase()}`
-                    : "badge-empty"
-                }`}
-            >
-                {accountType}
-            </span>
-            </td>
+              {/* CREATED */}
+              <td>
+                <span className="created-date">{formattedDate}</span>
+              </td>
 
-            {/* ORGANISATION */}
-            <td>
-              <span className="organisation">
-                {user.provider || "-"}
-              </span>
-            </td>
+              {/* STATUS */}
+              <td>
+                <span
+                  className={`status ${
+                    user.status?.toLowerCase() === "active" ? "active" : "inactive"
+                  }`}
+                >
+                  {user.status || "-"}
+                </span>
+              </td>
 
-            {/* CREATED */}
-            <td>
-              <span className="created-date">
-                {formattedDate}
-              </span>
-            </td>
-
-            {/* STATUS */}
-            <td>
-              <span
-                className={`status ${
-                  user.status?.toLowerCase() === "active"
-                    ? "active"
-                    : "inactive"
-                }`}
-              >
-                {user.status || "-"}
-              </span>
-            </td>
-
-            {/* ACTIONS */}
-            <td>
-              <button
-                className="action-btn"
-                title="Edit User"
-                onClick={() => {
-                  console.log("Edit user:", user);
-                }}
-              >
-                <i className="fa-regular fa-pen-to-square"></i>
-              </button>
-            </td>
-
-          </tr>
-        );
-      })
-    ) : (
-      <tr>
-        <td colSpan="8" className="no-users">
-          No External Users Found
-        </td>
-      </tr>
-    )}
-  </tbody>
-</table>
+              {/* ACTIONS */}
+              <td>
+                <button
+                  className="action-btn"
+                  title="Edit User"
+                  onClick={() => console.log("Edit user:", user)}
+                >
+                  <i className="fa-regular fa-pen-to-square"></i>
+                </button>
+              </td>
+            </tr>
+          );
+        })
+      ) : (
+        <tr>
+          <td colSpan="8" className="no-users">
+            No External Users Found
+          </td>
+        </tr>
+      )}
+    </tbody>
+  </table>
 
     <div className="table-footer">
 
@@ -758,23 +772,41 @@ const statusOptions = [
         {filteredExternalUsers.length}
     </span>
 
-    <div className="pagination">
+    {filteredExternalUsers.length > 0 && (
+        <div className="pagination">
+          <button
+            className="page-btn"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            <i className="fa-solid fa-chevron-left"></i>
+          </button>
 
-        <button className="page-btn">
-        <i className="fa-solid fa-chevron-left"></i>
-        </button>
+          {getPageNumbers().map((page, idx) =>
+            page === "..." ? (
+              <span key={`ellipsis-${idx}`} className="pagination-ellipsis">
+                ...
+              </span>
+            ) : (
+              <button
+                key={page}
+                className={`page-btn ${currentPage === page ? "active" : ""}`}
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </button>
+            )
+          )}
 
-        <button className="page-btn active"> 1 </button>
-        <button className="page-btn"> 2 </button>
-        <button className="page-btn"> 3 </button>
-        <button className="page-btn"> 4 </button>
-        <button className="page-btn"> 5 </button>
-
-        <button className="page-btn">
-        <i className="fa-solid fa-chevron-right"></i>
-        </button>
-
-    </div>
+          <button
+            className="page-btn"
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            <i className="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+      )}
 
     </div>
     </div>

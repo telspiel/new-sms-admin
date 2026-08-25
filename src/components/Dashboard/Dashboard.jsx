@@ -33,6 +33,9 @@ ChartJS.register(
 function Dashboard() { 
 
   const { userData } = useContext(AuthContext);
+  const [loading, setLoading] = useState(true);
+  const [isSummaryLoading, setIsSummaryLoading] = useState(true);
+  const [isHourlyLoading, setIsHourlyLoading] = useState(true);
 
     const [dashboardData, setDashboardData] = useState({
     totalSmsToday: 0,
@@ -40,33 +43,35 @@ function Dashboard() {
     availableCredits: 0,
     });
 
-    const getDashboard = async () => {
+  const getDashboard = async () => {
+    setLoading(true);
     try {
-        const payload = {
+      const payload = {
         username: userData.username,
-        };
+      };
 
-        const response = await Endpoints.post(
+      const response = await Endpoints.post(
         "dashboard",
         payload,
         userData.authJwtToken
-        );
+      );
 
-        console.log(response);
-
-        if (response.code === 1000) {
+      if (response.code === 1000) {
         setDashboardData(response.data);
-        } else {
+      } else {
         console.log(response.message);
-        }
+      }
     } catch (error) {
-        console.error(error);
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-    };
+  };
 
-    const [hourlyGrid, setHourlyGrid] = useState([]);
+  const [hourlyGrid, setHourlyGrid] = useState([]);
 
     const getHourlyReport = async () => {
+      setIsHourlyLoading(true);
     try {
         const payload = {
         loggedInUserName: userData.username,
@@ -84,7 +89,9 @@ function Dashboard() {
         }
     } catch (error) {
         console.error(error);
-    }
+    } finally {
+    setIsHourlyLoading(false);
+  }
     };
 
   const hourlyData = {
@@ -145,6 +152,7 @@ const hasHourlyData = hourlyGrid.some(
     const [summaryReportData, setSummaryReportData] = useState(null);
 
     const getSummaryReport = async () => {
+      setIsSummaryLoading(true);
     try {
         const today = getTodayIST();
 
@@ -169,7 +177,9 @@ const hasHourlyData = hourlyGrid.some(
         }
     } catch (error) {
         console.error("Summary Report Error:", error);
-    }
+    } finally {
+    setIsSummaryLoading(false);
+  }
   };
 
 const summary = summaryReportData?.grid?.[0];
@@ -256,15 +266,22 @@ const AnimatedNumber = ({ value, duration = 1200 }) => {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
+    // Parse to ensure numeric value
+    const numericValue = typeof value === "number" ? value : Number(String(value).replace(/,/g, "")) || 0;
+    
     let start = 0;
+    const increment = numericValue / (duration / 16);
 
-    const increment = value / (duration / 16);
+    if (numericValue <= 0 || isNaN(numericValue)) {
+      setCount(0);
+      return;
+    }
 
     const timer = setInterval(() => {
       start += increment;
 
-      if (start >= value) {
-        setCount(value);
+      if (start >= numericValue) {
+        setCount(numericValue);
         clearInterval(timer);
       } else {
         setCount(Math.floor(start));
@@ -274,7 +291,13 @@ const AnimatedNumber = ({ value, duration = 1200 }) => {
     return () => clearInterval(timer);
   }, [value, duration]);
 
-  return <>{count.toLocaleString()}</>;
+  // Format to Indian system (en-IN) on render
+  return <>{count.toLocaleString("en-IN")}</>;
+};
+
+const formatIndianNumber = (num) => {
+  if (num === null || num === undefined || isNaN(Number(num))) return "0";
+  return Number(num).toLocaleString("en-IN");
 };
 
   return (
@@ -290,163 +313,200 @@ const AnimatedNumber = ({ value, duration = 1200 }) => {
       </div>
 
       {/* Top Cards */}
-
       <div className="stats-grid">
+        {loading ? (
+          <>
+            {/* Shimmer Card 1 */}
+            <div className="stat-card skeleton-card">
+              <div className="skeleton-icon"></div>
+              <div className="skeleton-info">
+                <div className="skeleton-line title"></div>
+                <div className="skeleton-line value"></div>
+                <div className="skeleton-line sub"></div>
+              </div>
+            </div>
 
-        <div className="stat-card">
-          <div className="stat-icon yellow">
-            <i className="fa-regular fa-clock"></i>
-          </div>
-          <div className="stat-info">
-            <h4>SMS Count Today</h4>
-            <h2>
-            <AnimatedNumber value={dashboardData.totalSmsToday ?? 0} />
-            </h2>
-            <span className="success-text">
-              ▲ live today
-            </span>
-          </div>
-        </div>
+            {/* Shimmer Card 2 */}
+            <div className="stat-card skeleton-card">
+              <div className="skeleton-icon"></div>
+              <div className="skeleton-info">
+                <div className="skeleton-line title"></div>
+                <div className="skeleton-line value"></div>
+                <div className="skeleton-line sub"></div>
+              </div>
+            </div>
 
-        <div className="stat-card">
-          <div className="stat-icon blue">
-            <i className="fa-regular fa-calendar"></i>
-          </div>
+            {/* Shimmer Card 3 (Yellow Variant) */}
+            <div className="stat-card skeleton-card yellow-skeleton">
+              <div className="skeleton-icon"></div>
+              <div className="skeleton-info">
+                <div className="skeleton-line title"></div>
+                <div className="skeleton-line value"></div>
+                <div className="skeleton-line sub"></div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Card 1 */}
+            <div className="stat-card">
+              <div className="stat-icon yellow">
+                <i className="fa-regular fa-clock"></i>
+              </div>
+              <div className="stat-info">
+                <h4>SMS Count Today</h4>
+                <h2>
+                  <AnimatedNumber value={dashboardData.totalSmsToday ?? 0} />
+                </h2>
+                <span className="success-text">▲ live today</span>
+              </div>
+            </div>
 
-          <div className="stat-info">
-            <h4>SMS Count Current Month</h4>
-             <h2>
-            <AnimatedNumber value={dashboardData.totalSmsMonth ?? 0} />
-            </h2>
-            <span className="success-text">
-            {new Date().toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
-            })}
-          </span>
-          </div>
-        </div>
+            {/* Card 2 */}
+            <div className="stat-card">
+              <div className="stat-icon blue">
+                <i className="fa-regular fa-calendar"></i>
+              </div>
+              <div className="stat-info">
+                <h4>SMS Count Current Month</h4>
+                <h2>
+                  <AnimatedNumber value={dashboardData.totalSmsMonth ?? 0} />
+                </h2>
+                <span className="success-text">
+                  {new Date().toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+            </div>
 
-       <div
-        className={`stat-card available-credits ${
-          Number(dashboardData.availableCredits ?? 0) === 0
-            ? "credits-zero"
-            : ""
-        }`}
-      >
-        <div className="stat-icon yellow">
-          <i className="fa-solid fa-wallet"></i>
-        </div>
-
-        <div className="stat-info">
-          <h4>Available Credits</h4>
-
-          <h2>
-            <AnimatedNumber value={dashboardData.availableCredits ?? 0} />
-          </h2>
-
-          <span className="success-text">
-            Balance remaining
-          </span>
-        </div>
-      </div>
+            {/* Card 3 */}
+            <div
+              className={`stat-card available-credits ${
+                Number(dashboardData.availableCredits ?? 0) === 0
+                  ? "credits-zero"
+                  : ""
+              }`}
+            >
+              <div className="stat-icon yellow">
+                <i className="fa-solid fa-wallet"></i>
+              </div>
+              <div className="stat-info">
+                <h4>Available Credits</h4>
+                <h2>
+                  <AnimatedNumber value={dashboardData.availableCredits ?? 0} />
+                </h2>
+                <span className="success-text">Balance remaining</span>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Charts */}
 
       <div className="charts-grid">
+  {/* Today Summary Report Card */}
+  <div className="chart-card">
+    <div className="chart-header">
+      <h3>Today Summary Report</h3>
+      <p>Today</p>
+    </div>
 
-        <div className="chart-card">
-          <div className="chart-header">
-            <h3>Today Summary Report</h3>
-            <p>Today</p>
-          </div>
-          {hasSummaryData ? (
-            <Bar
-                data={summaryData}
-                options={{
-                responsive: true,
-                plugins: {
-                    legend: {
-                    display: false,
-                    },
-                },
-                scales: {
-                    y: {
-                    beginAtZero: true,
-                    },
-                },
-                }}
-            />
-            ) : (
-            <div className="no-chart-data">
-                <div className="no-chart-icon">
-                <i className="fa-solid fa-chart-line"></i>
-                </div>
-
-                <h3>No activity yet</h3>
-
-                <p>
-                No messages have been sent today.
-                <br />
-                Data will appear once traffic starts.
-                </p>
-            </div>
-            )}
-        </div>
-
-        <div className="chart-card">
-          <div className="chart-header">
-            <h3>Hourly Report</h3>
-            <p>Last 24h</p>
-          </div>
-        {hasHourlyData ? (
-         <Line
-            data={hourlyData}
-            options={{
-                responsive: true,
-                plugins: {
-                legend: {
-                    position: "bottom",
-                    labels: {
-                    usePointStyle: true,
-                    pointStyle: "circle",
-                    padding: 20,
-                    boxWidth: 10,
-                    boxHeight: 10,
-                    },
-                },
-                },
-                scales: {
-                x: {
-                    grid: {
-                    display: false,
-                    },
-                },
-                y: {
-                    beginAtZero: true,
-                },
-                },
-            }}
-            />
-             ) : (
-            <div className="no-chart-data">
-                <div className="no-chart-icon">
-                <i className="fa-solid fa-chart-line"></i>
-                </div>
-
-                <h3>No activity yet</h3>
-
-                <p>
-                No messages have been sent today.
-                <br />
-                Data will appear once traffic starts.
-                </p>
-            </div>
-            )}
-        </div>
-
+    {isSummaryLoading ? (
+      <div className="chart-loading-state">
+        <div className="chart-spinner"></div>
+        <span>Loading report...</span>
       </div>
+    ) : hasSummaryData ? (
+      <Bar
+        data={summaryData}
+        options={{
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false,
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        }}
+      />
+    ) : (
+      <div className="no-chart-data">
+        <div className="no-chart-icon">
+          <i className="fa-solid fa-chart-line"></i>
+        </div>
+        <h3>No activity yet</h3>
+        <p>
+          No messages have been sent today.
+          <br />
+          Data will appear once traffic starts.
+        </p>
+      </div>
+    )}
+  </div>
+
+  {/* Hourly Report Card */}
+  <div className="chart-card">
+    <div className="chart-header">
+      <h3>Hourly Report</h3>
+      <p>Last 24h</p>
+    </div>
+
+    {isHourlyLoading ? (
+      <div className="chart-loading-state">
+        <div className="chart-spinner"></div>
+        <span>Loading report...</span>
+      </div>
+    ) : hasHourlyData ? (
+      <Line
+        data={hourlyData}
+        options={{
+          responsive: true,
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: {
+                usePointStyle: true,
+                pointStyle: "circle",
+                padding: 20,
+                boxWidth: 10,
+                boxHeight: 10,
+              },
+            },
+          },
+          scales: {
+            x: {
+              grid: {
+                display: false,
+              },
+            },
+            y: {
+              beginAtZero: true,
+            },
+          },
+        }}
+      />
+    ) : (
+      <div className="no-chart-data">
+        <div className="no-chart-icon">
+          <i className="fa-solid fa-chart-line"></i>
+        </div>
+        <h3>No activity yet</h3>
+        <p>
+          No messages have been sent today.
+          <br />
+          Data will appear once traffic starts.
+        </p>
+      </div>
+    )}
+  </div>
+</div>
 
     </div>
   );

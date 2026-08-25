@@ -305,7 +305,7 @@
 }
 
 .errorcode-grand-total {
-  width: 15%;
+  width: 11%;
   color: #1d2839;
   font-size: 15px;
   font-weight: 700;
@@ -375,11 +375,16 @@
   background: #fff5d8;
   border-color: #f2d58a;
   color: #bd8100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .pagination-arrow {
   font-size: 22px;
   color: #53647b;
+  display: flex;
+  justify-content: center;
 }
 
 .pagination-arrow.disabled {
