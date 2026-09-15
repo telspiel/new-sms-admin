@@ -28,7 +28,49 @@ function Login() {
 
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  // Dynamic branding state (derived from stored session/local storage if available)
+  const [branding, setBranding] = useState(() => {
+    const saved = localStorage.getItem("userData") || sessionStorage.getItem("userData");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          logoUrl: parsed.logoUrl || null,
+          faviconUrl: parsed.faviconUrl || null,
+          brandName: parsed.brandName || "",
+        };
+      } catch (e) {
+        // Fallback to defaults on parse error
+      }
+    }
+    return { logoUrl: null, faviconUrl: null, brandName: "" };
+  });
+
   const otpRefs = useRef([]);
+
+  // Dynamically update document title & favicon if cached brand settings exist
+  // Dynamically update document title & favicon continuously
+useEffect(() => {
+  if (!branding.faviconUrl) return;
+
+  const updateFavicon = (url) => {
+    // Select all potential favicon link tags (icon, shortcut icon, etc.)
+    let links = document.querySelectorAll("link[rel*='icon']");
+
+    if (links.length === 0) {
+      const link = document.createElement("link");
+      link.rel = "icon";
+      link.href = url;
+      document.head.appendChild(link);
+    } else {
+      links.forEach((link) => {
+        link.href = url;
+      });
+    }
+  };
+
+  updateFavicon(branding.faviconUrl);
+}, [branding.faviconUrl]);
 
   // OTP Expiry Countdown
   useEffect(() => {
@@ -181,6 +223,7 @@ function Login() {
         lastLoginTime: response.data?.lastLoginTime,
         lastLoginIp: response.data?.lastLoginIp,
         logoUrl: response.data?.logoUrl,
+        faviconUrl: response.data?.faviconUrl,
         brandName: response.data?.brandName,
         otpRequired: false,
         authJwtToken: formattedToken,
@@ -423,13 +466,17 @@ function Login() {
             )}
           </div>
 
-          <button
-            type="submit"
-            className="login-card-button"
-            disabled={isLoggingIn}
-          >
-            {isLoggingIn ? "logging in..." : "Login"}
-          </button>
+         <button
+          type="submit"
+          className="login-card-button"
+          disabled={isLoggingIn}
+        >
+          {isLoggingIn ? (
+            <span className="login-loader-icon"></span>
+          ) : (
+            "Login"
+          )}
+        </button>
         </form>
 
         <div className="copyright">© All Rights Reserved</div>

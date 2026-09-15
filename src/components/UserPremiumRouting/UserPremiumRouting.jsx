@@ -32,6 +32,74 @@ const UserPremiumRouting = () => {
   const [selectedRow, setSelectedRow] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
 
+ // State variables
+const [showEditDrawer, setShowEditDrawer] = useState(false);
+const [editingItem, setEditingItem] = useState(null);
+const [selectedGroupName, setSelectedGroupName] = useState("");
+
+// Open edit drawer handler
+const handleEditClick = (item) => {
+  setEditingItem(item);
+  
+  const selectedId = item?.groupid !== undefined && item?.groupid !== null 
+    ? String(item.groupid) 
+    : "";
+
+  setSelectedGroupName(selectedId);
+  setShowEditDrawer(true);
+};
+
+// Save edit handler
+const handleSaveEdit = async () => {
+  if (!selectedGroupName) {
+    alert("Please select a group name.");
+    return;
+  }
+
+  try {
+    // Construct the payload object matching your API schema
+    const updatedItem = {
+      userid: editingItem?.userid || Number(selectedUser),
+      mobileNumber: editingItem?.mobileNumber || "",
+      description: editingItem?.description || "",
+      createddate: editingItem?.createddate || "",
+      updateddate: editingItem?.updateddate || "",
+      groupid: editingItem?.groupid || "",
+      updategroupId: Number(selectedGroupName), // Passing the newly selected group ID
+    };
+
+    // Wrap in an array as requested: [{...}]
+    const payload = [updatedItem];
+
+    const response = await fetch(Endpoints.get("updateGroupNameApi"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: userData?.authJwtToken || "",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const message = await response.text();
+    setToastMessage(message || "Routing group updated successfully!");
+    setShowToast(true);
+
+    setTimeout(() => setShowToast(false), 2000);
+
+    setShowEditDrawer(false);
+    setEditingItem(null);
+
+    // Refresh table data
+    if (selectedUser) {
+      usernameSearchSelect(selectedUser);
+    }
+  } catch (error) {
+    console.error("Error updating group:", error);
+  }
+};
+
+
+////////////////////////////////////////////////////////////////////
  //To get all the users API   
   const getAllUsername = async () => {
   try {
@@ -128,6 +196,11 @@ const usernameSearchSelect = async (userId) => {
   } finally {
     setLoading(false);
   }
+};
+
+const getGroupNameById = (groupId) => {
+  const match = routingGroups.find((g) => String(g.id) === String(groupId));
+  return match ? match.groupName : groupId || "-";
 };
 
 const selectedUserName =
@@ -400,7 +473,7 @@ const handleReset = () => {
     <div className="user-routing">
         {showToast && (
         <div className="toast-message">
-            <i className="fa-solid fa-circle-check"></i>
+            <i className="fa-regular fa-circle-check"></i>
             <span>{toastMessage}</span>
         </div>
         )}
@@ -782,11 +855,11 @@ const handleReset = () => {
                     }}
                   />
                 </th>
-
                 <th>User Premium Number</th>
                 <th>Description</th>
                 <th>Created Date</th>
                 <th>Updated Date</th>
+                <th>Group Name</th> {/* Added Header */}
                 <th>Actions</th>
               </tr>
             </thead>
@@ -795,7 +868,7 @@ const handleReset = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="6">
+                <td colSpan="7"> {/* Updated colSpan */}
                   <div className="table-loader">
                     <div className="spinner"></div>
                     <p>Searching routing list...</p>
@@ -804,14 +877,12 @@ const handleReset = () => {
               </tr>
             ) : !hasSearched ? (
               <tr>
-                <td colSpan="6" className="empty-table-cell">
+                <td colSpan="7" className="empty-table-cell"> {/* Updated colSpan */}
                   <div className="empty-state">
                     <div className="empty-icon">
                       <i className="fa-solid fa-magnifying-glass"></i>
                     </div>
-
                     <h2>Search to view premium routing entries</h2>
-
                     <p>
                       This list can hold millions of entries, so it isn't loaded by
                       <br />
@@ -824,10 +895,9 @@ const handleReset = () => {
               </tr>
             ) : filteredRoutingData.length === 0 ? (
               <tr>
-                <td colSpan="6" className="empty-table-cell">
+                <td colSpan="7" className="empty-table-cell"> {/* Updated colSpan */}
                   <div className="empty-state">
                     <h2>No data found</h2>
-
                     <p>No data found for the selected user.</p>
                   </div>
                 </td>
@@ -850,15 +920,11 @@ const handleReset = () => {
                   <td>
                     <div className="premium-number">
                       <span className="country-code">+91</span>
-
                       <div className="premium-number-info">
                         <div className="mobile-number">
                           {item.mobileNumber.slice(-10)}
                         </div>
-
-                        <span className="user-name">
-                          {selectedUserName}
-                        </span>
+                        <span className="user-name">{selectedUserName}</span>
                       </div>
                     </div>
                   </td>
@@ -867,23 +933,37 @@ const handleReset = () => {
 
                   <td>
                     {item.createddate
-                      .split(" ")[0]
-                      .split("-")
-                      .reverse()
-                      .join("-")}
+                      ? item.createddate
+                          .split(" ")[0]
+                          .split("-")
+                          .reverse()
+                          .join("-")
+                      : "-"}
                   </td>
 
                   <td>
                     {item.updateddate
-                      .split(" ")[0]
-                      .split("-")
-                      .reverse()
-                      .join("-")}
+                      ? item.updateddate
+                          .split(" ")[0]
+                          .split("-")
+                          .reverse()
+                          .join("-")
+                      : "-"}
+                  </td>
+
+                  {/* New Group Name Column */}
+                  <td>
+                    <span className="group-badge">
+                      {getGroupNameById(item.groupid)}
+                    </span>
                   </td>
 
                   <td>
                     <div className="user-action-buttons">
-                      <button className="action-btn edit-btn">
+                      <button
+                        className="action-btn edit-btn"
+                        onClick={() => handleEditClick(item)}
+                      >
                         <i className="fa-regular fa-pen-to-square"></i>
                       </button>
 
@@ -902,6 +982,74 @@ const handleReset = () => {
               ))
             )}
 
+            {/* Modals and Drawers placed outside single row mapping */}
+            {showEditDrawer && (
+              <>
+                <div
+                  className="drawer-overlay"
+                  onClick={() => setShowEditDrawer(false)}
+                ></div>
+
+                <div className="user-add-drawer">
+                  <div className="user-drawer-header">
+                    <div>
+                      <h2>Edit Routing Entry</h2>
+                      <p>Update the group for this entry</p>
+                    </div>
+                    <button
+                      className="user-close-drawer"
+                      onClick={() => setShowEditDrawer(false)}
+                    >
+                      <i className="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+
+                  <div className="user-drawer-body">
+                    <div className="routing-form-group">
+                      <label>User</label>
+                      <input
+                        type="text"
+                        value={selectedUserName || ""}
+                        disabled
+                        style={{ backgroundColor: "#f7f8fc", cursor: "not-allowed" }}
+                      />
+                    </div>
+
+                    <div className="routing-form-group">
+                      <label>
+                        Group Name <span style={{ color: "#d83b2d" }}>*</span>
+                      </label>
+                     <select
+                      value={selectedGroupName}
+                      onChange={(e) => setSelectedGroupName(e.target.value)}
+                    >
+                      {!selectedGroupName && (
+                        <option value="">Select a routing group...</option>
+                      )}
+                      {routingGroups.map((group) => (
+                        <option key={group.id} value={String(group.id)}>
+                          {group.groupName}
+                        </option>
+                      ))}
+                    </select>
+                    </div>
+                  </div>
+
+                  <div className="user-drawer-footer">
+                    <button
+                      className="cancel-button"
+                      onClick={() => setShowEditDrawer(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button className="submit-button" onClick={handleSaveEdit}>
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
             {showDeleteModal && (
               <>
                 <div
@@ -914,7 +1062,6 @@ const handleReset = () => {
                     <div className="user-delete-icon">
                       <i className="fa-regular fa-trash-can"></i>
                     </div>
-
                     <h2>Remove this routing entry?</h2>
                   </div>
 
@@ -922,17 +1069,15 @@ const handleReset = () => {
                     <p>
                       {selectedRows.length === 1 ? (
                         <>
-                          Remove{" "}
-                          <strong>+{selectedRows[0].mobileNumber}</strong>{" "}
-                          (<strong>{selectedUserName}</strong>) from premium routing?
+                          Remove <strong>+{selectedRows[0].mobileNumber}</strong> (
+                          <strong>{selectedUserName}</strong>) from premium routing?
                           This action cannot be undone.
                         </>
                       ) : (
                         <>
-                          Remove{" "}
-                          <strong>{selectedRows.length}</strong> selected routing
-                          {selectedRows.length > 1 ? " entries" : " entry"}?
-                          This action cannot be undone.
+                          Remove <strong>{selectedRows.length}</strong> selected routing
+                          {selectedRows.length > 1 ? " entries" : " entry"}? This
+                          action cannot be undone.
                         </>
                       )}
                     </p>
@@ -945,7 +1090,6 @@ const handleReset = () => {
                     >
                       Cancel
                     </button>
-
                     <button
                       className="confirm-delete-btn"
                       onClick={deleteSelectedRows}

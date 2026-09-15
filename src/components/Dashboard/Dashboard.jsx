@@ -168,8 +168,6 @@ const hasHourlyData = hourlyGrid.some(
         userData.authJwtToken
         );
 
-        console.log("Summary Report:", response);
-
         if (response.code === 14000) {
         setSummaryReportData(response.data);
         } else {

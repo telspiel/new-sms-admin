@@ -84,7 +84,7 @@ const handleReset = () => {
     <div className="switch-gateway">
         {toastMessage && (
         <div className="toast-message">
-            <i className="fa-solid fa-circle-check"></i>
+            <i className="fa-regular fa-circle-check"></i>
             {toastMessage}
         </div>
         )}

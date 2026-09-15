@@ -6,12 +6,6 @@
   min-height: 100vh;
   background-color: #f5f5f5;
 
-  background-image:
-    radial-gradient(
-      rgba(55, 52, 53, 0.08) 1px,
-      transparent 1px
-    );
-
   background-size: 30px 30px;
   display: flex;
   justify-content: center;
@@ -42,6 +36,28 @@
 
   100% {
     transform: scale(1);
+  }
+}
+
+.login-card-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.login-loader-icon {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top: 2px solid #44a67e;
+  border-radius: 50%;
+  display: inline-block;
+  animation: loginSpin 0.7s linear infinite;
+}
+
+@keyframes loginSpin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

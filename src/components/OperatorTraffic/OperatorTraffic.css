@@ -138,7 +138,7 @@
 
 .traffic-table-card .search-box {
   width: 320px;
-  height: 52px;
+  height: 40px;
   border-radius: 14px;
   background: #f6f8fb;
   border: 1px solid #e5e7eb;
@@ -242,94 +242,129 @@
   font-weight: bold;
 }
 
-/* Traffic History */
-.history-filter-card{
-    margin-top:25px;
-    background: linear-gradient(to bottom, #fff6da, #fffdf5);
-    border:1px solid #f1d17b;
-    border-radius:18px;
-    padding:22px 24px;
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    gap:20px;
+/* Traffic History Top Card */
+.history-filter-card {
+  margin-top: 25px;
+  background: linear-gradient(to bottom, #fff6da, #fffdf5);
+  border: 1px solid #f8eabf;
+  border-radius: 18px;
+  padding: 22px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
 }
 
-.history-filter-group{
-    display:flex;
-    gap:18px;
-    align-items:flex-end;
-    flex-wrap:wrap;
+.history-filter-group {
+  display: flex;
+  gap: 18px;
+  align-items: flex-end;
+  flex-wrap: wrap;
 }
 
-.history-field{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
+.history-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.history-field label{
-    font-size:14px;
-    font-weight:700;
-    color:#9b6a00;
-    text-align: left;
+.history-field label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #8b6200;
+  text-align: left;
+  letter-spacing: 0.3px;
 }
 
 .history-field input,
-.history-field select{
-    width:190px;
-    height:46px;
-    border:1px solid #e3c977;
-    border-radius:12px;
-    padding:0 14px;
-    font-size:15px;
-    background:#fff;
+.history-field select {
+  width: 190px;
+  height: 40px;
+  border: 1px solid #ebd89f;
+  border-radius: 12px;
+  padding: 0 14px;
+  font-size: 14px;
+  background: #ffffff;
+  color: #333333;
+  outline: none;
 }
 
-.history-checkbox{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:10px;
-    font-weight:600;
-    color:#9b6a00;
+/* Fix CSS Class Match for Buttons */
+.history-buttons {
+  display: flex;
+  gap: 12px;
 }
 
-.history-checkbox input{
-    width:18px;
-    height:18px;
+.history-buttons .reset-btn {
+  height: 44px;
+  padding: 0 26px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 12px;
+  font-weight: 700;
+  color: #2d3748;
+  cursor: pointer;
 }
 
-.history-buttons{
-    display:flex;
-    gap:12px;
+.history-buttons .submit-btn {
+  height: 44px;
+  padding: 0 28px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(to right, #f2c94c, #e0a800);
+  font-weight: 700;
+  color: #1a202c;
+  cursor: pointer;
+  transition: background 0.25s ease;
 }
 
-.history-buttons .resetBtn{
-    height:44px;
-    padding:0 26px;
-    border:1px solid #d9e1ef;
-    background:#fff;
-    border-radius:12px;
-    font-weight:600;
-    cursor:pointer;
+.history-buttons .submit-btn:hover {
+  background: #e5b312;
 }
 
-.history-buttons .submitBtn{
-    height:44px;
-    padding:0 28px;
-    border:none;
-    border-radius:12px;
-    background: linear-gradient(to right, #ffcc29, #e0a800);
-    font-weight:700;
-    cursor:pointer;
-    transition:.25s;
+/* Secondary White Card (Connect Name & Breakdowns) */
+.history-secondary-card {
+  margin-top: 16px;
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+  border-radius: 18px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.submit-btn:hover{
-    background:#f2bc00;
+.history-secondary-card .history-field input,
+.history-secondary-card .history-field select {
+  border: 1px solid #e2e8f0;
+  color: #718096;
 }
 
+.breakdown-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.breakdown-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #8b6200;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.breakdown-header i {
+  font-size: 12px;
+}
+
+.breakdown-fields {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
 .export-buttons{
     display:flex;
     gap:10px;
@@ -351,4 +386,44 @@
 
 .export-buttons button:hover{
     background:#fafbfd;
+}
+
+.operator-empty-state-cell {
+  padding: 60px 20px !important;
+  border: none !important;
+}
+
+.operator-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.operator-empty-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #f3f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8d96a8;
+  font-size: 22px;
+  margin-bottom: 18px;
+}
+
+.operator-empty-state h3 {
+  margin: 0;
+  color: #18243d;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.operator-empty-state p {
+  margin-top: 12px;
+  color: #8d96a8;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: center;
 }

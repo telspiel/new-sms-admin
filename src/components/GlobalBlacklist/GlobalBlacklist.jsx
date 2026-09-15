@@ -288,7 +288,7 @@ const GlobalBlacklist = () => {
     <div className="global-blacklist">
         {showToast && (
         <div className="toast-message">
-            <i className="fa-solid fa-circle-check"></i>
+            <i className="fa-regular fa-circle-check"></i>
             <span>{toastMessage}</span>
         </div>
         )}

@@ -175,7 +175,7 @@ const handleResetRouting = () => {
     <div className="new-user-routing">
         {toastMessage && (
         <div className="toast-message">
-            <i className="fa-solid fa-circle-check"></i>
+            <i className="fa-regular fa-circle-check"></i>
             {toastMessage}
         </div>
         )}

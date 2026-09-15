@@ -15,6 +15,7 @@ const DRSummary = () => {
 
   const [fromDate, setFromDate] = useState(getTodayIST());
   const [toDate, setToDate] = useState(getTodayIST());
+  const today = getTodayIST();
 
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -99,11 +100,12 @@ const filteredData = tableData.filter((item) => {
 
       <div className="filter-card">
         <div className="filter-left">
-         <div className="filter-group">
+        <div className="filter-group">
         <label>FROM</label>
         <input
             type="date"
             value={fromDate}
+            max={today}
             onChange={(e) => setFromDate(e.target.value)}
         />
         </div>
@@ -113,6 +115,7 @@ const filteredData = tableData.filter((item) => {
         <input
             type="date"
             value={toDate}
+            max={today}
             onChange={(e) => setToDate(e.target.value)}
         />
         </div>
@@ -224,9 +227,7 @@ const filteredData = tableData.filter((item) => {
                     <div className="empty-icon">
                         <i className="fa-solid fa-chart-line"></i>
                     </div>
-
                     <h3>No data for this range</h3>
-
                     <p>
                         There's no DR activity between the selected dates.
                         <br />

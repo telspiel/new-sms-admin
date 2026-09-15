@@ -11,6 +11,7 @@ class Endpoints {
       verifyOtp: { path: "reseller/verifyotp", server: "newAdmin" },
 
       profileDetails: { path: "userProfile/userProfileDetails", server: "newAdmin" },
+      updatedPassword: { path: "userProfile/updatedPassword", server: "newAdmin" },
       creditAlertNotification: { path: "creditNotification", server: "newAdmin" },
   
       dashboard: { path: "reseller/dashboard", server: "newAdmin"},
@@ -26,6 +27,7 @@ class Endpoints {
 
       //Internal User
       listInternalusers: { path: "userService/getAllInternalUsersList", server: "newAdmin" },
+      getInternalUserData: { path: "userService/viewInternalUser", server: "newAdmin" },
       saveInternalUser: { path: "userService/saveInternalUser", server: "newAdmin" },
       listSeniorAccountManagers: { path: "userService/getAllAccManagers", server: "newAdmin" },
       regionalManagersList: { path: "userService/getAllRegionalManagers", server: "newAdmin" },
@@ -45,10 +47,10 @@ class Endpoints {
 
 
       //Detailed MIS Report
-      detailedMisReport: { path: "reportService/detailedMis", server: "primary" },
+      detailedMisReport: { path: "reportService/detailedMis", server: "newAdmin" },
 
       //Summary Report
-      senderIdSummaryReport: { path: "reportService/senderIdSummaryReport", server: "primary" },
+      senderIdSummaryReport: { path: "reportService/senderIdSummaryReport", server: "newAdmin" },
 
       //Errorcode Report
       errorcodeReport: {path: "reportService/errorCodeWiseReport", server: "newAdmin"},
@@ -75,7 +77,7 @@ class Endpoints {
       updatedUserRouting: { path: "reseller/updateRouting", server: "newAdmin"},
 
       //SMPP Management
-      smppStatus: { path: "reseller/getSmppStats", server: "primary" },
+      smppStatus: { path: "reseller/getSmppStats", server: "newAdmin" },
 
       currentTelcoSummary: { path: "getUserConnectSummaryForDate", server: "secondary" },
       connectSummary: { path: "connectSummaryService/connectSummary", server: "newAdmin" },
@@ -94,9 +96,11 @@ class Endpoints {
       usernameSearchSelect: { path: "searchbasedonnumber", server: "newAdmin"},
       descriptionByUsername: { path: "getdescription", server: "newAdmin"},
       deleteSelectedRows: { path: "delete", server: "newAdmin"},
+      updateGroupNameApi: { path: "updategroupid", server: "newAdmin"},
 
       uploadLogo: { path: "reseller/uploadLogo", server: "newAdmin" },
-      uploadFavicon: { path: "reseller/getFavicon", server: "newAdmin" },
+      uploadFavicon: { path: "reseller/uploadFavicon", server: "newAdmin" },
+      getFavicon: { path: "reseller/getFavicon", server: "newAdmin" },
     };
   }
 

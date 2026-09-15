@@ -187,7 +187,7 @@ const handleModalSubmit = async (e) => {
     <div className="credit-notifications">
        {toastMessage && (
         <div className="toast-message">
-            <i className="fa-solid fa-circle-check"></i>
+            <i className="fa-regular fa-circle-check"></i>
             {toastMessage}
         </div>
         )}

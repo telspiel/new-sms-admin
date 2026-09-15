@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import "./DepartmentManagement.css";
 import Endpoints from "../../api/endpoint";
 import { AuthContext } from "../../context/AuthContext";
+import { Lock } from "lucide-react";
 
 const DepartmentManagement = () => {
 
@@ -21,6 +22,17 @@ const DepartmentManagement = () => {
 
     const [showAddDepartment, setShowAddDepartment] = useState(false);
     const [showEditDepartment, setShowEditDepartment] = useState(false);
+
+     // State to handle the Discard Confirmation Modal
+    const [showDiscardModal, setShowDiscardModal] = useState(false);
+
+    // Helper to trigger closing the active form modal
+    const handleConfirmDiscard = () => {
+        setShowAddDepartment(false);
+        setShowEditDepartment(false);
+        setShowDiscardModal(false);
+    };
+    
     const [searchDepartment, setSearchDepartment] = useState("");
 
     const [toastMessage, setToastMessage] = useState("");
@@ -115,27 +127,39 @@ useEffect(() => {
   }
 }, [selectedOrganizations]);
 
+const [deptErrors, setDeptErrors] = useState({});
+const [editDeptErrors, setEditDeptErrors] = useState({});
+
 //=================== API to add new department=======================
 const saveDepartment = async () => {
-  if (
-    !deptForm.orgId ||
-    !deptForm.deptName ||
-    !deptForm.deptEmailId ||
-    !deptForm.deptContactNumber
-  ) {
-    alert("Please fill all mandatory fields.");
-    return;
+  const newErrors = {};
+
+  if (!deptForm.orgId) {
+    newErrors.orgId = "Please choose an organization.";
   }
 
-  if (deptForm.deptContactNumber.length !== 10) {
-    alert("Mobile Number must be 10 digits.");
-    return;
+  if (!deptForm.deptName?.trim()) {
+    newErrors.deptName = "Department name is required.";
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!deptForm.deptEmailId?.trim()) {
+    newErrors.deptEmailId = "Email is required.";
+  } else {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(deptForm.deptEmailId)) {
+      newErrors.deptEmailId = "Please enter a valid email address.";
+    }
+  }
 
-  if (!emailRegex.test(deptForm.deptEmailId)) {
-    alert("Please enter a valid email address.");
+  if (!deptForm.deptContactNumber) {
+    newErrors.deptContactNumber = "Mobile number is required.";
+  } else if (deptForm.deptContactNumber.length !== 10) {
+    newErrors.deptContactNumber = "Mobile Number must be 10 digits.";
+  }
+
+  // Stop submission if validation errors exist
+  setDeptErrors(newErrors);
+  if (Object.keys(newErrors).length > 0) {
     return;
   }
 
@@ -165,8 +189,8 @@ const saveDepartment = async () => {
 
       setShowAddDepartment(false);
       setDeptForm(initialDeptForm);
-
-      getDepartmentList(); 
+      setDeptErrors({}); // Clear validation errors on success
+      getDepartmentList();
     } else {
       alert(response.message);
     }
@@ -177,25 +201,33 @@ const saveDepartment = async () => {
 
 //=================To edit info of a created department====================
 const editDepartmentData = async () => {
-  if (
-    !editDeptForm.orgId ||
-    !editDeptForm.deptName ||
-    !editDeptForm.deptEmailId ||
-    !editDeptForm.deptContactNumber
-  ) {
-    alert("Please fill all mandatory fields.");
-    return;
+  const newErrors = {};
+
+  // 1. Department Name Check
+  if (!editDeptForm.deptName?.trim()) {
+    newErrors.deptName = "Department name is required.";
   }
 
-  if (editDeptForm.deptContactNumber.length !== 10) {
-    alert("Mobile Number must be 10 digits.");
-    return;
+  // 2. Email Check
+  if (!editDeptForm.deptEmailId?.trim()) {
+    newErrors.deptEmailId = "Email is required.";
+  } else {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(editDeptForm.deptEmailId)) {
+      newErrors.deptEmailId = "Please enter a valid email address.";
+    }
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // 3. Contact Number Check
+  if (!editDeptForm.deptContactNumber) {
+    newErrors.deptContactNumber = "Mobile number is required.";
+  } else if (editDeptForm.deptContactNumber.length !== 10) {
+    newErrors.deptContactNumber = "Mobile Number must be 10 digits.";
+  }
 
-  if (!emailRegex.test(editDeptForm.deptEmailId)) {
-    alert("Please enter a valid email address.");
+  // Stop execution if there are validation errors
+  setEditDeptErrors(newErrors);
+  if (Object.keys(newErrors).length > 0) {
     return;
   }
 
@@ -217,7 +249,6 @@ const editDepartmentData = async () => {
       userData.authJwtToken
     );
 
-    // Updated code check from 0 to 6001
     if (response.code === 6001) {
       setToastMessage("Changes Saved");
 
@@ -226,7 +257,7 @@ const editDepartmentData = async () => {
       }, 2000);
 
       setShowEditDepartment(false);
-
+      setEditDeptErrors({}); // Clear errors on success
       getDepartmentList();
     } else {
       alert(response.message);
@@ -269,7 +300,7 @@ const currentDepartments = filteredDepartments.slice(
     <div className="department-management">
         {toastMessage && (
         <div className="toast-message">
-            <i className="fa-solid fa-circle-check"></i>
+            <i className="fa-regular fa-circle-check"></i>
             {toastMessage}
         </div>
         )}
@@ -288,10 +319,14 @@ const currentDepartments = filteredDepartments.slice(
                 Add Department
             </button>
             </div>
+
             {showAddDepartment && (
             <div
                 className="drawer-overlay"
-                onClick={() => setShowAddDepartment(false)}
+                onClick={() => {
+                setShowAddDepartment(false);
+                setDeptErrors({});
+                }}
             >
                 <div
                 className="department-drawer"
@@ -305,37 +340,47 @@ const currentDepartments = filteredDepartments.slice(
 
                     <button
                     className="close-btn"
-                    onClick={() => setShowAddDepartment(false)}
+                    onClick={() => {
+                        setShowAddDepartment(false);
+                        setDeptErrors({});
+                    }}
                     >
                     <i className="fa-solid fa-xmark"></i>
                     </button>
                 </div>
 
                 <div className="drawer-body">
-
                     {/* Organization */}
                     <div className="dept-form-group">
                     <label>
                         Organization <span>*</span>
                     </label>
-
                     <select
-                    value={deptForm.orgId}
-                    onChange={(e) =>
+                        className={deptErrors.orgId ? "error-input" : ""}
+                        value={deptForm.orgId}
+                        onChange={(e) => {
                         setDeptForm({
-                        ...deptForm,
-                        orgId: Number(e.target.value),
-                        })
-                    }
+                            ...deptForm,
+                            orgId: Number(e.target.value),
+                        });
+                        if (deptErrors.orgId) {
+                            setDeptErrors({ ...deptErrors, orgId: "" });
+                        }
+                        }}
                     >
-                    <option value="">Select organization</option>
-
-                    {deptOrganizationList.map((org) => (
+                        <option value="">Select organization</option>
+                        {deptOrganizationList.map((org) => (
                         <option key={org.orgId} value={org.orgId}>
-                        {org.orgName}
+                            {org.orgName}
                         </option>
-                    ))}
+                        ))}
                     </select>
+                    {deptErrors.orgId && (
+                        <span className="dept-error-text">
+                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        {deptErrors.orgId}
+                        </span>
+                    )}
                     </div>
 
                     {/* Department Name */}
@@ -343,18 +388,27 @@ const currentDepartments = filteredDepartments.slice(
                     <label>
                         Department Name <span>*</span>
                     </label>
-
                     <input
                         type="text"
                         placeholder="Your Department Name"
+                        className={deptErrors.deptName ? "error-input" : ""}
                         value={deptForm.deptName}
-                        onChange={(e) =>
-                            setDeptForm({
+                        onChange={(e) => {
+                        setDeptForm({
                             ...deptForm,
                             deptName: e.target.value,
-                            })
+                        });
+                        if (deptErrors.deptName) {
+                            setDeptErrors({ ...deptErrors, deptName: "" });
                         }
-                        />
+                        }}
+                    />
+                    {deptErrors.deptName && (
+                        <span className="dept-error-text">
+                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        {deptErrors.deptName}
+                        </span>
+                    )}
                     </div>
 
                     {/* Email */}
@@ -362,18 +416,27 @@ const currentDepartments = filteredDepartments.slice(
                     <label>
                         Email ID <span>*</span>
                     </label>
-
                     <input
-                    type="email"
-                    placeholder="dept@company.com"
-                    value={deptForm.deptEmailId}
-                    onChange={(e) =>
+                        type="email"
+                        placeholder="dept@company.com"
+                        className={deptErrors.deptEmailId ? "error-input" : ""}
+                        value={deptForm.deptEmailId}
+                        onChange={(e) => {
                         setDeptForm({
-                        ...deptForm,
-                        deptEmailId: e.target.value,
-                        })
-                    }
+                            ...deptForm,
+                            deptEmailId: e.target.value,
+                        });
+                        if (deptErrors.deptEmailId) {
+                            setDeptErrors({ ...deptErrors, deptEmailId: "" });
+                        }
+                        }}
                     />
+                    {deptErrors.deptEmailId && (
+                        <span className="dept-error-text">
+                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        {deptErrors.deptEmailId}
+                        </span>
+                    )}
                     </div>
 
                     {/* Mobile */}
@@ -381,8 +444,11 @@ const currentDepartments = filteredDepartments.slice(
                     <label>
                         Mobile Number <span>*</span>
                     </label>
-
-                    <div className="phone-input">
+                    <div
+                        className={`phone-input ${
+                        deptErrors.deptContactNumber ? "error-input" : ""
+                        }`}
+                    >
                         <span className="country-code">+91</span>
                         <input
                         type="text"
@@ -391,30 +457,38 @@ const currentDepartments = filteredDepartments.slice(
                         value={deptForm.deptContactNumber}
                         onChange={(e) => {
                             const value = e.target.value.replace(/\D/g, "");
-
                             setDeptForm({
                             ...deptForm,
                             deptContactNumber: value,
                             });
+                            if (deptErrors.deptContactNumber) {
+                            setDeptErrors({ ...deptErrors, deptContactNumber: "" });
+                            }
                         }}
                         />
                     </div>
+                    {deptErrors.deptContactNumber && (
+                        <span className="dept-error-text">
+                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        {deptErrors.deptContactNumber}
+                        </span>
+                    )}
                     </div>
 
                     {/* Status */}
                     <div className="dept-form-group">
                     <label>Status</label>
                     <select
-                    value={deptForm.deptStatus}
-                    onChange={(e) =>
+                        value={deptForm.deptStatus}
+                        onChange={(e) =>
                         setDeptForm({
-                        ...deptForm,
-                        deptStatus: e.target.value,
+                            ...deptForm,
+                            deptStatus: e.target.value,
                         })
-                    }
+                        }
                     >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
                     </select>
                     </div>
                 </div>
@@ -422,15 +496,12 @@ const currentDepartments = filteredDepartments.slice(
                 <div className="drawer-footer-org">
                     <button
                     className="cancel-btn"
-                    onClick={() => setShowAddDepartment(false)}
+                    onClick={() => setShowDiscardModal(true)}
                     >
                     Cancel
                     </button>
 
-                    <button
-                    className="create-btn"
-                    onClick={saveDepartment}
-                    >
+                    <button className="create-btn" onClick={saveDepartment}>
                     Create Department
                     </button>
                 </div>
@@ -649,10 +720,14 @@ const currentDepartments = filteredDepartments.slice(
             </td>
             </tr>  
         )}
+         
          {showEditDepartment && (
             <div
                 className="drawer-overlay"
-                onClick={() => setShowEditDepartment(false)}
+                onClick={() => {
+                setShowEditDepartment(false);
+                setEditDeptErrors({});
+                }}
             >
                 <div
                 className="department-drawer"
@@ -666,15 +741,17 @@ const currentDepartments = filteredDepartments.slice(
 
                     <button
                     className="close-btn"
-                    onClick={() => setShowEditDepartment(false)}
+                    onClick={() => {
+                        setShowEditDepartment(false);
+                        setEditDeptErrors({});
+                    }}
                     >
                     <i className="fa-solid fa-xmark"></i>
                     </button>
                 </div>
 
                 <div className="drawer-body">
-
-                    {/* Organization */}
+                    {/* Organization (Locked - No Validation Error Needed) */}
                     <div className="dept-form-group">
                     <label>
                         Organization <span>*</span>
@@ -689,7 +766,7 @@ const currentDepartments = filteredDepartments.slice(
                         ))}
                         </select>
 
-                        <i className="fa-solid fa-lock lock-icon"></i>
+                        <Lock size={18} className="dept-lock-icon"/>
                     </div>
                     </div>
 
@@ -701,14 +778,24 @@ const currentDepartments = filteredDepartments.slice(
 
                     <input
                         type="text"
+                        className={editDeptErrors.deptName ? "error-input" : ""}
                         value={editDeptForm.deptName}
-                        onChange={(e) =>
+                        onChange={(e) => {
                         setEditDeptForm({
                             ...editDeptForm,
                             deptName: e.target.value,
-                        })
+                        });
+                        if (editDeptErrors.deptName) {
+                            setEditDeptErrors({ ...editDeptErrors, deptName: "" });
                         }
+                        }}
                     />
+                    {editDeptErrors.deptName && (
+                        <span className="dept-error-text">
+                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        {editDeptErrors.deptName}
+                        </span>
+                    )}
                     </div>
 
                     {/* Email */}
@@ -719,14 +806,24 @@ const currentDepartments = filteredDepartments.slice(
 
                     <input
                         type="email"
+                        className={editDeptErrors.deptEmailId ? "error-input" : ""}
                         value={editDeptForm.deptEmailId}
-                        onChange={(e) =>
+                        onChange={(e) => {
                         setEditDeptForm({
                             ...editDeptForm,
                             deptEmailId: e.target.value,
-                        })
+                        });
+                        if (editDeptErrors.deptEmailId) {
+                            setEditDeptErrors({ ...editDeptErrors, deptEmailId: "" });
                         }
+                        }}
                     />
+                    {editDeptErrors.deptEmailId && (
+                        <span className="dept-error-text">
+                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        {editDeptErrors.deptEmailId}
+                        </span>
+                    )}
                     </div>
 
                     {/* Mobile */}
@@ -735,7 +832,11 @@ const currentDepartments = filteredDepartments.slice(
                         Mobile Number <span>*</span>
                     </label>
 
-                    <div className="phone-input">
+                    <div
+                        className={`phone-input ${
+                        editDeptErrors.deptContactNumber ? "error-input" : ""
+                        }`}
+                    >
                         <span className="country-code">+91</span>
 
                         <input
@@ -749,9 +850,21 @@ const currentDepartments = filteredDepartments.slice(
                             ...editDeptForm,
                             deptContactNumber: value,
                             });
+                            if (editDeptErrors.deptContactNumber) {
+                            setEditDeptErrors({
+                                ...editDeptErrors,
+                                deptContactNumber: "",
+                            });
+                            }
                         }}
                         />
                     </div>
+                    {editDeptErrors.deptContactNumber && (
+                        <span className="dept-error-text">
+                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        {editDeptErrors.deptContactNumber}
+                        </span>
+                    )}
                     </div>
 
                     {/* Status */}
@@ -771,13 +884,12 @@ const currentDepartments = filteredDepartments.slice(
                         <option value="inactive">Inactive</option>
                     </select>
                     </div>
-
                 </div>
 
                 <div className="drawer-footer-org">
                     <button
                     className="cancel-btn"
-                    onClick={() => setShowEditDepartment(false)}
+                    onClick={() => setShowDiscardModal(true)}
                     >
                     Cancel
                     </button>
@@ -791,6 +903,55 @@ const currentDepartments = filteredDepartments.slice(
             )}
         </tbody>
         </table>
+
+        {showDiscardModal && (
+        <div className="discard-modal-overlay">
+          <div className="discard-modal">
+            {/* Header */}
+            <div className="discard-modal-header">
+              <div className="trash-icon-container">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#e5484d"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+              </div>
+              <h2>Discard changes?</h2>
+            </div>
+
+            {/* Content */}
+            <div className="discard-modal-body">
+              <p>You have unsaved changes. Discard them?</p>
+            </div>
+
+            {/* Actions */}
+            <div className="discard-modal-footer">
+              <button
+                className="btn-secondary"
+                onClick={() => setShowDiscardModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-danger"
+                onClick={handleConfirmDiscard}
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
         <div className="pagination">
         <span>
             Showing{" "}

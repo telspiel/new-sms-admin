@@ -1,159 +1,176 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import Endpoints from "../../api/endpoint";
 import "./GenerateApiKey.css";
-import Select from "react-select";
 
 const GenerateApiKey = () => {
+  const { userData } = useContext(AuthContext);
 
-const { userData } = useContext(AuthContext);
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [apiKey, setApiKey] = useState(null);
 
-const [selectedClient, setSelectedClient] = useState(null);
-const [apiKey, setApiKey] = useState(null);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
-const [showApiKey, setShowApiKey] = useState(true);
+  // Searchable dropdown internal state
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const dropdownRef = useRef(null);
 
-const [showRegenerateModal, setShowRegenerateModal] = useState(false);
-
-const [toastMessage, setToastMessage] = useState("");
-
-const [userLists, setUserLists] = useState({
+  const [userLists, setUserLists] = useState({
     clientList: [],
-});
+  });
 
-const toOptions = (list = []) =>
-  list.map((item) => ({
-    label: item,
-    value: item,
-  }));
-
-
-// ================Get all users data API=========================
-const getUserLists = async () => {
-    try {
-    const payload = {
-        loggedInUserName: userData.username,
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
     };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-    const response = await Endpoints.post(
+  // Filter client list based on search term
+  const filteredClients = userLists.clientList.filter((item) =>
+    item.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // ================Get all users data API=========================
+  const getUserLists = async () => {
+    try {
+      const payload = {
+        loggedInUserName: userData.username,
+      };
+
+      const response = await Endpoints.post(
         "getAllUsers",
         payload,
         userData.authJwtToken
-    );
+      );
 
-    if (response.code === 14000) {
+      if (response.code === 14000) {
         setUserLists({
-        clientList: response.data.clientList || [],
+          clientList: response.data.clientList || [],
         });
-    } else {
+      } else {
         alert(response.message);
-    }
+      }
     } catch (error) {
-    console.error(error);
+      console.error(error);
     }
-};
+  };
 
-useEffect(() => {
+  useEffect(() => {
     getUserLists();
-}, []);
+  }, []);
 
-// ================Get API key of selected user API==================
-const getUserApiKey = async (userName) => {
-  try {
-    const payload = {
-      loggedInUserName: userData.username,
-      operation: "getUserApiKey",
-      userName: userName,
-    };
+  // ================Get API key of selected user API==================
+  const getUserApiKey = async (userName) => {
+    try {
+      const payload = {
+        loggedInUserName: userData.username,
+        operation: "getUserApiKey",
+        userName: userName,
+      };
 
-    const response = await Endpoints.post(
-      "getUserApiKey",
-      payload,
-      userData.authJwtToken
-    );
+      const response = await Endpoints.post(
+        "getUserApiKey",
+        payload,
+        userData.authJwtToken
+      );
 
-    if (Number(response.code) === 4001) {
-    setApiKey(response.data?.apiKey ?? "");
-    } else {
+      if (Number(response.code) === 4001) {
+        setApiKey(response.data?.apiKey ?? "");
+      } else {
+        setApiKey(null);
+        alert(response.message);
+      }
+    } catch (error) {
+      console.error(error);
       setApiKey(null);
-      alert(response.message);
     }
-  } catch (error) {
-    console.error(error);
-    setApiKey(null);
-  }
-};
+  };
 
-//=================Get new Key API================
-const generateNewApiKey = async () => {
-  if (!selectedClient) {
-    alert("Please select a client first.");
-    return;
-  }
+  //=================Get new Key API================
+  const generateNewApiKey = async () => {
+    if (!selectedClient) {
+      alert("Please select a client first.");
+      return;
+    }
 
-  try {
-    const payload = {
-      loggedInUserName: userData.username,
-      operation: "getUserApiKey",
-      userName: selectedClient.value,
-    };
+    try {
+      const payload = {
+        loggedInUserName: userData.username,
+        operation: "getUserApiKey",
+        userName: selectedClient.value,
+      };
 
-    const response = await Endpoints.post(
-      "generateNewApiKey",
-      payload,
-      userData.authJwtToken
-    );
+      const response = await Endpoints.post(
+        "generateNewApiKey",
+        payload,
+        userData.authJwtToken
+      );
 
-    if (Number(response.code) === 4001) {
-      setApiKey(response.data?.apiKey ?? "");
+      if (Number(response.code) === 4001) {
+        setApiKey(response.data?.apiKey ?? "");
 
-       // Show success toast
-      setToastMessage(`API Key generated for ${selectedClient.label}`);
+        // Show success toast
+        setToastMessage(`API Key generated for ${selectedClient.label}`);
 
-      // Hide toast after 2 seconds
+        // Hide toast after 2 seconds
+        setTimeout(() => {
+          setToastMessage("");
+        }, 2000);
+      } else {
+        alert(response.message);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  //===============function to copy API key============
+  const copyApiKey = async () => {
+    if (!apiKey) return;
+
+    try {
+      await navigator.clipboard.writeText(apiKey);
+      setToastMessage("API key copied successfully.");
+
+      // Hide the toast after 3 seconds
+      setTimeout(() => {
+        setToastMessage("");
+      }, 3000);
+    } catch (error) {
+      console.error("Failed to copy API key:", error);
+
+      setToastMessage("Failed to copy API key.");
+
       setTimeout(() => {
         setToastMessage("");
       }, 2000);
-
-    } else {
-      alert(response.message);
     }
-  } catch (error) {
-    console.error(error);
-  }
-};
+  };
 
-//===============function to copy API key============
-const copyApiKey = async () => {
-  if (!apiKey) return;
-
-  try {
-    await navigator.clipboard.writeText(apiKey);
-    setToastMessage("API key copied successfully.");
-
-    // Hide the toast after 3 seconds
-    setTimeout(() => {
-      setToastMessage("");
-    }, 3000);
-  } catch (error) {
-    console.error("Failed to copy API key:", error);
-
-    setToastMessage("Failed to copy API key.");
-
-    setTimeout(() => {
-      setToastMessage("");
-    }, 2000);
-  }
-};
+  const handleSelectClient = (clientName) => {
+    const selectedObj = { label: clientName, value: clientName };
+    setSelectedClient(selectedObj);
+    getUserApiKey(clientName);
+    setIsDropdownOpen(false);
+    setSearchTerm("");
+  };
 
   return (
     <div className="generate-api-key">
-        {toastMessage && (
+      {toastMessage && (
         <div className="toast-message">
-            <i className="fa-solid fa-circle-check"></i>
-            {toastMessage}
+          <i className="fa-regular fa-circle-check"></i>
+          {toastMessage}
         </div>
-        )}
+      )}
 
       <div className="generate-api-key-header">
         <h1>Generate API Key</h1>
@@ -165,33 +182,63 @@ const copyApiKey = async () => {
       </div>
 
       <div className="api-key-card">
-        {/* Select Account */}
         <div className="section">
           <h3>SELECT ACCOUNT</h3>
 
-        <div className="form-group">
+          <div className="form-group">
             <label>Client name</label>
 
-            <div className="select-wrapper">
-                <Select
-                className="field-select"
-                classNamePrefix="react-select"
-                options={toOptions(userLists.clientList)}
-                value={selectedClient}
-                onChange={(value) => {
-                    setSelectedClient(value);
+            <div className="select-wrapper" ref={dropdownRef}>
+              <div
+                className="custom-select-trigger"
+                onClick={() => setIsDropdownOpen((prev) => !prev)}
+              >
+                <span>
+                  {selectedClient ? selectedClient.label : "Select client"}
+                </span>
+                <i
+                  className={`fa-solid fa-chevron-${
+                    isDropdownOpen ? "up" : "down"
+                  }`}
+                ></i>
+              </div>
 
-                    if (value) {
-                    getUserApiKey(value.value);
-                    } else {
-                    setApiKey(null);
-                    }
-                }}
-                placeholder="Select client"
-                isSearchable
-                />
+              {isDropdownOpen && (
+                <div className="custom-dropdown-menu">
+                  <div className="dropdown-search-wrapper">
+                    <input
+                      type="text"
+                      className="dropdown-search-input"
+                      placeholder="Search Client Name"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+
+                  <ul className="dropdown-options-list">
+                    {filteredClients.length > 0 ? (
+                      filteredClients.map((client) => (
+                        <li
+                          key={client}
+                          className={`dropdown-option ${
+                            selectedClient?.value === client ? "selected" : ""
+                          }`}
+                          onClick={() => handleSelectClient(client)}
+                        >
+                          {client}
+                        </li>
+                      ))
+                    ) : (
+                      <li className="dropdown-option no-results">
+                        No clients found
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
             </div>
-            </div>
+          </div>
         </div>
 
         <hr />
@@ -200,133 +247,134 @@ const copyApiKey = async () => {
         <div className="section">
           <h3>API KEY</h3>
 
-         <div className="form-group">
+          <div className="form-group">
             <label>Existing API Key</label>
 
             <div className="key-row">
-               <input
+              <input
                 type={showApiKey ? "text" : "password"}
                 value={apiKey || ""}
                 placeholder={
-                    !selectedClient
+                  !selectedClient
                     ? "Select an account to view its key"
                     : "No API key generated yet"
                 }
                 readOnly
-                />
+              />
 
-                <button
-                className="icon-btn"
-                onClick={() => setShowApiKey(!showApiKey)}
-                >
-                <i
-                    className={`fa-regular ${
-                    showApiKey ? "fa-eye-slash" : "fa-eye"
-                    }`}y
-                ></i>
-                </button>
+              <button
+              className="icon-btn"
+              onClick={() => setShowApiKey(!showApiKey)}
+              disabled={!selectedClient}
+            >
+              <i
+                className={`fa-regular ${
+                  showApiKey ? "fa-eye-slash" : "fa-eye"
+                }`}
+              ></i>
+            </button>
 
-                <button
-                    className="icon-btn"
-                    onClick={copyApiKey}
-                    disabled={!apiKey}
-                    >
-                    <i className="fa-regular fa-copy"></i>
-                </button>
+            {/* Copy API Key Button */}
+            <button
+              className="icon-btn"
+              onClick={copyApiKey}
+              disabled={!selectedClient || !apiKey}
+            >
+              <i className="fa-regular fa-copy"></i>
+            </button>
             </div>
             {apiKey && (
-                <div className="api-key-status">
-                <i className="fa-solid fa-circle-check"></i>
+              <div className="api-key-status">
+                <i className="fa-regular fa-circle-check"></i>
                 <span>Active key on file for this account</span>
-                </div>
+              </div>
             )}
-            </div>
-
+          </div>
 
           <div className="generate-btn-wrapper">
-           {!apiKey ? (
+            {!apiKey ? (
               <button
                 className="generate-btn"
                 onClick={generateNewApiKey}
                 disabled={!selectedClient}
-                >
+              >
                 <i className="fa-solid fa-key"></i>
                 Generate API Key
-                </button>
+              </button>
             ) : (
-               <button
+              <button
                 className="regenerate-btn"
                 onClick={() => setShowRegenerateModal(true)}
-                >
+              >
                 <i className="fa-solid fa-rotate"></i>
                 Regenerate API Key
-                </button>
+              </button>
             )}
-            </div>
+          </div>
 
-            <p className="regenerate-warning">
+          <div className="regenerate-warning">
             {apiKey ? (
-            <>
+              <>
                 Regenerating will immediately invalidate the current key for{" "}
                 <strong>{selectedClient?.label}</strong> — anything using it will need
                 to be updated.
-            </>
+              </>
             ) : (
-                <p className="helper-text">
+              <p className="helper-text">
                 Select an account above to enable this.
-                </p>
+              </p>
             )}
-        </p>
-
+          </div>
         </div>
       </div>
+
       {showRegenerateModal && (
         <div
-            className="modal-overlay"
-            onClick={() => setShowRegenerateModal(false)}
+          className="modal-overlay"
+          onClick={() => setShowRegenerateModal(false)}
         >
-            <div
+          <div
             className="regenerate-modal"
             onClick={(e) => e.stopPropagation()}
-            >
+          >
             <div className="modal-header">
-                <div className="warning-icon">
+              <div className="warning-icon">
                 <i className="fa-regular fa-trash-can"></i>
-                </div>
+              </div>
 
-                <h2>Regenerate API key?</h2>
+              <h2>Regenerate API key?</h2>
             </div>
 
             <div className="modal-body">
-                <p>
+              <p>
                 This will immediately invalidate the current API key for{" "}
-                <strong>{selectedClient?.label}</strong> Any integration still 
-                using the old key will stop working until it's updated with the 
+                <strong>{selectedClient?.label}</strong> Any integration still
+                using the old key will stop working until it's updated with the
                 new one. This can't be undone..
-                </p>
+              </p>
             </div>
 
             <div className="modal-footer">
-                <button
+              <button
                 className="cancel-btn"
                 onClick={() => setShowRegenerateModal(false)}
-                >
+              >
                 Cancel
-                </button>
+              </button>
 
-                <button
+              <button
                 className="confirm-btn"
                 onClick={async () => {
-                    await generateNewApiKey();
-                    setShowRegenerateModal(false);
+                  await generateNewApiKey();
+                  setShowRegenerateModal(false);
                 }}
-                >
+              >
                 Regenerate key
-                </button>
+              </button>
             </div>
-            </div>
+          </div>
         </div>
-        )}
+      )}
     </div>
   );
 };

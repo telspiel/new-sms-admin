@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import "./OperatorTraffic.css";
 import Endpoints from "../../api/endpoint";
 import { AuthContext } from "../../context/AuthContext";
-
+import * as XLSX from "xlsx";
 
 const OperatorTraffic = () => {
   const [activeTab, setActiveTab] = useState("live");
@@ -20,14 +20,34 @@ const OperatorTraffic = () => {
   const [historyTraffic, setHistoryTraffic] = useState([]);
 
   const [selectedConnect, setSelectedConnect] = useState("All");
+  const [selectedUser, setSelectedUser] = useState("All");
+  const [selectedSenderId, setSelectedSenderId] = useState("All");
 
   const [loading, setLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+
+  const handleResetFilters = () => {
+  setSelectedConnect("All");
+  setSelectedUser("All");
+  setSelectedSenderId("All");
+  setHistoryTraffic([]);
+};
 
   const connectNames = [
   "All",
   ...new Set(
     historyTraffic.map((item) => item.connectName)
   ),
+];
+
+const userNames = [
+  "All",
+  ...new Set(historyTraffic.map((item) => item.userName).filter(Boolean)),
+];
+
+const senderIds = [
+  "All",
+  ...new Set(historyTraffic.map((item) => item.senderId).filter(Boolean)),
 ];
 
   //Live Traffic
@@ -110,7 +130,7 @@ useEffect(() => {
   return () => clearInterval(timer);
 }, []);
 
-  //Traffic History
+//Traffic History
 const getConnectSummary = async () => {
    setLoading(true);
    try {
@@ -179,21 +199,123 @@ const totals =
       )
     : null;
 
+
+// Filtered traffic array based on active dropdown selections
+const filteredHistoryTraffic = historyTraffic.filter((item) => {
+  const matchesConnect =
+    selectedConnect === "All" || item.connectName === selectedConnect;
+  const matchesUser =
+    selectedUser === "All" || item.userName === selectedUser;
+  const matchesSender =
+    selectedSenderId === "All" || item.senderId === selectedSenderId;
+
+  return matchesConnect && matchesUser && matchesSender;
+});
+
+// Helper function to trigger toast notification
+  const showToast = (message) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(""), 3000); // Auto-clear after 3 seconds
+  };
+
+  // Generate dynamic file name based on selected dates
+  const getFileName = (extension) => {
+    const start = fromDate || "start";
+    const end = toDate || "end";
+    return `operator-traffic-history_${start}_to_${end}.${extension}`;
+  };
+
+  // Helper to format table row data for export safely
+  const formatExportData = () => {
+    return historyTraffic.map((row) => {
+      const submit = Number(row.totalSubmit) || 0;
+      const delivered = Number(row.totalDelivered) || 0;
+      const failed = Number(row.totalFailed) || 0;
+      const awaited = Number(row.totalAwaited) || 0;
+
+      const deliveredPercent = submit === 0 ? "0%" : `${((delivered / submit) * 100).toFixed(1)}%`;
+      const failedPercent = submit === 0 ? "0%" : `${((failed / submit) * 100).toFixed(1)}%`;
+      const awaitedPercent = submit === 0 ? "0%" : `${((awaited / submit) * 100).toFixed(1)}%`;
+
+      return {
+        "SUMMARY DATE": row.summaryDate || "",
+        "CONNECT NAME": row.connectName || "",
+        "SUBMIT": `${submit.toLocaleString()} (100%)`,
+        "DELIVERED": `${delivered.toLocaleString()} (${deliveredPercent})`,
+        "FAILED": `${failed.toLocaleString()} (${failedPercent})`,
+        "AWAITED": `${awaited.toLocaleString()} (${awaitedPercent})`,
+      };
+    });
+  };
+
+  // Safe file downloader utility
+  const triggerDownload = (blob, fileName) => {
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Export to CSV
+  const handleExportCSV = () => {
+    try {
+      if (!historyTraffic || historyTraffic.length === 0) {
+        showToast("No Data To Download");
+        return;
+      }
+
+      const dataToExport = formatExportData();
+      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+      const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
+
+      const blob = new Blob([csvOutput], { type: "text/csv;charset=utf-8;" });
+      triggerDownload(blob, getFileName("csv"));
+
+      showToast("Exported in csv");
+    } catch (err) {
+      console.error("CSV Export failed:", err);
+    }
+  };
+
+  // Export to XLSX (Browser-safe array buffer conversion)
+  const handleExportXLSX = () => {
+    try {
+      if (!historyTraffic || historyTraffic.length === 0) {
+        showToast("No Data To Download");
+        return;
+      }
+
+      const dataToExport = formatExportData();
+      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Traffic History");
+
+      // Write as array buffer to prevent browser fs crashes
+      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      triggerDownload(blob, getFileName("xlsx"));
+
+      showToast("Exported in xlsx");
+    } catch (err) {
+      console.error("XLSX Export failed:", err);
+    }
+  };
+
   return (
     <div className="operator-traffic">
-    {/* {loading && (
-        <div className="page-loader">
-
-        <div className="loader-content">
-
-            <div className="spinner"></div>
-
-            <p>Loading traffic history...</p>
-
+     {toastMessage && (
+        <div className="toast-message">
+            <i className="fa-regular fa-circle-check"></i>
+            {toastMessage}
         </div>
-
-        </div>
-    )} */}
+        )} 
 
       {/* Heading */}
 
@@ -358,11 +480,19 @@ const totals =
             </tr>
         ) : liveTraffic.length === 0 ? (
             <tr>
-            <td colSpan="6">
-                <div className="empty-table-state">
-                <p>No traffic data found.</p>
-                </div>
-            </td>
+            <td colSpan="6"className="operator-empty-state-cell">
+                  <div className="operator-empty-state">
+                  <div className="operator-empty-icon">
+                      <i className="fa-solid fa-chart-line"></i>
+                  </div>
+                  <h3>No data for this range</h3>
+                  <p>
+                      There's no DR activity between the selected dates.
+                      <br />
+                      Try selecting a wider date range.
+                  </p>
+                  </div>
+                </td>
             </tr>
         ) : (
             liveTraffic.map((item, index) => {
@@ -435,81 +565,91 @@ const totals =
   {activeTab === "history" && (
   <>
   <div className="history-filter-card">
-
-    <div className="history-filter-group">
-
-      <div className="history-field">
-
-        <label>FROM</label>
-
-       <input
+  <div className="history-filter-group">
+    <div className="history-field">
+      <label>FROM</label>
+      <input
         type="date"
         value={fromDate}
         onChange={(e) => setFromDate(e.target.value)}
-        />
+      />
+    </div>
 
-      </div>
-
-      <div className="history-field">
-
-        <label>TO</label>
-
-        <input
+    <div className="history-field">
+      <label>TO</label>
+      <input
         type="date"
         value={toDate}
         onChange={(e) => setToDate(e.target.value)}
-        />
-
-      </div>
-
-      <div className="history-field">
-        <label>CONNECT NAME</label>
-
-        <select
-            value={selectedConnect}
-            onChange={(e) =>
-            setSelectedConnect(e.target.value)
-            }
-        >
-            {connectNames.map((connect) => (
-            <option
-                key={connect}
-                value={connect}
-            >
-                {connect === "All"
-                ? "All Connect Name"
-                : connect}
-            </option>
-            ))}
-        </select>
-        </div>
-
-      <div className="history-checkbox">
-
-        <input type="checkbox" />
-
-        <span>Group by connect</span>
-
-      </div>
-
+      />
     </div>
-
-    <div className="history-buttons">
-
-      <button className="reset-btn">
-        Reset
-     </button>
-
-      <button
-        className="submit-btn"
-        onClick={getConnectSummary}
-        >
-        Submit
-    </button>
-
-    </div>
-
   </div>
+
+  <div className="history-buttons">
+    <button className="reset-btn" onClick={handleResetFilters}>Reset</button>
+
+    <button className="submit-btn" onClick={getConnectSummary}>
+      Submit
+    </button>
+  </div>
+</div>
+
+<div className="history-secondary-card">
+  {/* CONNECT NAME */}
+  <div className="history-field">
+    <label>CONNECT NAME</label>
+    <select
+      value={selectedConnect}
+      onChange={(e) => setSelectedConnect(e.target.value)}
+    >
+      {connectNames.map((connect) => (
+        <option key={connect} value={connect}>
+          {connect === "All" ? "All Connect Name" : connect}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  {/* BREAK DOWN BY (OPTIONAL) */}
+  <div className="breakdown-section">
+    <div className="breakdown-header">
+      <i className="fa-solid fa-bars-staggered"></i>
+      <span>BREAK DOWN BY (OPTIONAL)</span>
+    </div>
+
+    <div className="breakdown-fields">
+      {/* USERNAME */}
+      <div className="history-field">
+        <label>USERNAME</label>
+        <select
+          value={selectedUser}
+          onChange={(e) => setSelectedUser(e.target.value)}
+        >
+          {userNames.map((user) => (
+            <option key={user} value={user}>
+              {user === "All" ? "Select Username" : user}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* SENDER ID */}
+      <div className="history-field">
+        <label>SENDER ID</label>
+        <select
+          value={selectedSenderId}
+          onChange={(e) => setSelectedSenderId(e.target.value)}
+        >
+          {senderIds.map((sender) => (
+            <option key={sender} value={sender}>
+              {sender === "All" ? "Select Sender Id" : sender}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
 
 
   <div className="traffic-cards">
@@ -601,127 +741,130 @@ const totals =
 
       <div className="wrap-buttons">
       <div className="export-buttons">
-
-        <button>
+        <button onClick={handleExportCSV}>
           <i className="fa-solid fa-download"></i>
           CSV
         </button>
 
-        <button>
+        <button onClick={handleExportXLSX}>
           <i className="fa-solid fa-download"></i>
           XLSX
         </button>
-
       </div>
 
       <div className="rows-count">
-         {historyTraffic.length} of {historyTraffic.length} connects
-      </div>
+      {filteredHistoryTraffic.length} of {historyTraffic.length} connects
+    </div>
       </div>
 
     </div>
 
     <table className="operator-traffic-table">
+    <thead>
+      <tr>
+        <th>SUMMARY DATE</th>
+        <th>CONNECT NAME</th>
+        <th>SUBMIT</th>
+        <th>DELIVERED</th>
+        <th>FAILED</th>
+        <th>AWAITED</th>
+      </tr>
+    </thead>
 
-      <thead>
-
+    <tbody>
+      {loading ? (
         <tr>
-          <th>SUMMARY DATE</th>
-          <th>CONNECT NAME</th>
-          <th>SUBMIT</th>
-          <th>DELIVERED</th>
-          <th>FAILED</th>
-          <th>AWAITED</th>
-        </tr>
-
-      </thead>
-
-      <tbody>
-    {loading ? (
-        <tr>
-        <td colSpan="6">
+          <td colSpan="6">
             <div className="table-loader">
-            <div className="spinner"></div>
-            <p>Loading traffic history...</p>
+              <div className="spinner"></div>
+              <p>Loading traffic history...</p>
             </div>
-        </td>
+          </td>
         </tr>
-    ) : historyTraffic.length === 0 ? (
+      ) : filteredHistoryTraffic.length === 0 ? (
         <tr>
-        <td colSpan="6">
-            <div className="empty-table-state">
-            <p>No traffic history found.</p>
+          <td colSpan="6" className="operator-empty-state-cell">
+            <div className="operator-empty-state">
+              <div className="operator-empty-icon">
+                <i className="fa-solid fa-chart-line"></i>
+              </div>
+              <h3>No data found</h3>
+              <p>
+                There's no DR activity matching your selected filters.
+                <br />
+                Try adjusting your filter options or selecting a wider date range.
+              </p>
             </div>
-        </td>
+          </td>
         </tr>
-    ) : (
-        historyTraffic.map((row, index) => {
-        const submit = Number(row.totalSubmit);
-        const delivered = Number(row.totalDelivered);
-        const failed = Number(row.totalFailed);
-        const awaited = Number(row.totalAwaited);
+      ) : (
+        filteredHistoryTraffic.map((row, index) => {
+          const submit = Number(row.totalSubmit) || 0;
+          const delivered = Number(row.totalDelivered) || 0;
+          const failed = Number(row.totalFailed) || 0;
+          const awaited = Number(row.totalAwaited) || 0;
 
-        const deliveredPercent =
+          const deliveredPercent =
             submit === 0
-            ? "0%"
-            : `${((delivered / submit) * 100).toFixed(1)}%`;
+              ? "0%"
+              : `${((delivered / submit) * 100).toFixed(1)}%`;
 
-        const failedPercent =
+          const failedPercent =
             submit === 0
-            ? "0%"
-            : `${((failed / submit) * 100).toFixed(1)}%`;
+              ? "0%"
+              : `${((failed / submit) * 100).toFixed(1)}%`;
 
-        const awaitedPercent =
+          const awaitedPercent =
             submit === 0
-            ? "0%"
-            : `${((awaited / submit) * 100).toFixed(1)}%`;
+              ? "0%"
+              : `${((awaited / submit) * 100).toFixed(1)}%`;
 
-        return (
+          return (
             <tr key={index}>
-            <td>{row.summaryDate}</td>
+              <td>{row.summaryDate}</td>
 
-            <td>
+              <td>
                 <div className="connect-name">
-                <div className="connect-avatar">
-                    {row.connectName.charAt(0)}
-                </div>
+                  <div className="connect-avatar">
+                    {row.connectName ? row.connectName.charAt(0) : "N"}
+                  </div>
 
-                {row.connectName}
+                  {row.connectName}
                 </div>
-            </td>
+              </td>
 
-            <td className="submit">
+              <td className="submit">
                 {submit.toLocaleString()}
                 <br />
                 <small>100%</small>
-            </td>
+              </td>
 
-            <td>
+              <td>
                 <div className="green-text">
-                {delivered.toLocaleString()}
+                  {delivered.toLocaleString()}
                 </div>
                 <small>{deliveredPercent}</small>
-            </td>
+              </td>
 
-            <td>
+              <td>
                 <div className="red-text">
-                {failed.toLocaleString()}
+                  {failed.toLocaleString()}
                 </div>
                 <small>{failedPercent}</small>
-            </td>
+              </td>
 
-            <td>
+              <td>
                 <div className="yellow-text">
-                {awaited.toLocaleString()}
+                  {awaited.toLocaleString()}
                 </div>
                 <small>{awaitedPercent}</small>
-            </td>
+              </td>
             </tr>
-        );
+          );
         })
       )}
-     </tbody>
-    </table>
+    </tbody>
+  </table>
 
   </div>
 </>

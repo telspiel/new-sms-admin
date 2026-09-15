@@ -3,6 +3,7 @@ import "./CreditsManagement.css";
 import { AuthContext } from "../../context/AuthContext";
 import Endpoints from "../../api/endpoint";
 import Select from "react-select";
+import { Banknote } from "lucide-react";
 import * as XLSX from "xlsx";
 
 function CreditsManagement() {
@@ -266,42 +267,6 @@ const filteredHistory = creditHistory.filter((item) => {
   return true;
 });
 
-//=====================Download in xlsx and csv functionality======================
-const exportData = (type) => {
-  if (!filteredHistory.length) {
-    alert("No data to download.");
-    return;
-  }
-
-  const data = filteredHistory.map((item) => ({
-    "Created Date": item.createdDate,
-    Credit: item.credit,
-    Status: item.status,
-    "Updated Credit": item.updatedCredit,
-    "Updated By": item.updatedBy,
-    Comment: item.comment,
-  }));
-
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(
-    workbook,
-    worksheet,
-    "Credit History"
-  );
-
-  if (type === "xlsx") {
-    XLSX.writeFile(workbook, "Credit_History.xlsx");
-  } else {
-    XLSX.writeFile(workbook, "Credit_History.csv", {
-      bookType: "csv",
-    });
-  }
-
-  setShowExportMenu(false);
-};
-
 //===================Reset data on section switch==================
 const resetPage = () => {
   setSelectedUser({
@@ -350,11 +315,134 @@ const selectedName =
   selectedUser.client?.label ||
   "";
 
+  const handleResetHistory = () => {
+  setFromDate(today);
+  setToDate(today);
+
+  setHistoryType("All");
+
+  setSelectedUser({
+    admin: null,
+    reseller: null,
+    seller: null,
+    client: null,
+  });
+
+  setCreditHistory([]);
+
+  getViewCreditForUser("adminName", null, true);
+
+};
+
+//Pagination Logic
+// State for pagination
+const [currentPage, setCurrentPage] = useState(1);
+const [pageSize, setPageSize] = useState(10);
+
+// Total items and pages based on filtered data
+const totalEntries = filteredHistory.length;
+const totalPages = Math.ceil(totalEntries / pageSize) || 1;
+
+// Slice data for the current page
+const indexOfLastItem = currentPage * pageSize;
+const indexOfFirstItem = indexOfLastItem - pageSize;
+const currentItems = filteredHistory.slice(indexOfFirstItem, indexOfLastItem);
+
+// Helper function to generate page numbers with ellipsis (...)
+const getPageNumbers = () => {
+  const pages = [];
+  const maxVisiblePages = 5;
+
+  if (totalPages <= maxVisiblePages) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (currentPage > 3) pages.push("...");
+
+    let start = Math.max(2, currentPage - 1);
+    let end = Math.min(totalPages - 1, currentPage + 1);
+
+    for (let i = start; i <= end; i++) pages.push(i);
+
+    if (currentPage < totalPages - 2) pages.push("...");
+    pages.push(totalPages);
+  }
+  return pages;
+};
+
+// Reset to page 1 whenever filters change
+useEffect(() => {
+  setCurrentPage(1);
+}, [filteredHistory.length, historyType, selectedUser]);
+
+
+//Credit history Download Logic
+const triggerToast = (message) => {
+  setToastMessage(message);
+  setTimeout(() => {
+    setToastMessage("");
+  }, 3000); // Auto-hide toast after 3 seconds
+};
+
+const exportData = (format) => {
+  setShowExportMenu(false); // Close dropdown menu
+
+  // 1. Check if table/data is empty
+  if (!filteredHistory || filteredHistory.length === 0) {
+    triggerToast("No Data To Download");
+    return;
+  }
+
+  // 2. Prepare full dataset (irrespective of pagination) mapped to clear column headers
+  const exportPayload = filteredHistory.map((item) => ({
+    "Created Date": item.createdDate || "",
+    "Credit": item.credit !== undefined ? Number(item.credit) : "",
+    "Status": item.status || "",
+    "Updated Credit": item.updatedCredit !== undefined ? Number(item.updatedCredit) : "",
+    "Updated By": item.updatedBy || "",
+    "Comment": item.comment || "",
+  }));
+
+  // 3. Dynamic filename based on selected fromDate and toDate
+  // Result format: credit-history-2026-07-01-to-2026-07-06 (or single date if same)
+  const fileName =
+    fromDate === toDate
+      ? `credit-history-${fromDate}`
+      : `credit-history-${fromDate}-to-${toDate}`;
+
+  // 4. Handle CSV Export
+  if (format === "csv") {
+    const worksheet = XLSX.utils.json_to_sheet(exportPayload);
+    const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
+    
+    const blob = new Blob([csvOutput], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `${fileName}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    triggerToast("Exported in csv");
+  } 
+  // 5. Handle XLSX Export
+  else if (format === "xlsx") {
+    const worksheet = XLSX.utils.json_to_sheet(exportPayload);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Credit History");
+
+    XLSX.writeFile(workbook, `${fileName}.xlsx`);
+
+    triggerToast("Exported in xlsx");
+  }
+};
+
   return (
     <div className="credits-management">
         {toastMessage && (
         <div className="toast-message">
-            <i className="fa-solid fa-circle-check"></i>
+           <i className="fa-regular fa-circle-check"></i>
             {toastMessage}
         </div>
         )}
@@ -542,7 +630,7 @@ const selectedName =
                 <span>YOUR AVAILABLE CREDIT</span>
                 <h3>
                 {creditData.loggedInUserCredit != null
-                    ? Number(creditData.loggedInUserCredit).toLocaleString()
+                    ? Number(creditData.loggedInUserCredit).toLocaleString("en-IN")
                     : "—"}
                 </h3>
                 <small>
@@ -554,7 +642,7 @@ const selectedName =
                 <span>CUSTOMER AVAILABLE CREDIT</span>
                 <h3>
                 {creditData.userAvailableCredit != null
-                    ? Number(creditData.userAvailableCredit).toLocaleString()
+                    ? Number(creditData.userAvailableCredit).toLocaleString("en-IN")
                     : "—"}
                 </h3>
                 <small>
@@ -567,7 +655,6 @@ const selectedName =
             <div className="credit-input-section">
 
                 <div className="credit-input">
-
                 <label>
                     Add Credit <span>*</span>
                 </label>
@@ -575,7 +662,11 @@ const selectedName =
                <input
                 type="number"
                 value={creditToAdd}
-                onChange={(e) => setCreditToAdd(e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value.length <= 16) {
+                    setCreditToAdd(e.target.value);
+                  }
+                }}
                 placeholder="0"
                 onKeyDown={(e) => {
                   if (e.key === "-" || e.key === "e") {
@@ -592,33 +683,39 @@ const selectedName =
 
                 {creditData.loggedInUserCredit !== null &&
                 creditData.userAvailableCredit !== null &&
-                addAmount > 0 && (
-                <div className="credit-preview-card">
-
-                    <div className="preview-row">
-                    <span>Your balance after</span>
+                addAmount > 0 &&
+                (Number(addAmount) > Number(creditData.userAvailableCredit) ? (
+                  /* Error Banner */
+                  <div className="error-banner">
+                    Insufficient balance — you only have{" "}
                     <strong>
-                        {yourBalanceAfter.toLocaleString()}
-                    </strong>
-                    </div>
-
+                      {Number(creditData.userAvailableCredit).toLocaleString()}
+                    </strong>{" "}
+                    available.
+                  </div>
+                ) : (
+                  /* Preview Card (Valid balance) */
+                  <div className="credit-preview-card">
                     <div className="preview-row">
-                    <span>
-                        {creditData.userName}'s balance after
-                    </span>
-                    <strong>
-                        {customerBalanceAfter.toLocaleString()}
-                    </strong>
+                      <span>Your balance after</span>
+                      <strong>{yourBalanceAfter.toLocaleString()}</strong>
                     </div>
-
-                </div>
-                )}
+                    <div className="preview-row">
+                      <span>{creditData.userName}'s balance after</span>
+                      <strong>{customerBalanceAfter.toLocaleString()}</strong>
+                    </div>
+                  </div>
+                ))}
 
                 <div className="credit-buttons">
 
                <button
                 className="add-btn"
-                disabled={!isUserSelected}
+                disabled={
+                  !isUserSelected ||
+                  !addAmount ||
+                  Number(addAmount) > Number(creditData.loggedInUserCredit)
+                }
                 onClick={() => {
                     setConfirmAction("addCredit");
                     setShowConfirmModal(true);
@@ -805,7 +902,7 @@ const selectedName =
                 <span>YOUR AVAILABLE CREDIT</span>
                 <h3>
                 {creditData.loggedInUserCredit != null
-                    ? Number(creditData.loggedInUserCredit).toLocaleString()
+                    ? Number(creditData.loggedInUserCredit).toLocaleString("en-IN")
                     : "—"}
                 </h3>
                 <small>
@@ -817,7 +914,7 @@ const selectedName =
                 <span>AVAILABLE USER CREDIT</span>
                 <h3>
                 {creditData.userAvailableCredit != null
-                    ? Number(creditData.userAvailableCredit).toLocaleString()
+                    ? Number(creditData.userAvailableCredit).toLocaleString("en-IN")
                     : "—"}
                 </h3>
                 <small>
@@ -838,7 +935,11 @@ const selectedName =
                 <input
                 type="number"
                 value={creditToDeduct}
-                onChange={(e) => setCreditToDeduct(e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value.length <= 16) {
+                    setCreditToDeduct(e.target.value);
+                  }
+                }}
                 placeholder="0"
                 onKeyDown={(e) => {
                   if (e.key === "-" || e.key === "e") {
@@ -853,35 +954,45 @@ const selectedName =
                 </small>
                 </div>
 
-                
                 {creditData.loggedInUserCredit !== null &&
                 creditData.userAvailableCredit !== null &&
-                deductAmount > 0 && (
-                <div className="credit-preview-card">
-
-                    <div className="preview-row">
-                    <span>
-                        {creditData.userName}'s balance after
-                    </span>
+                deductAmount > 0 &&
+                (Number(deductAmount) > Number(creditData.userAvailableCredit) ? (
+                  /* Error Banner matching attached image */
+                  <div className="error-banner">
+                    Cannot deduct more than the available{" "}
                     <strong>
+                      {Number(creditData.userAvailableCredit).toLocaleString()}
+                    </strong>
+                    .
+                  </div>
+                ) : (
+                  /* Preview Card (Valid deduction) */
+                  <div className="credit-preview-card">
+                    <div className="preview-row">
+                      <span>{creditData.userName}'s balance after</span>
+                      <strong>
                         {customerBalanceAfterDeduct.toLocaleString()}
-                    </strong>
+                      </strong>
                     </div>
 
                     <div className="preview-row">
-                    <span>Your balance after</span>
-                    <strong>
+                      <span>Your balance after</span>
+                      <strong>
                         {yourBalanceAfterDeduct.toLocaleString()}
-                    </strong>
+                      </strong>
                     </div>
-
-                </div>
-                )}
+                  </div>
+                ))}
 
                 <div className="credit-buttons">
                 <button
                 className="deduct-btn"
-                disabled={!isUserSelected}
+                disabled={
+                  !isUserSelected ||
+                  !deductAmount ||
+                  Number(deductAmount) > Number(creditData.userAvailableCredit)
+                }
                 onClick={() => {
                     setConfirmAction("deductCredit");
                     setShowConfirmModal(true);
@@ -1090,7 +1201,7 @@ const selectedName =
             </select>
             </div>
 
-            <div className="history-buttons">
+            <div className="credits-history-buttons">
 
                 <button
                 className="submit-btn"
@@ -1103,16 +1214,7 @@ const selectedName =
 
                 <button
                 className="reset-btn"
-                onClick={() => {
-                    setFromDate(today);
-                    setToDate(today);
-                    setSelectedUser({
-                        admin: null,
-                        reseller: null,
-                        seller: null,
-                        client: null,
-                    });
-                }}
+                onClick={handleResetHistory} 
                 >
                 Reset
                 </button>
@@ -1136,23 +1238,17 @@ const selectedName =
                     </button>
 
                     {showExportMenu && (
-                        <div className="export-dropdown">
-
-                        <button
-                            onClick={() => exportData("xlsx")}
-                        >
-                            <span className="excel-icon">XLS</span>
-                            Export as XLSX
+                      <div className="export-dropdown">
+                        <button onClick={() => exportData("xlsx")}>
+                          <span className="excel-icon">XLS</span>
+                          Export as XLSX
                         </button>
 
-                        <button
-                            onClick={() => exportData("csv")}
-                        >
-                            <span className="csv-icon">CSV</span>
-                            Export as CSV
+                        <button onClick={() => exportData("csv")}>
+                          <span className="csv-icon">CSV</span>
+                          Export as CSV
                         </button>
-
-                        </div>
+                      </div>
                     )}
 
                     </div>
@@ -1182,7 +1278,7 @@ const selectedName =
                 </thead>
 
                 <tbody>
-                  {filteredHistory.map((item, index) => (
+                  {currentItems.map((item, index) => (
                     <tr key={index}>
                       <td>{item.createdDate}</td>
 
@@ -1222,7 +1318,7 @@ const selectedName =
             ) : (
               <div className="history-empty">
                 <div className="history-empty-icon">
-                  <i className="fa-solid fa-dollar-sign"></i>
+                  <Banknote />
                 </div>
 
                 <h3>No history in this range</h3>
@@ -1235,6 +1331,67 @@ const selectedName =
               </div>
             )}
           </div>
+          <div className="credits-pagination-container">
+          <div className="credits-pagination-info">
+            <span>Show</span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="entries-select"
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+            <span>entries</span>
+            <span className="showing-text">
+              Showing {indexOfFirstItem + 1}–
+              {Math.min(indexOfLastItem, totalEntries)} of {totalEntries}
+            </span>
+          </div>
+
+          {/* Right Side: Page Controls */}
+          <div className="pagination-buttons">
+            {/* Previous Button */}
+            <button
+              className="page-nav-btn"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => prev - 1)}
+            >
+              ‹
+            </button>
+
+            {/* Page Numbers */}
+            {getPageNumbers().map((page, index) =>
+              page === "..." ? (
+                <span key={index} className="pagination-ellipsis">
+                  ...
+                </span>
+              ) : (
+                <button
+                  key={index}
+                  className={`page-btn ${currentPage === page ? "active" : ""}`}
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </button>
+              )
+            )}
+
+            {/* Next Button */}
+            <button
+              className="page-nav-btn"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+            >
+              ›
+            </button>
+          </div>
+        </div>
 
         </>
         )}
@@ -1245,7 +1402,7 @@ const selectedName =
       {showConfirmModal && (
         <div
             className="credit-modal-overlay"
-            onClick={() => setShowConfirmModal(false)}
+            
         >
             <div
             className="credit-confirm-modal"
@@ -1253,7 +1410,7 @@ const selectedName =
             >
             <div className="modal-header">
                 <div className="modal-icon">
-                <i className="fa-solid fa-dollar-sign"></i>
+                <Banknote/>
                 </div>
 
                 <h2>

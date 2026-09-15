@@ -101,7 +101,7 @@ const Profile = () => {
 
           <div className="profile-info">
             <Building2 size={18} />
-            <span>YSA · IT</span>
+            <span>{profileData.organization}</span>
           </div>
 
          <button
@@ -115,7 +115,6 @@ const Profile = () => {
         </div>
 
         {/* Right Card */}
-
         <div className="account-card">
 
           <h2>Account Information</h2>
@@ -125,80 +124,78 @@ const Profile = () => {
           </p>
 
           <div className="profile-form-grid">
-
             <div className="profile-form-group">
-                <label>User Name</label>
-
-                <div className="profile-input-wrapper">
-                <input
-                    type="text"
-                    value={profileData.username}
-                    disabled
-                />
-                <i className="fa-solid fa-lock lock-icon"></i>
-                </div>
+            <label>User Name</label>
+            <div className="profile-input-wrapper">
+              <input
+                type="text"
+                value={profileData.username}
+                disabled
+              />
+              <Lock size={16} className="lock-icon" />
             </div>
+          </div>
 
              <div className="profile-form-group">
                 <label>Email ID *</label>
                 <div className="profile-input-wrapper">
                 <input
-                type="email"
-                value={profileData.emailID || "Not Available"}
-                onChange={(e) =>
+                  type="email"
+                  value={profileData.emailID || "Not Available"}
+                  onChange={(e) =>
                     setProfileData({
-                    ...profileData,
-                    emailID: e.target.value,
+                      ...profileData,
+                      emailID: e.target.value,
                     })
-                }
-                disabled
+                  }
+                  disabled
                 />
-                <i className="fa-solid fa-lock lock-icon"></i>
-                </div>
+                <Lock size={16} className="lock-icon" />
+              </div>
             </div>
 
            <div className="profile-form-group">
                 <label>Mobile Number *</label>
-                <div className="profile-input-wrapper">
+               <div className="profile-input-wrapper">
                 <input
-                type="text"
-                value={profileData.mobileNumber || "Not Available"}
-                onChange={(e) =>
+                  type="text"
+                  value={profileData.mobileNumber || "Not Available"}
+                  onChange={(e) =>
                     setProfileData({
-                    ...profileData,
-                    mobileNumber: e.target.value,
+                      ...profileData,
+                      mobileNumber: e.target.value,
                     })
-                }
-                disabled
+                  }
+                  disabled
                 />
-                <i className="fa-solid fa-lock lock-icon"></i>
-                </div>
+                <Lock size={16} className="lock-icon" />
+              </div>
             </div>
 
              <div className="profile-form-group">
                 <label>Organization</label>
 
-                <div className="profile-input-wrapper">
-                <input
-                    type="text"
-                    value={profileData.organization}
-                    disabled
-                />
-                <i className="fa-solid fa-lock lock-icon"></i>
-                </div>
+              <div className="profile-input-wrapper">
+              <input
+                type="text"
+                value={profileData.organization}
+                disabled
+              />
+              <Lock size={16} className="lock-icon" />
+            </div>
             </div>
 
            <div className="profile-form-group">
             <label>Department</label>
 
-            <div className="profile-input-wrapper">
+           <div className="profile-input-wrapper">
             <input
-                type="text"
-                value={profileData.department}
-                disabled
+              type="text"
+              value={profileData.department}
+              disabled
             />
-            <i className="fa-solid fa-lock lock-icon"></i>
-            </div>
+            <Lock size={16} className="lock-icon" />
+          </div>
         </div>
 
           </div>
@@ -209,17 +206,6 @@ const Profile = () => {
               Locked fields are managed by your administrator and can't be edited here.
             </span>
           </div>
-
-          <div className="profile-footer">
-            <button className="cancel-btn">
-              Cancel
-            </button>
-
-            <button className="save-btn">
-              Save Changes
-            </button>
-          </div>
-
         </div>
 
       </div>

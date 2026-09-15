@@ -75,7 +75,7 @@ h2 {
 
 h1 {
   font-size: 56px;
-  letter-spacing: -1.68px;
+  letter-spacing: 0px;
   margin: 32px 0;
   @media (max-width: 1024px) {
     font-size: 36px;
@@ -198,7 +198,7 @@ code {
   left: 50%;
   transform: translateX(-50%);
   background: #1d2330;
-  color: #ffcc29;
+  color: #fff;
   padding: 14px 22px;
   border-radius: 10px;
   display: flex;
@@ -214,6 +214,7 @@ code {
 
 .toast-message i {
   font-size: 18px;
+  color: #44a67e;
 }
 
 @keyframes toastAnimation {
@@ -236,4 +237,108 @@ code {
     opacity: 0;
     transform: translate(-50%, -25px);
   }
+}
+
+/* ================Discard Modal Style================ */
+/* Overlay darkens background */
+.discard-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 24, 31, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+/* Modal Card */
+.discard-modal {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+}
+
+/* Header with Icon and Title */
+.discard-modal-header {
+  display: flex;
+  align-items: center;
+  padding: 24px 28px 16px;
+  gap: 16px;
+}
+
+.trash-icon-container {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #fde8e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.discard-modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+/* Body Text */
+.discard-modal-body {
+  padding: 0 28px 24px;
+  border-bottom: 1px solid #edf2f7;
+  text-align: left;
+}
+
+.discard-modal-body p {
+  margin: 0;
+  font-size: 15px;
+  color: #4a5568;
+}
+
+/* Action Buttons Footer */
+.discard-modal-footer {
+  display: flex;
+  justify-content: space-around;
+  gap: 12px;
+  padding: 20px 28px;
+}
+
+.discard-modal-footer .btn-secondary {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #2d3748;
+  flex: 1;
+  padding: 11px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.discard-modal-footer .btn-secondary:hover {
+  background: #f7fafc;
+}
+
+.discard-modal-footer .btn-danger {
+  background: #ea4343;
+  border: none;
+  color: #ffffff;
+  flex: 1;
+  padding: 11px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.discard-modal-footer .btn-danger:hover {
+  background: #d93838;
 }

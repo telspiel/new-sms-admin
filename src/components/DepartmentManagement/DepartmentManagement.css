@@ -70,7 +70,7 @@
     border:1px solid #ddd;
     border-radius:12px;
     padding:0 15px;
-    height: 42px
+    height: 44px
 }
 
 .department-toolbar .search-box input{
@@ -97,7 +97,7 @@
 }
 
 .org-dropdown-header {
-  height: 40px;
+  height: 44px;
   border: 1px solid #ddd;
   border-radius: 12px;
   padding: 0 14px;
@@ -197,6 +197,18 @@
     align-items: center;
 }
 
+.dept-info .avatar {
+      width: 36px;
+    height: 36px;
+    background: #fff2cc;
+    border-radius: 10px !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #b67d00;
+    font-weight: bold;
+}
+
 .department-data-table td h4{
     margin:0;
     font-size: 14px;
@@ -266,25 +278,27 @@
   box-shadow: -6px 0 24px rgba(0, 0, 0, 0.15);
 }
 
-.locked-select{
-    position: relative;
+.locked-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
-.locked-select select{
-    width:100%;
-    background:#f5f5f5;
-    cursor:not-allowed;
-    padding-right:42px;
+.locked-select select {
+  width: 100%;
+  background: #f5f5f5;
+  cursor: not-allowed;
+  padding-right: 42px; 
 }
 
-.lock-icon{
-    font-size: 18px;
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform:translateY(-50%);
-    color:#8b8b8b;
-    pointer-events:none;
+.dept-lock-icon {
+  position: absolute;
+  right: 25px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8b8b8b;
+  pointer-events: none; /* Prevents icon from blocking select clicks */
 }
 
 .dept-form-group {
@@ -330,4 +344,32 @@
 
 .dept-form-group select {
   cursor: pointer;
+}
+
+/* ========================================================= */
+input.error-input,
+select.error-input, 
+.phone-input.error-input {
+  border: 1px solid #f87171 !important;
+  background-color: #fef2f2 !important;
+}
+
+.phone-input.error-input input {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* Red warning text below field */
+.dept-error-text {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #e11d48;
+  font-size: 12px;
+  margin-top: 4px;
+  text-align: left;
+}
+
+.dept-error-text i {
+  font-size: 10px;
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useState, useContext, useRef } from "react";
 import Cropper from "react-easy-crop";
 import "./AppearanceBranding.css";
 import { Layers, Send, Save, X } from "lucide-react";
@@ -35,7 +35,7 @@ const AppearanceBranding = () => {
   const logoInputRef = useRef(null);
   const faviconInputRef = useRef(null);
 
-  // Trigger file selection
+  // Trigger file selection handlers
   const handleChooseLogoClick = () => {
     setUploadType("logo");
     if (logoInputRef.current) logoInputRef.current.click();
@@ -46,7 +46,7 @@ const AppearanceBranding = () => {
     if (faviconInputRef.current) faviconInputRef.current.click();
   };
 
-  // Handle image selection
+  // Handle image selection for both inputs
   const handleFileChange = (e, type) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
@@ -132,7 +132,7 @@ const AppearanceBranding = () => {
     setShowCropModal(false);
   };
 
-  // Remove uploaded images
+  // Remove handlers
   const handleRemoveLogo = () => {
     setLogoPreview(null);
     setFinalLogoFile(null);
@@ -146,77 +146,78 @@ const AppearanceBranding = () => {
   };
 
   // Unified Save Changes Handler
- const handleSaveChanges = async () => {
-  if (!finalLogoFile && !finalFaviconFile && brandName === userData?.brandName) {
-    return;
-  }
+  const handleSaveChanges = async () => {
+    if (!finalLogoFile && !finalFaviconFile && brandName === userData?.brandName) {
+      return;
+    }
 
-  try {
-    let successMessages = [];
+    try {
+      let successMessages = [];
 
-    // 1. Upload Logo API if new logo file present
-    if (finalLogoFile) {
-      const logoData = new FormData();
-      logoData.append("loggedInUserName", userData?.username || "");
-      logoData.append("file", finalLogoFile);
-      logoData.append("brandName", brandName ? brandName.trim() : "");
+      // 1. Upload Logo API
+      if (finalLogoFile) {
+        const logoData = new FormData();
+        logoData.append("loggedInUserName", userData?.username || "");
+        logoData.append("file", finalLogoFile);
+        logoData.append("brandName", brandName ? brandName.trim() : "");
 
-      const logoUrl = Endpoints.get("uploadLogo");
-      const resLogo = await fetch(logoUrl, {
-        method: "POST",
-        headers: {
-          Authorization: userData?.authJwtToken || "",
-        },
-        body: logoData,
-      });
+        const logoUrl = Endpoints.get("uploadLogo");
+        const resLogo = await fetch(logoUrl, {
+          method: "POST",
+          headers: {
+            Authorization: userData?.authJwtToken || "",
+          },
+          body: logoData,
+        });
 
-      const responseLogo = await resLogo.json();
-      if (responseLogo.code === 1000) {
-        successMessages.push("Logo updated");
-        handleRemoveLogo(); // Reset logo preview & file input
+        const responseLogo = await resLogo.json();
+        if (responseLogo.code === 1000) {
+          successMessages.push("Logo updated");
+          handleRemoveLogo();
+        }
       }
-    }
 
-    // 2. Upload Favicon API if new favicon file present
-    if (finalFaviconFile) {
-      const faviconData = new FormData();
-      faviconData.append("loggedInUserName", userData?.username || "");
-      faviconData.append("file", finalFaviconFile);
+      // 2. Upload Favicon API (Only sending loggedInUserName and file)
+      if (finalFaviconFile) {
+        const faviconData = new FormData();
+        faviconData.append("loggedInUserName", userData?.username || "");
+        faviconData.append("file", finalFaviconFile);
 
-      const faviconUrl = Endpoints.get("uploadFavicon");
-      const resFavicon = await fetch(faviconUrl, {
-        method: "POST",
-        headers: {
-          Authorization: userData?.authJwtToken || "",
-        },
-        body: faviconData,
-      });
+        const faviconUrl = Endpoints.get("uploadFavicon");
+        const resFavicon = await fetch(faviconUrl, {
+          method: "POST",
+          headers: {
+            Authorization: userData?.authJwtToken || "",
+          },
+          body: faviconData,
+        });
 
-      const responseFavicon = await resFavicon.json();
-      if (responseFavicon.code === 1000) {
-        successMessages.push("Favicon updated");
-        handleRemoveFavicon(); // Reset favicon preview & file input
+        const responseFavicon = await resFavicon.json();
+        if (responseFavicon.code === 1000) {
+          successMessages.push("Favicon updated");
+          handleRemoveFavicon();
+        }
       }
+
+      if (successMessages.length > 0) {
+        setToastMessage(
+          `${successMessages.join(" & ")} successfully. Changes will be visible from next login.`
+        );
+      } else {
+        setToastMessage("Saved successfully.");
+      }
+
+      setTimeout(() => setToastMessage(""), 4000);
+    } catch (error) {
+      console.error("Upload error:", error);
+      setToastMessage("Something went wrong while saving changes.");
+      setTimeout(() => setToastMessage(""), 4000);
     }
+  };
 
-    if (successMessages.length > 0) {
-      setToastMessage(
-        `${successMessages.join(" & ")} successfully. Changes will be visible from next login.`
-      );
-    } else {
-      setToastMessage("Saved successfully.");
-    }
-
-    setTimeout(() => setToastMessage(""), 4000);
-  } catch (error) {
-    console.error("Upload error:", error);
-    setToastMessage("Something went wrong while saving changes.");
-    setTimeout(() => setToastMessage(""), 4000);
-  } 
-};
-
- const isSaveDisabled =
-  !finalLogoFile && !finalFaviconFile && brandName === userData?.brandName;
+  // Enable save button if logo, favicon, or brand name is changed
+  const isSaveDisabled =
+    !finalLogoFile && !finalFaviconFile && brandName === userData?.brandName;
 
   return (
     <div className="appearance-branding">
@@ -239,7 +240,7 @@ const AppearanceBranding = () => {
       {/* Toast Notification */}
       {toastMessage && (
         <div className="toast-message">
-          <i className="fa-solid fa-circle-check"></i>
+          <i className="fa-regular fa-circle-check"></i>
           <span>{toastMessage}</span>
         </div>
       )}

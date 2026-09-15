@@ -37,13 +37,29 @@ const InternalUsers = () => {
 
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [loadingCreate, setLoadingCreate] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [loadingUpdate, setLoadingUpdate] = useState(false);
     const [toastMessage, setToastMessage] = useState("");
 
     const [errors, setErrors] = useState({});
 
+    const [showEditDrawer, setShowEditDrawer] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+
+    const [editUserType, setEditUserType] = useState("");
+    const [editStatus, setEditStatus] = useState("active");
+    const [editSelectedSeniorManager, setEditSelectedSeniorManager] = useState("");
+    const [editSelectedRegionalManager, setEditSelectedRegionalManager] = useState("");
+    const [editUsername, setEditUsername] = useState("");
+    const [editPassword, setEditPassword] = useState("");
+    const [editEmail, setEditEmail] = useState("");
+    const [editMobile, setEditMobile] = useState("");
+    const [editErrors, setEditErrors] = useState({});
+
+   
     //Get all Internal User Data API
     const getInternalUsers = async () => {
-        setLoading(true);
+    setLoading(true);
     try {
         const payload = {
         loggedInUserName: userData.username,
@@ -56,16 +72,87 @@ const InternalUsers = () => {
         );
 
         if (response.code === 4005) {
-        setInternalUsers(response.data.userList || []);
+        const reversedUsers = [...(response.data.userList || [])].reverse();
+        setInternalUsers(reversedUsers);
         } else {
         setToastMessage(response.message);
         }
-     } catch (error) {
+    } catch (error) {
         console.error(error);
-     } finally {
-    setLoading(false);
-     }
+    } finally {
+        setLoading(false);
+    }
     };
+
+  //Edit Internal User  
+  const [isFetchingUser, setIsFetchingUser] = useState(false);
+
+  const validateEditForm = () => {
+  let errs = {};
+  if (!editUserType) errs.userType = "User Type is required";
+  if (!editUsername) errs.username = "Username is required";
+  if (!editPassword) errs.password = "Password is required";
+  if (!editEmail) errs.email = "Email ID is required";
+  if (!editMobile) errs.mobile = "Mobile Number is required";
+
+  setEditErrors(errs);
+  return Object.keys(errs).length === 0;
+};
+
+const getInternalUserData = async (targetUserName) => {
+  setIsFetchingUser(true);
+  try {
+    const payload = {
+      loggedInUserName: userData.username,
+      userName: targetUserName,
+    };
+
+    const response = await Endpoints.post(
+      "getInternalUserData",
+      payload,
+      userData.authJwtToken
+    );
+
+    if (response.code === 9003 && response.data?.user) {
+      const fetchedUser = response.data.user;
+
+      setSelectedUser(fetchedUser);
+
+      // Populate dedicated Edit states
+      setEditUsername(fetchedUser.userName || "");
+      setEditPassword(fetchedUser.userPassword || "");
+      setEditEmail(fetchedUser.email || "");
+      setEditMobile(fetchedUser.mobile || "");
+      setEditStatus(fetchedUser.status?.toLowerCase() || "active");
+
+      // Set Manager dropdown IDs if available in API response
+      setEditSelectedSeniorManager(fetchedUser.seniorManagerId || "");
+      setEditSelectedRegionalManager(fetchedUser.regionalManagerId || "");
+
+      // Normalize customerType string
+      const type = fetchedUser.customerType?.toLowerCase() || "";
+      if (type === "accountmanager") {
+        setEditUserType("Account Manager");
+      } else if (type === "regionalmanager") {
+        setEditUserType("Regional Manager");
+      } else if (type === "support") {
+        setEditUserType("Support");
+      } else {
+        setEditUserType(fetchedUser.customerType || "");
+      }
+
+      setEditErrors({});
+      setShowEditDrawer(true);
+    } else {
+      setToastMessage(response.message || "Failed to fetch user details");
+    }
+  } catch (error) {
+    console.error("Error fetching internal user data:", error);
+    setToastMessage("An error occurred while fetching user data");
+  } finally {
+    setIsFetchingUser(false);
+  }
+};
 
     //API to get all the sr. Account Manager list
     const getSeniorAccountManagers = async () => {
@@ -295,11 +382,79 @@ const saveInternalUser = async () => {
     }
 };
 
+//Save Updated User
+const handleUpdateUser = async () => {
+  try {
+    setLoadingUpdate(true);
+
+    const payload = {
+      loggedInUserName: userData.username,
+      operation: "editInternalUser",
+      userRole: "internaluser",
+      userName: editUsername,
+      userPassword: editPassword,
+      email: editEmail,
+      mobile: editMobile,
+      status: editStatus,
+      userExpiryDate: "",
+    };
+
+    // Set customerType string based on selected dropdown value
+    if (editUserType === "Account Manager") {
+      payload.customerType = "accountmanager";
+    } else if (editUserType === "Regional Manager") {
+      payload.customerType = "regionalmanager";
+    } else {
+      payload.customerType = "support";
+    }
+
+    const response = await Endpoints.post(
+      "saveInternalUser",
+      payload,
+      userData.authJwtToken
+    );
+
+    if (response.code === 9001 || response.code === 9000) {
+      setToastMessage(response.message || "User updated successfully");
+      setShowEditModal(false);
+      setShowEditDrawer(false);
+
+      // Refresh list
+      getInternalUsers();
+    } else {
+      setToastMessage(response.message || "Failed to update user");
+    }
+  } catch (err) {
+    console.error("Error updating internal user:", err);
+    setToastMessage("An error occurred while updating the user");
+  } finally {
+    setLoadingUpdate(false);
+  }
+};
+
+//Edit Internal User Logic
+const handleEditClick = (user) => {
+  setSelectedUser(user);
+  setUserType(user.customerType || "");
+  setStatus(user.status?.toLowerCase() || "active");
+  setEmail(user.email || "");
+  setMobile(user.mobile || "");
+  setUsername(user.userName || "");
+  
+  // Set manager assignments if available in your user object
+  setSelectedSeniorManager(user.seniorManagerId || "");
+  setSelectedRegionalManager(user.regionalManagerId || "");
+  
+  setPassword(""); // Reset password field for security
+  setErrors({});
+  setShowEditDrawer(true);
+};
+
   return (
     <div className="internal-user">
          {toastMessage && (
         <div className="toast-message">
-            <i className="fa-solid fa-circle-check"></i>
+            <i className="fa-regular fa-circle-check"></i>
             {toastMessage}
         </div>
         )}
@@ -827,7 +982,11 @@ const saveInternalUser = async () => {
 
                 {/* ACTION */}
                 <td>
-                <button className="internal-action-btn">
+                <button 
+                    className="internal-action-btn"
+                    disabled={isFetchingUser}
+                    onClick={() => getInternalUserData(user.userName)}
+                >
                     <i className="fa-regular fa-pen-to-square"></i>
                 </button>
                 </td>
@@ -844,6 +1003,223 @@ const saveInternalUser = async () => {
         )}
         </tbody>
      </table>
+     
+     {showEditDrawer && (
+        <div
+            className="internal-drawer-overlay"
+            onClick={() => setShowEditDrawer(false)}
+        >
+            <div
+            className="internal-user-drawer"
+            onClick={(e) => e.stopPropagation()}
+            >
+            {/* Header */}
+            <div className="internal-drawer-header">
+                <div>
+                <h2>Edit Internal User</h2>
+                <p>Update account details for {selectedUser?.userName}</p>
+                </div>
+
+                <button
+                className="close-btn"
+                onClick={() => setShowEditDrawer(false)}
+                >
+                <i className="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            {/* Body */}
+            <div className="internal-drawer-body">
+                <h3 className="internal-section-title">USER ACCOUNT</h3>
+
+                <div className="internal-form-row">
+                {/* User Type */}
+                <div className="internal-form-group">
+                    <label>
+                    User Type <span>*</span>
+                    </label>
+                    <select
+                    value={editUserType}
+                    onChange={(e) => {
+                        setEditUserType(e.target.value);
+                        if (editErrors.userType) {
+                        setEditErrors((prev) => ({ ...prev, userType: "" }));
+                        }
+                    }}
+                    className={editErrors.userType ? "input-error" : ""}
+                    >
+                    <option value="">-- Select --</option>
+                    <option value="Account Manager">Account Manager</option>
+                    <option value="Regional Manager">Regional Manager</option>
+                    <option value="Support">Support</option>
+                    </select>
+                    {editErrors.userType && (
+                    <div className="field-error">⚠ {editErrors.userType}</div>
+                    )}
+                </div>
+
+                {/* Status */}
+                <div className="internal-form-group">
+                    <label>Status</label>
+                    <select
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value)}
+                    >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+                </div>
+
+                {/* Username */}
+                <div className="internal-form-group">
+                <label>
+                    Username <span>*</span>
+                </label>
+                <input
+                    type="text"
+                    placeholder="Enter username"
+                    value={editUsername}
+                    onChange={(e) => {
+                    setEditUsername(e.target.value);
+                    if (editErrors.username) {
+                        setEditErrors((prev) => ({ ...prev, username: "" }));
+                    }
+                    }}
+                    className={editErrors.username ? "input-error" : ""}
+                />
+                {editErrors.username && (
+                    <div className="field-error">⚠ {editErrors.username}</div>
+                )}
+                </div>
+
+                {/* Password (Visible Text) */}
+                <div className="internal-form-group">
+                <label>
+                    Password <span>*</span>
+                </label>
+                <input
+                    type="text"
+                    placeholder="Enter password"
+                    value={editPassword}
+                    onChange={(e) => {
+                    setEditPassword(e.target.value);
+                    if (editErrors.password) {
+                        setEditErrors((prev) => ({ ...prev, password: "" }));
+                    }
+                    }}
+                    className={editErrors.password ? "input-error" : ""}
+                />
+                {editErrors.password && (
+                    <div className="field-error">⚠ {editErrors.password}</div>
+                )}
+                </div>
+
+                {/* Email & Mobile */}
+                <div className="internal-form-row">
+                <div className="internal-form-group">
+                    <label>
+                    Email ID <span>*</span>
+                    </label>
+                    <input
+                    type="email"
+                    placeholder="name@company.com"
+                    value={editEmail}
+                    onChange={(e) => {
+                        setEditEmail(e.target.value);
+                        if (editErrors.email) {
+                        setEditErrors((prev) => ({ ...prev, email: "" }));
+                        }
+                    }}
+                    className={editErrors.email ? "input-error" : ""}
+                    />
+                    {editErrors.email && (
+                    <div className="field-error">⚠ {editErrors.email}</div>
+                    )}
+                </div>
+
+                <div className="internal-form-group">
+                    <label>
+                    Mobile Number <span>*</span>
+                    </label>
+                    <input
+                    type="text"
+                    placeholder="10-digit mobile number"
+                    maxLength={10}
+                    value={editMobile}
+                    onChange={(e) => {
+                        setEditMobile(e.target.value.replace(/\D/g, ""));
+                        if (editErrors.mobile) {
+                        setEditErrors((prev) => ({ ...prev, mobile: "" }));
+                        }
+                    }}
+                    className={editErrors.mobile ? "input-error" : ""}
+                    />
+                    {editErrors.mobile && (
+                    <div className="field-error">⚠ {editErrors.mobile}</div>
+                    )}
+                </div>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="drawer-footer-internal">
+                <button
+                className="cancel-btn"
+                onClick={() => setShowEditDrawer(false)}
+                >
+                Cancel
+                </button>
+
+                <button
+                className="create-btn"
+                onClick={() => {
+                if (validateEditForm()) {
+                    setShowEditModal(true);
+                }
+                }}
+            >
+                Save Changes
+            </button>
+            </div>
+            </div>
+        </div>
+        )}
+
+        {showEditModal && (
+        <div className="internal-modal-overlay">
+            <div className="create-internal-modal">
+            <div className="create-internal-header">
+                <div className="create-internal-icon">
+                <CircleHelp size={22} strokeWidth={2.2} />
+                </div>
+
+                <h2>Save changes to this account?</h2>
+            </div>
+
+            <div className="create-internal-body">
+                You're about to update <b>{selectedUser?.userName || editUsername}</b>'s profile.
+            </div>
+
+            <div className="create-internal-footer">
+                <button
+                className="cancel-btn"
+                onClick={() => setShowEditModal(false)}
+                >
+                Cancel
+                </button>
+
+                <button
+                className="create-btn"
+                onClick={handleUpdateUser}
+                disabled={loadingUpdate}
+                >
+                {loadingUpdate ? "Saving..." : "Save Changes"}
+                </button>
+            </div>
+            </div>
+        </div>
+        )}
 
         <div className="internal-table-footer">
         <span>

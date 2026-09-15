@@ -227,8 +227,7 @@
 .credit-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(30, 35, 45, 0.35);
-  backdrop-filter: blur(6px);
+  background: rgba(20, 24, 31, .45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -236,7 +235,7 @@
 }
 
 .credit-confirm-modal {
-  width: 460px;
+  width: 490px;
   background: #fff;
   border-radius: 22px;
   overflow: hidden;
@@ -380,9 +379,6 @@
   cursor: pointer;
 }
 
-.credit-buttons .add-btn:hover {
-    background: #e0a300;
-}
 
 .credit-buttons .reset-btn {
   height: 42px;
@@ -439,14 +435,14 @@
   box-sizing: border-box;
 }
 
-.history-buttons {
+.credits-history-buttons {
   display: flex;
   align-items: center;
   gap: 14px;
   margin-bottom: 1px; /* aligns with inputs */
 }
 
-.history-buttons .submit-btn, .reset-btn, .export-btn {
+.credits-history-buttons .submit-btn, .reset-btn, .export-btn {
   height: 40px;
   display: flex;
   align-items: center;
@@ -454,7 +450,7 @@
   font-size: 15px !important;
 }
 
-.history-buttons .submit-btn {
+.credits-history-buttons .submit-btn {
   border: none;
   background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
   color: #222;
@@ -466,11 +462,11 @@
   box-shadow: 0 10px 20px rgba(244, 180, 0, .25);
 }
 
-.history-buttons .submit-btn:hover {
+.credits-history-buttons .submit-btn:hover {
   background: #e0a300;
 }
 
-.history-buttons .export-btn {
+.credits-history-buttons .export-btn {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -543,7 +539,6 @@
   margin-top: 30px;
   background: #fff;
   border-radius: 16px;
-  border: 1px solid #edf0f5;
   overflow: hidden;
 }
 
@@ -674,7 +669,7 @@
 /* a==================================== */
 
 .history-empty {
-  min-height: 200px;
+  min-height: 210px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -712,6 +707,22 @@
   line-height: 1.6;
 }
 
+.error-banner {
+  background-color: #fde8e8;
+  width: 500px;
+  color: #9b1c1c;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 12px;
+  text-align: left;
+}
+
+.error-banner strong {
+  color: #000000;
+  font-weight: 600;
+}
+
 .credit-preview-card {
   margin-top: 12px;
   border: 1px solid #e5e9f2;
@@ -741,6 +752,85 @@
   color: #1f2937;
   font-size: 18px;
   font-weight: 700;
+}
+
+.credits-pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 10px;
+  background-color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.credits-pagination-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.entries-select {
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #f9fafb;
+  color: #374151;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+.showing-text {
+  margin-left: 8px;
+  color: #9ca3af;
+}
+
+.pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-btn,
+.page-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #374151;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(.active),
+.page-nav-btn:hover:not(:disabled) {
+  border-color: #d1d5db;
+  background-color: #f3f4f6;
+}
+
+.page-btn.active {
+  background-color: #fef3c7; /* Light yellow background */
+  color: #854d0e; /* Dark gold text */
+  border-color: #fde68a;
+  font-weight: 600;
+}
+
+.page-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-ellipsis {
+  padding: 0 4px;
+  color: #9ca3af;
 }
 
 /* Responsive */

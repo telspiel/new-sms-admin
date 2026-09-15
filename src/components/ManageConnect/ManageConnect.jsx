@@ -198,7 +198,7 @@ const isAllocationInvalid = totalAllocated !== 100;
     <div className="manage-connect">
         {toastMessage && (
         <div className="toast-message">
-            <i className="fa-solid fa-circle-check"></i>
+            <i className="fa-regular fa-circle-check"></i>
             {toastMessage}
         </div>
         )} 

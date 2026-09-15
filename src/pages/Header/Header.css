@@ -111,12 +111,9 @@
 .avatar {
   width: 38px;
   height: 38px;
-
-  border-radius: 50%;
-
+  border-radius: 50% !important;
   background: #e6b31f;
   color: #ffffff;
-
   display: flex;
   justify-content: center;
   align-items: center;
@@ -272,10 +269,10 @@
 
 .notification .badge {
   position: absolute;
-  top: -5px;
-  right: 5px;
-  min-width: 30px;
-  height: 29px;
+  top: -9px;
+  right: -14px;
+  min-width: 33px;
+  height: 26px;
   padding: 0 5px;
   display: flex;
   align-items: center;

@@ -11,6 +11,16 @@ const OrganizationManagement = () => {
     const [showEditOrg, setShowEditOrg] = useState(false);
     const [selectedOrg, setSelectedOrg] = useState(null);
 
+    // State to handle the Discard Confirmation Modal
+    const [showDiscardModal, setShowDiscardModal] = useState(false);
+
+    // Helper to trigger closing the active form modal
+    const handleConfirmDiscard = () => {
+        setShowAddOrg(false);
+        setShowEditOrg(false);
+        setShowDiscardModal(false);
+    };
+
     const [organizationList, setOrganizationList] = useState([]);
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -99,162 +109,168 @@ const initialOrgForm = {
 
 const [orgForm, setOrgForm] = useState(initialOrgForm);
 const [editOrgForm, setEditOrgForm] = useState(initialOrgForm);
+const [errors, setErrors] = useState({});
+const [editErrors, setEditErrors] = useState({});
 
 //===========Add new organization API=================
 const saveOrganization = async () => {
+  const newErrors = {};
 
-    if (
-        !orgForm.orgName ||
-        !orgForm.orgEmailId ||
-        !orgForm.orgContactNumber ||
-        !orgForm.orgPrimaryContact ||
-        !orgForm.orgAddress
-    ) {
-        alert("Please fill all mandatory fields.");
-        return;
-    }
+  // 1. Mandatory field checks
+  if (!orgForm.orgName?.trim()) {
+    newErrors.orgName = "Organization name is required.";
+  }
 
-    if (orgForm.orgGstNumber.length < 12) {
-        alert("GST Number must be at least 12 characters.");
-        return;
-    }
-
-    if (orgForm.orgContactNumber.length !== 10) {
-    alert("Phone Number must be 10 digits.");
-    return;
-    }
-
-    if (orgForm.orgPrimaryContact.length !== 10) {
-    alert("Primary Contact Number must be 10 digits.");
-    return;
-    }
-
+  if (!orgForm.orgEmailId?.trim()) {
+    newErrors.orgEmailId = "Email is required.";
+  } else {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     if (!emailRegex.test(orgForm.orgEmailId)) {
-    alert("Please enter a valid email address.");
+      newErrors.orgEmailId = "Please enter a valid email address.";
+    }
+  }
+
+  if (!orgForm.orgContactNumber) {
+    newErrors.orgContactNumber = "Phone number is required.";
+  } else if (orgForm.orgContactNumber.length !== 10) {
+    newErrors.orgContactNumber = "Phone Number must be 10 digits.";
+  }
+
+  if (!orgForm.orgPrimaryContact) {
+    newErrors.orgPrimaryContact = "Primary contact is required.";
+  } else if (orgForm.orgPrimaryContact.length !== 10) {
+    newErrors.orgPrimaryContact = "Primary Contact Number must be 10 digits.";
+  }
+
+
+  // 2. Optional field checks
+  if (orgForm.orgGstNumber && orgForm.orgGstNumber.length < 12) {
+    newErrors.orgGstNumber = "GST Number must be at least 12 characters.";
+  }
+
+  // Set errors and stop execution if validation fails
+  setErrors(newErrors);
+  if (Object.keys(newErrors).length > 0) {
     return;
+  }
+
+  try {
+    const payload = {
+      loggedInUserName: userData.username,
+      operation: "addOrganisation",
+      ...orgForm,
+      orgContactNumber: `91${orgForm.orgContactNumber}`,
+      orgPrimaryContact: `91${orgForm.orgPrimaryContact}`,
+    };
+
+    const response = await Endpoints.post(
+      "saveOrganization",
+      payload,
+      userData.authJwtToken
+    );
+
+    if (response.code === 5001) {
+      setToastMessage(response.message);
+      setTimeout(() => {
+        setToastMessage("");
+      }, 2000);
+
+      setShowAddOrg(false);
+      setOrgForm(initialOrgForm);
+      setErrors({}); // Clear validation errors
+      getOrganizationList();
+    } else {
+      alert(response.message);
     }
-
-    try {
-        const payload = {
-            loggedInUserName: userData.username,
-            operation: "addOrganisation",
-            ...orgForm,
-            orgContactNumber: `91${orgForm.orgContactNumber}`,
-            orgPrimaryContact: `91${orgForm.orgPrimaryContact}`,
-        };
-        const response = await Endpoints.post(
-            "saveOrganization",
-            payload,
-            userData.authJwtToken
-        );
-        if (response.code === 5001) {
-            setToastMessage(response.message);
-            setTimeout(() => {
-                setToastMessage("");
-            }, 2000);
-
-            setShowAddOrg(false);
-            setOrgForm(initialOrgForm);
-            getOrganizationList();
-
-        } else {
-            alert(response.message);
-        }
-
-    } catch (error) {
-        console.error(error);
-    }
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 //=============Edit existing org name API====================
 const editOrganization = async () => {
+  const newErrors = {};
 
-    if (
-        !editOrgForm.orgName ||
-        !editOrgForm.orgEmailId ||
-        !editOrgForm.orgContactNumber ||
-        !editOrgForm.orgPrimaryContact ||
-        !editOrgForm.orgAddress
-    ) {
-        alert("Please fill all mandatory fields.");
-        return;
+  // 1. Mandatory Field Checks
+  if (!editOrgForm.orgName?.trim()) {
+    newErrors.orgName = "Organization name is required.";
+  }
+
+  if (!editOrgForm.orgEmailId?.trim()) {
+    newErrors.orgEmailId = "Email is required.";
+  } else {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(editOrgForm.orgEmailId)) {
+      newErrors.orgEmailId = "Please enter a valid email address.";
     }
+  }
 
-    if (editOrgForm.orgGstNumber.length < 12) {
-        alert("GST Number must be at least 12 characters.");
-        return;
+  if (!editOrgForm.orgContactNumber) {
+    newErrors.orgContactNumber = "Phone number is required.";
+  } else if (editOrgForm.orgContactNumber.length !== 10) {
+    newErrors.orgContactNumber = "Phone Number must be 10 digits.";
+  }
+
+  if (!editOrgForm.orgPrimaryContact) {
+    newErrors.orgPrimaryContact = "Primary contact is required.";
+  } else if (editOrgForm.orgPrimaryContact.length !== 10) {
+    newErrors.orgPrimaryContact = "Primary Contact Number must be 10 digits.";
+  }
+
+  if (!editOrgForm.orgAddress?.trim()) {
+    newErrors.orgAddress = "Address is required.";
+  }
+
+  // 2. Optional Field Checks
+  if (editOrgForm.orgGstNumber && editOrgForm.orgGstNumber.length < 12) {
+    newErrors.orgGstNumber = "GST Number must be at least 12 characters.";
+  }
+
+  // If there are errors, stop execution
+  setEditErrors(newErrors);
+  if (Object.keys(newErrors).length > 0) {
+    return;
+  }
+
+  try {
+    const payload = {
+      loggedInUserName: userData.username,
+      operation: "editOrganisation",
+      orgId: editOrgForm.orgId,
+      ...editOrgForm,
+      orgContactNumber: `91${editOrgForm.orgContactNumber}`,
+      orgPrimaryContact: `91${editOrgForm.orgPrimaryContact}`,
+    };
+
+    const response = await Endpoints.post(
+      "saveOrganization",
+      payload,
+      userData.authJwtToken
+    );
+
+    if (response.code === 5001) {
+      setToastMessage(response.message);
+
+      setTimeout(() => {
+        setToastMessage("");
+      }, 2000);
+
+      setShowEditOrg(false);
+      setEditErrors({}); // Clear errors upon successful save
+      getOrganizationList();
+    } else {
+      alert(response.message);
     }
-
-    if (editOrgForm.orgContactNumber.length !== 10) {
-        alert("Phone Number must be 10 digits.");
-        return;
-    }
-
-    if (editOrgForm.orgPrimaryContact.length !== 10) {
-        alert("Primary Contact Number must be 10 digits.");
-        return;
-    }
-
-    const emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if(!emailRegex.test(editOrgForm.orgEmailId)){
-        alert("Please enter a valid email address.");
-        return;
-    }
-
-    try{
-
-        const payload={
-
-            loggedInUserName:userData.username,
-
-            operation:"editOrganisation",
-
-            orgId:editOrgForm.orgId,
-
-            ...editOrgForm,
-
-            orgContactNumber:`91${editOrgForm.orgContactNumber}`,
-
-            orgPrimaryContact:`91${editOrgForm.orgPrimaryContact}`,
-
-        };
-
-        const response=await Endpoints.post(
-            "saveOrganization",
-            payload,
-            userData.authJwtToken
-        );
-
-        if(response.code===5001){
-
-            setToastMessage(response.message);
-
-            setTimeout(()=>{
-                setToastMessage("");
-            },2000);
-
-            setShowEditOrg(false);
-
-            getOrganizationList();
-
-        }else{
-            alert(response.message);
-        }
-
-    }catch(error){
-        console.error(error);
-    }
-
+  } catch (error) {
+    console.error(error);
+  }
 };
 
   return (
      <div className="org-management">
         {toastMessage && (
         <div className="toast-message">
-            <i className="fa-solid fa-circle-check"></i>
+            <i className="fa-regular fa-circle-check"></i>
             {toastMessage}
         </div>
         )}
@@ -275,222 +291,217 @@ const editOrganization = async () => {
         </div>
 
         {showAddOrg && (
-        <div
-            className="drawer-overlay"
-            onClick={() => setShowAddOrg(false)}
-        >
-            <div
-            className="organization-drawer"
-            onClick={(e) => e.stopPropagation()}
-            >
+        <div className="drawer-overlay" onClick={() => setShowAddOrg(false)}>
+            <div className="organization-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="drawer-header">
-              <div>
+                <div>
                 <h2>Add Organization</h2>
                 <p>Create a new organization</p>
-              </div>
+                </div>
 
-              <button
-                className="close-btn"
-                onClick={() => setShowAddOrg(false)}
-              >
+                <button className="close-btn" onClick={() => setShowAddOrg(false)}>
                 <i className="fa-solid fa-xmark"></i>
-              </button>
+                </button>
             </div>
 
             <div className="drawer-body">
-
-            <div className="org-form-group">
-                <label>
-                Organization Name <span>*</span>
-                </label>
-                <input
-                type="text"
-                placeholder="Org name"
-                value={orgForm.orgName}
-                onChange={(e) =>
-                    setOrgForm({ ...orgForm, orgName: e.target.value })
-                }
-            />
-            </div>
-
-            <div className="org-form-row">
+                {/* Organization Name */}
                 <div className="org-form-group">
                 <label>
-                    Email ID <span>*</span>
+                    Organization Name <span>*</span>
                 </label>
                 <input
+                    type="text"
+                    placeholder="Org name"
+                    className={errors.orgName ? "error-input" : ""}
+                    value={orgForm.orgName}
+                    onChange={(e) => {
+                    setOrgForm({ ...orgForm, orgName: e.target.value });
+                    if (errors.orgName) setErrors({ ...errors, orgName: "" });
+                    }}
+                />
+                {errors.orgName && (
+                    <span className="org-error-text">
+                    <i className="fa-solid fa-triangle-exclamation"></i> {errors.orgName}
+                    </span>
+                )}
+                </div>
+
+                <div className="org-form-row">
+                {/* Email ID */}
+                <div className="org-form-group">
+                    <label>
+                    Email ID <span>*</span>
+                    </label>
+                    <input
                     type="email"
                     placeholder="name@company.com"
+                    className={errors.orgEmailId ? "error-input" : ""}
                     value={orgForm.orgEmailId}
-                    onChange={(e) =>
-                    setOrgForm({
-                        ...orgForm,
-                        orgEmailId: e.target.value,
-                    })
-                    }
-                    required
-                />
-                </div>
-
-                <div className="org-form-group">
-            <label>
-                Phone Number <span>*</span>
-            </label>
-
-            <div className="phone-input">
-                <span className="country-code">+91</span>
-
-                <input
-                type="text"
-                placeholder="9876543210"
-                maxLength={10}
-                value={orgForm.orgContactNumber}
-                onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "");
-                    setOrgForm({
-                    ...orgForm,
-                    orgContactNumber: value,
-                    });
-                }}
-                />
-            </div>
-            </div>
-            </div>
-
-            <div className="org-form-row">
-               <div className="org-form-group">
-                <label>
-                    Primary Contact Number <span>*</span>
-                </label>
-
-                <div className="phone-input">
-                    <span className="country-code">+91</span>
-
-                    <input
-                    type="text"
-                    placeholder="9876543210"
-                    maxLength={10}
-                    value={orgForm.orgPrimaryContact}
                     onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, "");
-                        setOrgForm({
-                        ...orgForm,
-                        orgPrimaryContact: value,
-                        });
+                        setOrgForm({ ...orgForm, orgEmailId: e.target.value });
+                        if (errors.orgEmailId) setErrors({ ...errors, orgEmailId: "" });
                     }}
                     />
+                    {errors.orgEmailId && (
+                    <span className="org-error-text">
+                        <i className="fa-solid fa-triangle-exclamation"></i> {errors.orgEmailId}
+                    </span>
+                    )}
+                </div>
+
+                {/* Phone Number */}
+                <div className="org-form-group">
+                    <label>
+                    Phone Number <span>*</span>
+                    </label>
+                    <div className={`phone-input ${errors.orgContactNumber ? "error-input" : ""}`}>
+                    <span className="country-code">+91</span>
+                    <input
+                        type="text"
+                        placeholder="9876543210"
+                        maxLength={10}
+                        value={orgForm.orgContactNumber}
+                        onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "");
+                        setOrgForm({ ...orgForm, orgContactNumber: value });
+                        if (errors.orgContactNumber) setErrors({ ...errors, orgContactNumber: "" });
+                        }}
+                    />
+                    </div>
+                    {errors.orgContactNumber && (
+                    <span className="org-error-text">
+                        <i className="fa-solid fa-triangle-exclamation"></i> {errors.orgContactNumber}
+                    </span>
+                    )}
                 </div>
                 </div>
 
+                <div className="org-form-row">
+                {/* Primary Contact Number */}
                 <div className="org-form-group">
-                <label>GST Number</label>
-               <input
+                    <label>
+                    Primary Contact Number <span>*</span>
+                    </label>
+                    <div className={`phone-input ${errors.orgPrimaryContact ? "error-input" : ""}`}>
+                    <span className="country-code">+91</span>
+                    <input
+                        type="text"
+                        placeholder="9876543210"
+                        maxLength={10}
+                        value={orgForm.orgPrimaryContact}
+                        onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "");
+                        setOrgForm({ ...orgForm, orgPrimaryContact: value });
+                        if (errors.orgPrimaryContact) setErrors({ ...errors, orgPrimaryContact: "" });
+                        }}
+                    />
+                    </div>
+                    {errors.orgPrimaryContact && (
+                    <span className="org-error-text">
+                        <i className="fa-solid fa-triangle-exclamation"></i> {errors.orgPrimaryContact}
+                    </span>
+                    )}
+                </div>
+
+                {/* GST Number */}
+                <div className="org-form-group">
+                    <label>GST Number</label>
+                    <input
                     type="text"
                     placeholder="GST Number"
+                    className={errors.orgGstNumber ? "error-input" : ""}
                     value={orgForm.orgGstNumber}
-                    onChange={(e) =>
-                        setOrgForm({
-                            ...orgForm,
-                            orgGstNumber: e.target.value,
-                        })
-                    }
-                />
+                    onChange={(e) => {
+                        setOrgForm({ ...orgForm, orgGstNumber: e.target.value });
+                        if (errors.orgGstNumber) setErrors({ ...errors, orgGstNumber: "" });
+                    }}
+                    />
+                    {errors.orgGstNumber && (
+                    <span className="org-error-text">
+                        <i className="fa-solid fa-triangle-exclamation"></i> {errors.orgGstNumber}
+                    </span>
+                    )}
                 </div>
-            </div>
+                </div>
 
-            <div className="org-form-row">
+                <div className="org-form-row">
                 <div className="org-form-group">
-                <label>Billing Cycle</label>
-
-                <select
+                    <label>Billing Cycle</label>
+                    <select
                     value={orgForm.orgBillingCycle}
                     onChange={(e) =>
-                        setOrgForm({
-                            ...orgForm,
-                            orgBillingCycle: e.target.value,
-                        })
+                        setOrgForm({ ...orgForm, orgBillingCycle: e.target.value })
                     }
-                >
+                    >
                     <option value="monthly">Monthly</option>
                     <option value="quarterly">Quarterly</option>
                     <option value="yearly">Yearly</option>
-                </select>
+                    </select>
                 </div>
 
                 <div className="org-form-group">
-                <label>Billing Type</label>
-
-                <select
+                    <label>Billing Type</label>
+                    <select
                     value={orgForm.orgBillingType}
                     onChange={(e) =>
-                        setOrgForm({
-                            ...orgForm,
-                            orgBillingType: e.target.value,
-                        })
+                        setOrgForm({ ...orgForm, orgBillingType: e.target.value })
                     }
-                >
+                    >
                     <option value="prepaid">PREPAID</option>
                     <option value="postpaid">POSTPAID</option>
-                </select>
+                    </select>
                 </div>
-            </div>
+                </div>
 
-            <div className="org-form-row">
+                <div className="org-form-row">
                 <div className="org-form-group">
-                <label>Status</label>
-
-                <select
+                    <label>Status</label>
+                    <select
                     value={orgForm.orgStatus}
                     onChange={(e) =>
-                        setOrgForm({
-                            ...orgForm,
-                            orgStatus: e.target.value,
-                        })
+                        setOrgForm({ ...orgForm, orgStatus: e.target.value })
                     }
-                >
+                    >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
-                </select>
+                    </select>
                 </div>
-            </div>
+                </div>
 
-            <div className="org-form-group">
-                <label>Address</label>
-
+                {/* Address */}
+                <div className="org-form-group">
+                <label>
+                    Address
+                </label>
                 <textarea
                     rows="5"
                     placeholder="Organization address"
+                    className={errors.orgAddress ? "error-input" : ""}
                     value={orgForm.orgAddress}
-                    onChange={(e) =>
-                        setOrgForm({
-                            ...orgForm,
-                            orgAddress: e.target.value,
-                        })
-                    }
+                    onChange={(e) => {
+                    setOrgForm({ ...orgForm, orgAddress: e.target.value });
+                    if (errors.orgAddress) setErrors({ ...errors, orgAddress: "" });
+                    }}
                 />
-            </div>
-
+                </div>
             </div>
 
             <div className="drawer-footer-org">
-              <button
+                <button
                 className="cancel-btn"
-                onClick={() => setShowAddOrg(false)}
-              >
+                onClick={() => setShowDiscardModal(true)}
+                >
                 Cancel
-              </button>
+                </button>
 
-              <button
-                className="create-btn"
-                onClick={saveOrganization}
-            >
+                <button className="create-btn" onClick={saveOrganization}>
                 Create Organization
-            </button>
+                </button>
             </div>
-
-          </div>
+            </div>
         </div>
-      )}
+        )}
       </div>
 
       <div className="org-card">
@@ -657,12 +668,12 @@ const editOrganization = async () => {
             {showEditOrg && selectedOrg && (
             <div
                 className="drawer-overlay"
-                onClick={() => setShowEditOrg(false)}
+                onClick={() => {
+                setShowEditOrg(false);
+                setEditErrors({}); // Clear errors when drawer closes
+                }}
             >
-                <div
-                className="organization-drawer"
-                onClick={(e) => e.stopPropagation()}
-                >
+                <div className="organization-drawer" onClick={(e) => e.stopPropagation()}>
                 <div className="drawer-header">
                     <div>
                     <h2>Edit Organization</h2>
@@ -671,206 +682,317 @@ const editOrganization = async () => {
 
                     <button
                     className="close-btn"
-                    onClick={() => setShowEditOrg(false)}
+                    onClick={() => {
+                        setShowEditOrg(false);
+                        setEditErrors({});
+                    }}
                     >
                     <i className="fa-solid fa-xmark"></i>
                     </button>
                 </div>
 
                 <div className="drawer-body">
-
+                    {/* Organization Name */}
                     <div className="org-form-group">
                     <label>
                         Organization Name <span>*</span>
                     </label>
                     <input
                         type="text"
+                        className={editErrors.orgName ? "error-input" : ""}
                         value={editOrgForm.orgName}
                         disabled
-                        onChange={(e)=>
-                            setEditOrgForm({
-                                ...editOrgForm,
-                                orgName:e.target.value
-                            })
+                        onChange={(e) => {
+                        setEditOrgForm({
+                            ...editOrgForm,
+                            orgName: e.target.value,
+                        });
+                        if (editErrors.orgName) {
+                            setEditErrors({ ...editErrors, orgName: "" });
                         }
+                        }}
                     />
+                    {editErrors.orgName && (
+                        <span className="org-error-text">
+                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        {editErrors.orgName}
+                        </span>
+                    )}
                     </div>
 
                     <div className="org-form-row">
-
+                    {/* Email ID */}
                     <div className="org-form-group">
                         <label>
                         Email ID <span>*</span>
                         </label>
                         <input
                         type="email"
-                       value={editOrgForm.orgEmailId}
-                        onChange={(e)=>
-                        setEditOrgForm({
+                        className={editErrors.orgEmailId ? "error-input" : ""}
+                        value={editOrgForm.orgEmailId}
+                        onChange={(e) => {
+                            setEditOrgForm({
                             ...editOrgForm,
-                            orgEmailId:e.target.value
-                        })
-                        }
+                            orgEmailId: e.target.value,
+                            });
+                            if (editErrors.orgEmailId) {
+                            setEditErrors({ ...editErrors, orgEmailId: "" });
+                            }
+                        }}
                         />
+                        {editErrors.orgEmailId && (
+                        <span className="org-error-text">
+                            <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                            {editErrors.orgEmailId}
+                        </span>
+                        )}
                     </div>
 
+                    {/* Phone Number */}
                     <div className="org-form-group">
                         <label>
                         Phone Number <span>*</span>
                         </label>
+                        <div
+                        className={`phone-input ${
+                            editErrors.orgContactNumber ? "error-input" : ""
+                        }`}
+                        >
+                        <span className="country-code">+91</span>
+                        <input
+                            type="text"
+                            value={editOrgForm.orgContactNumber}
+                            maxLength={10}
+                            onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "");
+                            setEditOrgForm({
+                                ...editOrgForm,
+                                orgContactNumber: value,
+                            });
+                            if (editErrors.orgContactNumber) {
+                                setEditErrors({ ...editErrors, orgContactNumber: "" });
+                            }
+                            }}
+                        />
+                        </div>
+                        {editErrors.orgContactNumber && (
+                        <span className="org-error-text">
+                            <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                            {editErrors.orgContactNumber}
+                        </span>
+                        )}
+                    </div>
+                    </div>
+
+                    <div className="org-form-row">
+                    {/* Primary Contact Number */}
+                    <div className="org-form-group">
+                        <label>
+                        Primary Contact Number <span>*</span>
+                        </label>
+                        <div
+                        className={`phone-input ${
+                            editErrors.orgPrimaryContact ? "error-input" : ""
+                        }`}
+                        >
+                        <span className="country-code">+91</span>
+                        <input
+                            type="text"
+                            value={editOrgForm.orgPrimaryContact}
+                            maxLength={10}
+                            onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, "");
+                            setEditOrgForm({
+                                ...editOrgForm,
+                                orgPrimaryContact: value,
+                            });
+                            if (editErrors.orgPrimaryContact) {
+                                setEditErrors({ ...editErrors, orgPrimaryContact: "" });
+                            }
+                            }}
+                        />
+                        </div>
+                        {editErrors.orgPrimaryContact && (
+                        <span className="org-error-text">
+                            <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                            {editErrors.orgPrimaryContact}
+                        </span>
+                        )}
+                    </div>
+
+                    {/* GST Number */}
+                    <div className="org-form-group">
+                        <label>GST Number</label>
                         <input
                         type="text"
-                        value={editOrgForm.orgContactNumber}
-                        onChange={(e)=>{
-                        const value=e.target.value.replace(/\D/g,"");
-                        setEditOrgForm({
-                            ...editOrgForm,
-                            orgContactNumber:value
-                        });
-                        }}
-                        />
-                    </div>
-
-                    </div>
-
-                    <div className="org-form-row">
-
-                    <div className="org-form-group">
-                    <label>
-                        Primary Contact Number <span>*</span>
-                    </label>
-
-                    <input
-                        type="text"
-                        value={editOrgForm.orgPrimaryContact}
-                        onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, "");
-                        setEditOrgForm({
-                            ...editOrgForm,
-                            orgPrimaryContact: value,
-                        });
-                        }}
-                    />
-                    </div>
-
-                    <div className="org-form-group">
-                    <label>GST Number</label>
-
-                    <input
-                        type="text"
+                        className={editErrors.orgGstNumber ? "error-input" : ""}
                         value={editOrgForm.orgGstNumber}
-                        onChange={(e) =>
-                        setEditOrgForm({
+                        onChange={(e) => {
+                            setEditOrgForm({
                             ...editOrgForm,
                             orgGstNumber: e.target.value,
-                        })
-                        }
-                    />
+                            });
+                            if (editErrors.orgGstNumber) {
+                            setEditErrors({ ...editErrors, orgGstNumber: "" });
+                            }
+                        }}
+                        />
+                        {editErrors.orgGstNumber && (
+                        <span className="org-error-text">
+                            <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                            {editErrors.orgGstNumber}
+                        </span>
+                        )}
                     </div>
-
                     </div>
 
                     <div className="org-form-row">
-
                     <div className="org-form-group">
-                    <label>Billing Cycle</label>
-
-                    <select
+                        <label>Billing Cycle</label>
+                        <select
                         value={editOrgForm.orgBillingCycle}
                         onChange={(e) =>
-                        setEditOrgForm({
+                            setEditOrgForm({
                             ...editOrgForm,
                             orgBillingCycle: e.target.value,
-                        })
+                            })
                         }
-                    >
+                        >
                         <option value="monthly">Monthly</option>
                         <option value="quarterly">Quarterly</option>
                         <option value="yearly">Yearly</option>
                         <option value="NA">NA</option>
-                    </select>
+                        </select>
                     </div>
 
                     <div className="org-form-group">
-                    <label>Billing Type</label>
-
-                    <select
+                        <label>Billing Type</label>
+                        <select
                         value={editOrgForm.orgBillingType}
                         onChange={(e) =>
-                        setEditOrgForm({
+                            setEditOrgForm({
                             ...editOrgForm,
                             orgBillingType: e.target.value,
-                        })
+                            })
                         }
-                    >
+                        >
                         <option value="prepaid">PREPAID</option>
                         <option value="postpaid">POSTPAID</option>
-                    </select>
+                        </select>
                     </div>
-
                     </div>
 
                     <div className="org-form-row">
-
                     <div className="org-form-group">
-                    <label>Status</label>
-
-                    <select
+                        <label>Status</label>
+                        <select
                         value={editOrgForm.orgStatus}
                         onChange={(e) =>
-                        setEditOrgForm({
+                            setEditOrgForm({
                             ...editOrgForm,
                             orgStatus: e.target.value,
-                        })
+                            })
                         }
-                    >
+                        >
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
-                    </select>
+                        </select>
+                    </div>
                     </div>
 
-                    </div>
-
-                   <div className="org-form-group">
-                    <label>Address</label>
-
+                    {/* Address */}
+                    <div className="org-form-group">
+                    <label>
+                        Address <span>*</span>
+                    </label>
                     <textarea
                         rows="5"
+                        className={editErrors.orgAddress ? "error-input" : ""}
                         value={editOrgForm.orgAddress}
-                        onChange={(e) =>
+                        onChange={(e) => {
                         setEditOrgForm({
                             ...editOrgForm,
                             orgAddress: e.target.value,
-                        })
+                        });
+                        if (editErrors.orgAddress) {
+                            setEditErrors({ ...editErrors, orgAddress: "" });
                         }
+                        }}
                     />
+                    {editErrors.orgAddress && (
+                        <span className="org-error-text">
+                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        {editErrors.orgAddress}
+                        </span>
+                    )}
                     </div>
-
                 </div>
 
                 <div className="drawer-footer-org">
-
                     <button
                     className="cancel-btn"
-                    onClick={() => setShowEditOrg(false)}
+                    onClick={() => setShowDiscardModal(true)}
                     >
                     Cancel
                     </button>
 
-                    <button
-                    className="create-btn"
-                    onClick={editOrganization}
-                >
+                    <button className="create-btn" onClick={editOrganization}>
                     Save Changes
-                </button>
+                    </button>
                 </div>
-
                 </div>
             </div>
             )}
           </tbody>
-
         </table>
+
+        {showDiscardModal && (
+        <div className="discard-modal-overlay">
+          <div className="discard-modal">
+            {/* Header */}
+            <div className="discard-modal-header">
+              <div className="trash-icon-container">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#e5484d"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+              </div>
+              <h2>Discard changes?</h2>
+            </div>
+
+            {/* Content */}
+            <div className="discard-modal-body">
+              <p>You have unsaved changes. Discard them?</p>
+            </div>
+
+            {/* Actions */}
+            <div className="discard-modal-footer">
+              <button
+                className="btn-secondary"
+                onClick={() => setShowDiscardModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-danger"
+                onClick={handleConfirmDiscard}
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
          <div className="pagination">
             <span>

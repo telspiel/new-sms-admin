@@ -306,7 +306,7 @@ const updateUserRouting = async () => {
     <div className="userwise-routing">
        {toastMessage && (
         <div className="toast-message">
-            <i className="fa-solid fa-circle-check"></i>
+            <i className="fa-regular fa-circle-check"></i>
             {toastMessage}
         </div>
         )}

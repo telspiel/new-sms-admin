@@ -175,9 +175,6 @@
 }
 
 
-/* =================================
-   Input / Select
-================================= */
 
 .external-form-group input,
 .external-form-group select {
@@ -221,7 +218,6 @@
 
 
 /* Helper Text */
-
 .external-form-group small {
   display: block;
   margin-top: 7px;
@@ -231,10 +227,29 @@
   text-align: left;
 }
 
+.locked-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
 
-/* =================================
-   Permissions
-================================= */
+.disabled-input {
+  width: 100%;
+  padding-right: 36px; /* Reserve space so text doesn't hide behind the icon */
+  background-color: #f5f6fa;
+  border: 1px solid #e1e4ea;
+  color: #555;
+  cursor: not-allowed;
+}
+
+.input-lock-icon {
+  position: absolute;
+  right: 12px;
+  color: #94a3b8; 
+  pointer-events: none; 
+}
+
 
 .external-permissions-grid {
   display: grid;
