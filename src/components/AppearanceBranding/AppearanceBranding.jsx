@@ -14,12 +14,11 @@ const AppearanceBranding = () => {
   // Upload type tracker: 'logo' | 'favicon'
   const [uploadType, setUploadType] = useState(null);
 
-  // Logo States
-  const [logoPreview, setLogoPreview] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(userData?.logoUrl || null);
   const [finalLogoFile, setFinalLogoFile] = useState(null);
 
   // Favicon States
-  const [faviconPreview, setFaviconPreview] = useState(null);
+  const [faviconPreview, setFaviconPreview] = useState(userData?.faviconUrl || null);
   const [finalFaviconFile, setFinalFaviconFile] = useState(null);
 
   // Shared Cropper Modal States
@@ -132,6 +131,7 @@ const AppearanceBranding = () => {
     setShowCropModal(false);
   };
 
+  
   // Remove handlers
   const handleRemoveLogo = () => {
     setLogoPreview(null);
@@ -291,84 +291,88 @@ const AppearanceBranding = () => {
 
         {/* Logo Section */}
         <div className="branding-field">
-          <label>Logo</label>
-          <div className="upload-box">
-            {logoPreview ? (
-              <div className="upload-icon preview-icon">
-                <img src={logoPreview} alt="Logo preview" />
-              </div>
-            ) : (
-              <div className="upload-icon">
-                <Send size={32} strokeWidth={1.8} />
-              </div>
-            )}
+  <label>Logo</label>
+  <div className="upload-box">
+    {logoPreview ? (
+      <div className="upload-icon preview-icon">
+        <img src={logoPreview} alt="Logo preview" />
+      </div>
+    ) : (
+      <div className="upload-icon">
+        <Send size={32} strokeWidth={1.8} />
+      </div>
+    )}
 
-            <div className="upload-content">
-              <h3>Upload your logo</h3>
-              <p>
-                PNG, JPG or SVG · max 1 MB · square works best · crop after choosing
-              </p>
+    <div className="upload-content">
+      <h3>Upload your logo</h3>
+      <p>
+        PNG, JPG or SVG · max 1 MB · square works best · crop after choosing
+      </p>
 
-              <div className="upload-actions">
-                <button
-                  className="choose-file-btn"
-                  onClick={handleChooseLogoClick}
-                >
-                  Choose file
-                </button>
-                {logoPreview && (
-                  <button
-                    className="remove-file-btn"
-                    onClick={handleRemoveLogo}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="upload-actions">
+        <button
+          type="button"
+          className="choose-file-btn"
+          onClick={handleChooseLogoClick}
+        >
+          Choose file
+        </button>
+        {logoPreview && (
+          <button
+            type="button"
+            className="remove-file-btn"
+            onClick={handleRemoveLogo}
+          >
+            Remove
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+</div>
 
         {/* Favicon Section */}
         <div className="branding-field favicon-field">
-          <label>Favicon</label>
-          <div className="upload-box">
-            {faviconPreview ? (
-              <div className="upload-icon preview-icon">
-                <img src={faviconPreview} alt="Favicon preview" />
-              </div>
-            ) : (
-              <div className="upload-icon">
-                <Send size={32} strokeWidth={1.8} />
-              </div>
-            )}
+  <label>Favicon</label>
+  <div className="upload-box">
+    {faviconPreview ? (
+      <div className="upload-icon preview-icon">
+        <img src={faviconPreview} alt="Favicon preview" />
+      </div>
+    ) : (
+      <div className="upload-icon">
+        <Send size={32} strokeWidth={1.8} />
+      </div>
+    )}
 
-            <div className="upload-content">
-              <h3>Upload your favicon</h3>
-              <p>
-                PNG, ICO or SVG · max 512 KB · square, 32×32 or 512×512 works
-                best · crop after choosing
-              </p>
+    <div className="upload-content">
+      <h3>Upload your favicon</h3>
+      <p>
+        PNG, ICO or SVG · max 512 KB · square, 32×32 or 512×512 works
+        best · crop after choosing
+      </p>
 
-              <div className="upload-actions">
-                <button
-                  className="choose-file-btn"
-                  onClick={handleChooseFaviconClick}
-                >
-                  Choose file
-                </button>
-                {faviconPreview && (
-                  <button
-                    className="remove-file-btn"
-                    onClick={handleRemoveFavicon}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="upload-actions">
+        <button
+          type="button"
+          className="choose-file-btn"
+          onClick={handleChooseFaviconClick}
+        >
+          Choose file
+        </button>
+        {faviconPreview && (
+          <button
+            type="button"
+            className="remove-file-btn"
+            onClick={handleRemoveFavicon}
+          >
+            Remove
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+</div>
       </div>
 
       {/* Crop Modal */}

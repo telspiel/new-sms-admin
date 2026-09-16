@@ -309,6 +309,7 @@
 .history-buttons .submit-btn {
   height: 44px;
   padding: 0 28px;
+  width: auto;
   border: none;
   border-radius: 12px;
   background: linear-gradient(to right, #f2c94c, #e0a800);

@@ -8,7 +8,16 @@ const OperatorTraffic = () => {
   const [activeTab, setActiveTab] = useState("live");
   const { userData } = useContext(AuthContext);
 
-  const today = new Date().toISOString().split("T")[0];
+  // Get local date formatted as YYYY-MM-DD
+  const getTodayString = () => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const today = getTodayString();
 
   const [fromDate, setFromDate] = useState(today);
   const [toDate, setToDate] = useState(today);
@@ -571,6 +580,7 @@ const filteredHistoryTraffic = historyTraffic.filter((item) => {
       <input
         type="date"
         value={fromDate}
+        max={today}
         onChange={(e) => setFromDate(e.target.value)}
       />
     </div>
@@ -580,6 +590,7 @@ const filteredHistoryTraffic = historyTraffic.filter((item) => {
       <input
         type="date"
         value={toDate}
+        max={today}
         onChange={(e) => setToDate(e.target.value)}
       />
     </div>

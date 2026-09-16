@@ -134,8 +134,25 @@
   font-weight: 500;
 }
 
-/* Empty State */
+/* Select Box Red Border & Background */
+select.select-error {
+  border: 1px solid #e53935 !important;
+  background-color: #fdeded !important;
+  color: #111;
+  border-radius: 12px;
+}
 
+/* Error Message Text Below Input */
+.manage-field-error-text {
+  display: block;
+  color: #e53935;
+  font-size: 13px;
+  margin-top: 6px;
+  font-weight: 500;
+  text-align: left;
+}
+
+/* Empty State */
 .empty-connect-state{
   height:280px;
   display:flex;

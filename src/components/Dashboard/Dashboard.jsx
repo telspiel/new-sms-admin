@@ -103,8 +103,8 @@ function Dashboard() {
       data: hourlyGrid.map((item) =>
         Number(item.totalDelivered)
       ),
-      borderColor: "#ffcc29",
-      backgroundColor: "#ffcc29",
+      borderColor: "#44a67e",
+      backgroundColor: "#44a67e",
       fill: false,
       tension: 0.4,
       pointRadius: 4,
@@ -233,13 +233,11 @@ const summaryData = {
           chartArea.bottom
         );
 
-        gradient.addColorStop(0, color);
-
-        gradient.addColorStop(0.35, `${color}CC`);
-
-        gradient.addColorStop(0.7, `${color}55`);
-
-        gradient.addColorStop(1, `${color}15`);
+        // Boosted gradient visibility thresholds
+        gradient.addColorStop(0, color);            // 100% Opacity at top
+        gradient.addColorStop(0.5, `${color}E6`);   // 90% Opacity middle
+        gradient.addColorStop(0.85, `${color}B3`);  // 70% Opacity lower
+        gradient.addColorStop(1, `${color}80`);     // 50% Opacity at bottom
 
         return gradient;
       },
@@ -405,106 +403,114 @@ const formatIndianNumber = (num) => {
       {/* Charts */}
 
       <div className="charts-grid">
-  {/* Today Summary Report Card */}
-  <div className="chart-card">
-    <div className="chart-header">
-      <h3>Today Summary Report</h3>
-      <p>Today</p>
-    </div>
-
-    {isSummaryLoading ? (
-      <div className="chart-loading-state">
-        <div className="chart-spinner"></div>
-        <span>Loading report...</span>
-      </div>
-    ) : hasSummaryData ? (
-      <Bar
-        data={summaryData}
-        options={{
-          responsive: true,
-          plugins: {
-            legend: {
-              display: false,
-            },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-            },
-          },
-        }}
-      />
-    ) : (
-      <div className="no-chart-data">
-        <div className="no-chart-icon">
-          <i className="fa-solid fa-chart-line"></i>
+      {/* Today Summary Report Card */}
+      <div className="chart-card">
+        <div className="chart-header">
+          <h3>Today Summary Report</h3>
+          <p>Today</p>
         </div>
-        <h3>No activity yet</h3>
-        <p>
-          No messages have been sent today.
-          <br />
-          Data will appear once traffic starts.
-        </p>
-      </div>
-    )}
-  </div>
 
-  {/* Hourly Report Card */}
-  <div className="chart-card">
-    <div className="chart-header">
-      <h3>Hourly Report</h3>
-      <p>Last 24h</p>
-    </div>
-
-    {isHourlyLoading ? (
-      <div className="chart-loading-state">
-        <div className="chart-spinner"></div>
-        <span>Loading report...</span>
-      </div>
-    ) : hasHourlyData ? (
-      <Line
-        data={hourlyData}
-        options={{
-          responsive: true,
-          plugins: {
-            legend: {
-              position: "bottom",
-              labels: {
-                usePointStyle: true,
-                pointStyle: "circle",
-                padding: 20,
-                boxWidth: 10,
-                boxHeight: 10,
-              },
+        {isSummaryLoading ? (
+          <div className="chart-loading-state">
+            <div className="chart-spinner"></div>
+            <span>Loading report...</span>
+          </div>
+        ) : hasSummaryData ? (
+          <Bar
+          data={summaryData}
+          options={{
+            responsive: true,
+            interaction: {
+              mode: "index",
+              intersect: false, 
             },
-          },
-          scales: {
-            x: {
-              grid: {
+            plugins: {
+              legend: {
                 display: false,
               },
+              tooltip: {
+                enabled: true,
+                intersect: false,
+              },
             },
-            y: {
-              beginAtZero: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+              },
             },
-          },
-        }}
-      />
-    ) : (
-      <div className="no-chart-data">
-        <div className="no-chart-icon">
-          <i className="fa-solid fa-chart-line"></i>
-        </div>
-        <h3>No activity yet</h3>
-        <p>
-          No messages have been sent today.
-          <br />
-          Data will appear once traffic starts.
-        </p>
+          }}
+        />
+        ) : (
+          <div className="no-chart-data">
+            <div className="no-chart-icon">
+              <i className="fa-solid fa-chart-line"></i>
+            </div>
+            <h3>No activity yet</h3>
+            <p>
+              No messages have been sent today.
+              <br />
+              Data will appear once traffic starts.
+            </p>
+          </div>
+        )}
       </div>
-    )}
-  </div>
-</div>
+
+      {/* Hourly Report Card */}
+      <div className="chart-card">
+        <div className="chart-header">
+          <h3>Hourly Report</h3>
+          <p>Last 24h</p>
+        </div>
+
+        {isHourlyLoading ? (
+          <div className="chart-loading-state">
+            <div className="chart-spinner"></div>
+            <span>Loading report...</span>
+          </div>
+        ) : hasHourlyData ? (
+          <Line
+            data={hourlyData}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    usePointStyle: true,
+                    pointStyle: "circle",
+                    padding: 20,
+                    boxWidth: 10,
+                    boxHeight: 10,
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: false,
+                  },
+                },
+                y: {
+                  beginAtZero: true,
+                },
+              },
+            }}
+          />
+        ) : (
+          <div className="no-chart-data">
+            <div className="no-chart-icon">
+              <i className="fa-solid fa-chart-line"></i>
+            </div>
+            <h3>No activity yet</h3>
+            <p>
+              No messages have been sent today.
+              <br />
+              Data will appear once traffic starts.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
 
     </div>
   );

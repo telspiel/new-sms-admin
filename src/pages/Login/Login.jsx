@@ -49,28 +49,17 @@ function Login() {
   const otpRefs = useRef([]);
 
   // Dynamically update document title & favicon if cached brand settings exist
-  // Dynamically update document title & favicon continuously
-useEffect(() => {
-  if (!branding.faviconUrl) return;
-
-  const updateFavicon = (url) => {
-    // Select all potential favicon link tags (icon, shortcut icon, etc.)
-    let links = document.querySelectorAll("link[rel*='icon']");
-
-    if (links.length === 0) {
-      const link = document.createElement("link");
-      link.rel = "icon";
-      link.href = url;
-      document.head.appendChild(link);
-    } else {
-      links.forEach((link) => {
-        link.href = url;
-      });
+  useEffect(() => {
+    if (branding.faviconUrl) {
+      let link = document.querySelector("link[rel*='icon']");
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "shortcut icon";
+        document.getElementsByTagName("head")[0].appendChild(link);
+      }
+      link.href = branding.faviconUrl;
     }
-  };
-
-  updateFavicon(branding.faviconUrl);
-}, [branding.faviconUrl]);
+  }, [branding.faviconUrl]);
 
   // OTP Expiry Countdown
   useEffect(() => {

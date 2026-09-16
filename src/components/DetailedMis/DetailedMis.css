@@ -1,6 +1,10 @@
 .detailed-mis {
   padding: 10px;
   min-height: 100vh;
+  width: 100%;
+  max-width: 90vw;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* Header */
@@ -47,6 +51,149 @@
 .wrap-detailed-mis-input .detailed-mis-field {
   flex: 1;
   min-width: 0;
+}
+
+
+/* Container Positioning */
+.user-client-field {
+  position: relative;
+}
+
+/* Custom Dropdown Trigger Header */
+.custom-dropdown-trigger {
+  height: 40px;
+  padding: 0 12px;
+  background: #ffffff;
+  border: 1px solid #d9dee7;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.custom-dropdown-trigger.active,
+.custom-dropdown-trigger:focus-within {
+  border-color: #f8c400;
+  box-shadow: 0 0 0 3px rgba(248, 196, 0, 0.2);
+}
+
+.select-value-text {
+  font-size: 14px;
+  color: #373435;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.select-value-text.placeholder {
+  color: #7c8490;
+}
+
+/* Right-side Trigger Actions (Clear X + Chevron) */
+.trigger-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.clear-selection-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: color 0.15s ease;
+}
+
+.clear-selection-btn:hover {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
+.select-arrow {
+  background: transparent;
+  border: none;
+  color: #7b8490;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+
+/* Search Field inside Popup */
+.dropdown-search-wrapper {
+  margin-bottom: 6px;
+}
+
+.dropdown-inner-search-input {
+  width: 100%;
+  height: 38px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #334155;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.dropdown-inner-search-input:focus {
+  border-color: #cbd5e1;
+}
+
+.dropdown-inner-search-input::placeholder {
+  color: #94a3b8;
+}
+
+/* Scrollable Options Box */
+.dropdown-options-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.userClient-dropdown-option {
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #475569;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.userClient-dropdown-option:hover {
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+.userClient-dropdown-option.selected {
+  background-color: #fff7dc;
+  color: #854d0e;
+  font-weight: 600;
+}
+
+/* Scrollbar for Popup List */
+.dropdown-options-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-options-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.dropdown-options-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
 }
 
 /* User / Client field should be slightly wider */
@@ -134,9 +281,6 @@
   cursor: pointer;
 }
 
-.user-client-field {
-  position: relative;
-}
 
 .user-client-search-input {
   flex: 1;
@@ -176,7 +320,7 @@
   color: #373435;
 }
 
-.client-dropdown {
+.userClient-dropdown {
   position: absolute;
   top: 100%;
   left: 0;
@@ -186,13 +330,13 @@
   border: 1px solid #d9dee7;
   border-radius: 10px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  max-height: 220px;
+  max-height: 300px;
   overflow-y: auto;
   z-index: 100;
 }
 
 /* Dropdown option */
-.client-dropdown-option {
+.userClient-dropdown-option {
   padding: 10px 14px;
   color: #373435;
   font-size: 14px;
@@ -200,13 +344,13 @@
   text-align: left;
 }
 
-.client-dropdown-option:hover {
+.userClient-dropdown-option:hover {
   background: #fff7dc;
   border-radius: 15px;
 }
 
 /* No result */
-.client-dropdown-no-result {
+.userClient-dropdown-no-result {
   padding: 12px 14px;
   color: #8a94a3;
   font-size: 14px;
@@ -364,9 +508,13 @@
   margin: 0;
 }
 
+
 /* Report & Table Container */
 .detailed-mis-report-container {
   margin-top: 24px;
+  width: 100%;
+  min-width: 0; /* CRITICAL for Flexbox/Grid layouts to allow child scrolling */
+  box-sizing: border-box;
 }
 
 .summary-record-count {
@@ -378,17 +526,23 @@
 
 .detailed-mis-table-wrapper {
   width: 100%;
-  overflow-x: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: block;
+  overflow-x: scroll !important; 
+  overflow-y: hidden;
   background: #ffffff;
   border: 1px solid #e4e8ef;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(20, 34, 55, 0.03);
+  -webkit-overflow-scrolling: touch;
 }
 
 .detailed-mis-table {
   width: 100%;
-  min-width: 1400px;
+  min-width: 2200px; /* Forces width to be wider than container to enable scrollbar */
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .detailed-mis-table th {
@@ -416,16 +570,40 @@
   background-color: #f8fafc;
 }
 
+/* Explicit Scrollbar Styling - Force visible scrollbar track like image */
+.detailed-mis-table-wrapper::-webkit-scrollbar {
+  height: 12px !important; /* Visible height */
+  display: block !important;
+}
+
+.detailed-mis-table-wrapper::-webkit-scrollbar-track {
+  background: #e2e8f0 !important;
+  border-radius: 6px;
+}
+
+.detailed-mis-table-wrapper::-webkit-scrollbar-thumb {
+  background: #64748b !important; /* High contrast thumb */
+  border-radius: 6px;
+  border: 2px solid #e2e8f0;
+}
+
+.detailed-mis-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #475569 !important;
+}
+
+/* Message Text Truncation and Tooltip handling */
 .message-content-cell {
-  max-width: 250px;
+  max-width: 300px;
+  white-space: normal;
 }
 
 .text-truncate {
   display: inline-block;
-  max-width: 240px;
+  max-width: 280px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 /* Status Badges */
@@ -434,6 +612,7 @@
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
+  display: inline-block;
 }
 
 .status-badge.delivered {

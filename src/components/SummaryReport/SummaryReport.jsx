@@ -10,16 +10,23 @@ const SummaryReport = () => {
 
   // Helper function to get today's date formatted as YYYY-MM-DD in Asia/Kolkata (IST)
   const getTodayIST = () => {
-    const options = { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" };
-    const formatter = new Intl.DateTimeFormat("en-CA", options);
-    return formatter.format(new Date());
+  const options = {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   };
+  const formatter = new Intl.DateTimeFormat("en-CA", options);
+  return formatter.format(new Date());
+};
+
+const todayIST = getTodayIST();
 
   // Filter States
   const [selectedUser, setSelectedUser] = useState("");
   const [selectedSenderId, setSelectedSenderId] = useState("");
-  const [fromDate, setFromDate] = useState(getTodayIST());
-  const [toDate, setToDate] = useState(getTodayIST());
+  const [fromDate, setFromDate] = useState(todayIST);
+  const [toDate, setToDate] = useState(todayIST);
 
   // Options populated dynamically from senderIdSummaryReport
   const [userList, setUserList] = useState([]);
@@ -136,13 +143,49 @@ const SummaryReport = () => {
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentRows = gridData.slice(indexOfFirstRow, indexOfLastRow);
 
-  const getPageNumbers = () => {
-    const pages = [];
+  // Truncated Pagination Number Generator
+const getPageNumbers = () => {
+  const pages = [];
+  const maxVisiblePages = 5; // Maximum numbered buttons to show
+
+  if (totalPages <= maxVisiblePages) {
     for (let i = 1; i <= totalPages; i++) {
       pages.push(i);
     }
-    return pages;
-  };
+  } else {
+    // Always include first page
+    pages.push(1);
+
+    if (currentPage > 3) {
+      pages.push("LEFT_DOTS");
+    }
+
+    // Determine middle page bounds around current page
+    let start = Math.max(2, currentPage - 1);
+    let end = Math.min(totalPages - 1, currentPage + 1);
+
+    // Adjust bounds near edges
+    if (currentPage <= 3) {
+      end = 3;
+    }
+    if (currentPage >= totalPages - 2) {
+      start = totalPages - 2;
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    if (currentPage < totalPages - 2) {
+      pages.push("RIGHT_DOTS");
+    }
+
+    // Always include last page
+    pages.push(totalPages);
+  }
+
+  return pages;
+};
 
   const activeExtraColumnsCount =
     (showUserColumn ? 1 : 0) + (showSenderColumn ? 1 : 0);
@@ -201,6 +244,7 @@ const SummaryReport = () => {
             <input
               type="date"
               value={fromDate}
+              max={todayIST}
               onChange={(e) => setFromDate(e.target.value)}
             />
           </div>
@@ -214,6 +258,8 @@ const SummaryReport = () => {
             <input
               type="date"
               value={toDate}
+              max={todayIST}
+              min={fromDate}
               onChange={(e) => setToDate(e.target.value)}
             />
           </div>
@@ -394,29 +440,41 @@ const SummaryReport = () => {
             </div>
 
             <div className="summary-pagination-buttons">
+              {/* Previous Page Arrow */}
               <button
-                className={`summary-page-arrow ${
-                  currentPage === 1 ? "disabled" : ""
-                }`}
+                type="button"
+                className={`summary-page-arrow ${currentPage === 1 ? "disabled" : ""}`}
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               >
                 ‹
               </button>
 
-              {getPageNumbers().map((page) => (
-                <button
-                  key={page}
-                  className={`summary-page ${
-                    currentPage === page ? "active" : ""
-                  }`}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </button>
-              ))}
+              {/* Page Numbers & Ellipses */}
+              {getPageNumbers().map((page, idx) => {
+                if (page === "LEFT_DOTS" || page === "RIGHT_DOTS") {
+                  return (
+                    <span key={`dots-${idx}`} className="summary-pagination-dots">
+                      ...
+                    </span>
+                  );
+                }
 
+                return (
+                  <button
+                    key={page}
+                    type="button"
+                    className={`summary-page ${currentPage === page ? "active" : ""}`}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+
+              {/* Next Page Arrow */}
               <button
+                type="button"
                 className={`summary-page-arrow ${
                   currentPage === totalPages || totalPages === 0 ? "disabled" : ""
                 }`}

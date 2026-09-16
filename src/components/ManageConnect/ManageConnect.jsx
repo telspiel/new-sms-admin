@@ -18,6 +18,7 @@ const ManageConnect = () => {
    const [toastMessage, setToastMessage] = useState("");
 
    const [originalRows, setOriginalRows] = useState([]);
+   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const removeRow = (index) => {
     setRows(rows.filter((_, i) => i !== index));
@@ -134,17 +135,26 @@ const totalAllocated = rows.reduce(
 const isAllocationInvalid = totalAllocated !== 100;
 
 //To update kennel group mapping API
-    const updateKennalGroupMap = async () => {
+   const updateKennalGroupMap = async () => {
+    setIsSubmitted(true);
+
     if (!selectedGroup) {
-        alert("Please select a routing group.");
-        return;
+      alert("Please select a routing group.");
+      return;
     }
 
+    // 1. Check if any row is missing a kannel selection
+    const hasUnselectedKannel = rows.some((row) => !row.kannelId);
+    if (hasUnselectedKannel) {
+      return; // Stops function execution before calling the API
+    }
+
+    // 2. Check total percentage allocation
     if (totalAllocated !== 100) {
-        setAllocationError(
+      setAllocationError(
         `⚠ Total % of the group cannot be more or less than 100. Currently at ${totalAllocated}%.`
-        );
-        return;
+      );
+      return;
     }
 
     setAllocationError("");
@@ -152,46 +162,47 @@ const isAllocationInvalid = totalAllocated !== 100;
     const kannelPayload = {};
 
     rows.forEach((row) => {
-        if (row.kannelId) {
+      if (row.kannelId) {
         kannelPayload[row.kannelId] = String(row.percentage);
-        }
+      }
     });
 
     const payload = {
-        loggedInUsername: userData.username,
-        groupId: String(selectedGroup),
-        kannelList: kannelPayload,
+      loggedInUsername: userData.username,
+      groupId: String(selectedGroup),
+      kannelList: kannelPayload,
     };
 
+    // 3. API Call will only execute if all validations pass
     try {
-        const response = await Endpoints.post(
+      const response = await Endpoints.post(
         "updatedKennalGroupMap",
         payload,
         userData.authJwtToken
-        );
+      );
 
-        if (response.code === 1007 || response.result === "success") {
-
+      if (response.code === 1007 || response.result === "success") {
         const selectedGroupName =
-        groups.find((group) => String(group.id) === String(selectedGroup))
+          groups.find((group) => String(group.id) === String(selectedGroup))
             ?.name || "Selected group";
 
         setToastMessage(`${selectedGroupName} kannel routing saved`);
 
         setTimeout(() => {
-        setToastMessage("");
+          setToastMessage("");
         }, 2000);
-        } else {
+      } else {
         alert(response.message);
-        }
+      }
     } catch (error) {
-        console.error(error);
+      console.error(error);
     }
-    };
+  };
 
     const handleCancel = () => {
     setRows(JSON.parse(JSON.stringify(originalRows)));
     setAllocationError("");
+    setIsSubmitted(false);
     };
 
   return (
@@ -288,61 +299,76 @@ const isAllocationInvalid = totalAllocated !== 100;
           </div>
         ) : (
           <>
-            {rows.map((row, index) => (
-               <div className="routing-row" key={index}>
+            {rows.map((row, index) => {
+            const isKannelInvalid = isSubmitted && !row.kannelId;
+
+            return (
+              <>
+              <div className="routing-row" key={index}>
                 <div className="routing-field">
-                {index === 0 && <label>KANNEL NAME</label>}
-                <select
-                value={row.kannelId || ""}
-                onChange={(e) => {
-                    const selected = kannelList.find(
-                    (k) => String(k.id) === e.target.value
-                    );
+                  {index === 0 && <label>KANNEL NAME</label>}
+                  <select
+                    className={isKannelInvalid ? "select-error" : ""}
+                    value={row.kannelId || ""}
+                    onChange={(e) => {
+                      const selected = kannelList.find(
+                        (k) => String(k.id) === e.target.value
+                      );
 
-                    const updated = [...rows];
-                    updated[index].kannelId = selected?.id;
-                    updated[index].kannelName = selected?.name;
-                    setRows(updated);
-                }}
-                >
-                <option value="">Select Kannel</option>
+                      const updated = [...rows];
+                      updated[index].kannelId = selected?.id;
+                      updated[index].kannelName = selected?.name;
+                      setRows(updated);
+                    }}
+                  >
+                    <option value="">-- Select --</option>
 
-                {kannelList.map((kannel) => (
-                    <option key={kannel.id} value={kannel.id}>
-                    {kannel.name}
-                    </option>
-                ))}
-                </select>
+                    {kannelList.map((kannel) => (
+                      <option key={kannel.id} value={kannel.id}>
+                        {kannel.name}
+                      </option>
+                    ))}
+                  </select>
+                  
+                  {/* Error message under the select dropdown */}
+                  
                 </div>
 
                 <div className="percentage-field">
-                {index === 0 && <label>KANNEL PERCENTAGE</label>}
+                  {index === 0 && <label>KANNEL PERCENTAGE</label>}
 
-                <div className="percentage-input">
+                  <div className="percentage-input">
                     <input
-                    type="number"
-                    value={row.percentage}
-                    min="0"
-                    max="100"
-                    onChange={(e) => {
+                      type="number"
+                      value={row.percentage}
+                      min="0"
+                      max="100"
+                      onChange={(e) => {
                         const updated = [...rows];
                         updated[index].percentage = e.target.value;
                         setRows(updated);
-                    }}
+                      }}
                     />
                     <span>%</span>
-                </div>
+                  </div>
                 </div>
 
                 <button
-                className="remove-row"
-                onClick={() => removeRow(index)}
-                disabled={rows.length === 1}
+                  className="remove-row"
+                  onClick={() => removeRow(index)}
+                  disabled={rows.length === 1}
                 >
-                <i className="fa-solid fa-xmark"></i>
+                  <i className="fa-solid fa-xmark"></i>
                 </button>
               </div>
-            ))}
+                {isKannelInvalid && (
+                    <span className="manage-field-error-text">
+                      ⚠ Select a kannel.
+                    </span>
+                  )}
+                </>      
+            );
+          })}
 
             <button className="add-more-btn" onClick={addRow}>
               <i className="fa-solid fa-plus"></i>
