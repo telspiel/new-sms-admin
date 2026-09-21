@@ -116,8 +116,6 @@ const handleSaveEdit = async () => {
 
     const data = await response.json();
 
-    console.log("Users:", data);
-
     if (Array.isArray(data)) {
       setUsers(data);
     } else {
@@ -144,8 +142,6 @@ const getAllRoutingName = async () => {
     );
 
     const data = await response.json();
-
-    console.log("Routing Groups:", data);
 
     if (Array.isArray(data)) {
       setRoutingGroups(data);
@@ -179,8 +175,6 @@ const usernameSearchSelect = async (userId) => {
     );
 
     const data = await response.json();
-
-    console.log("Premium Routing:", data);
 
     if (Array.isArray(data)) {
       setRoutingData(data);
@@ -222,8 +216,6 @@ const descriptionByUsername = async (userId) => {
 
     const data = await response.json();
 
-    console.log("Descriptions:", data);
-
     if (Array.isArray(data)) {
       setDescriptions(data);
     } else {
@@ -237,7 +229,6 @@ const descriptionByUsername = async (userId) => {
 
 //Handle search for username select for table data and descriptions
 const handleSearch = async () => {
-  console.log("Search clicked");
 
   if (!selectedUser) {
     alert("Please select a user.");
@@ -248,7 +239,6 @@ const handleSearch = async () => {
     (user) => String(user.id) === String(selectedUser)
   );
 
-  console.log("Selected User:", selectedUser);
 
 
   try {
@@ -279,16 +269,40 @@ const [singleMobileNumber, setSingleMobileNumber] = useState("");
 const [singleRoutingGroup, setSingleRoutingGroup] = useState("");
 const [singleDescription, setSingleDescription] = useState("");
 
+// Single form errors
+const [singleErrors, setSingleErrors] = useState({
+  user: "",
+  mobile: "",
+  group: "",
+  description: "",
+});
+
+// Bulk form errors
+const [bulkErrors, setBulkErrors] = useState({
+  user: "",
+  group: "",
+  file: "",
+  description: "",
+});
+
 const addPremiumNumber = async () => {
-  if (
-    !singleUser ||
-    !singleMobileNumber ||
-    !singleRoutingGroup ||
-    !singleDescription
-  ) {
-    alert("Please fill all required fields.");
+ const errors = {};
+  if (!singleUser) errors.user = "Please select a user.";
+  if (!singleMobileNumber) {
+    errors.mobile = "Mobile number is required.";
+  } else if (singleMobileNumber.length !== 10) {
+    errors.mobile = "Please enter a valid 10-digit mobile number.";
+  }
+  if (!singleRoutingGroup) errors.group = "Please select a routing group.";
+  if (!singleDescription) errors.description = "Description is required.";
+
+  if (Object.keys(errors).length > 0) {
+    setSingleErrors(errors);
     return;
   }
+
+  // Clear errors if valid
+  setSingleErrors({});
 
   try {
     const payload = {
@@ -311,8 +325,6 @@ const addPremiumNumber = async () => {
     );
 
     const message = await response.text();
-
-    console.log(message);
 
     setToastMessage(message);
     setShowToast(true);
@@ -345,15 +357,18 @@ const [bulkDescription, setBulkDescription] = useState("");
 const [bulkFile, setBulkFile] = useState(null);
 
 const uploadPremiumNumber = async () => {
-  if (
-    !bulkUser ||
-    !bulkRoutingGroup ||
-    !bulkDescription ||
-    !bulkFile
-  ) {
-    alert("Please fill all required fields.");
+  const errors = {};
+  if (!bulkUser) errors.user = "Please select a user.";
+  if (!bulkRoutingGroup) errors.group = "Please select a routing group.";
+  if (!bulkFile) errors.file = "Please choose a file to upload.";
+  if (!bulkDescription) errors.description = "Description is required.";
+
+  if (Object.keys(errors).length > 0) {
+    setBulkErrors(errors);
     return;
   }
+
+  setBulkErrors({});
 
   try {
     const fileType = bulkFile.name.split(".").pop();
@@ -377,8 +392,6 @@ const uploadPremiumNumber = async () => {
     );
 
     const data = await response.json();
-
-    console.log(data);
 
     setToastMessage(data.msg);
     setShowToast(true);
@@ -467,6 +480,48 @@ const handleReset = () => {
   setMobileNumber("");
   setSelectedDescription("");
   setRoutingData([]);
+};
+
+const resetFormAndErrors = () => {
+  // Clear error states
+  setSingleErrors({});
+  setBulkErrors({});
+
+  // Reset single form state
+  setSingleUser("");
+  setSingleMobileNumber("");
+  setSingleRoutingGroup("");
+  setSingleDescription("");
+
+  // Reset bulk form state
+  setBulkUser("");
+  setBulkRoutingGroup("");
+  setBulkFile(null);
+  setBulkDescription("");
+};
+
+const handleCloseDrawer = () => {
+  resetFormAndErrors();
+  setShowUserDrawer(false);
+};
+
+const [showDiscardModal, setShowDiscardModal] = useState(false);
+
+
+const handleCloseEditDrawer = () => {
+
+  setShowDiscardModal(true);
+};
+
+const resetAndCloseEditDrawer = () => {
+  setShowEditDrawer(false);
+  setSelectedGroupName("");
+};
+
+// Triggered when clicking "Discard" on the discard modal
+const handleConfirmDiscard = () => {
+  setShowDiscardModal(false);
+  resetAndCloseEditDrawer();
 };
 
   return (
@@ -571,7 +626,7 @@ const handleReset = () => {
         <>
             <div
             className="drawer-overlay"
-            onClick={() => setShowUserDrawer(false)}
+            onClick={handleCloseDrawer}
             ></div>
 
             <div className="user-add-drawer">
@@ -586,7 +641,7 @@ const handleReset = () => {
 
                 <button
                 className="user-close-drawer"
-                onClick={() => setShowUserDrawer(false)}
+                onClick={handleCloseDrawer}
                 >
                 <i className="fa-solid fa-xmark"></i>
                 </button>
@@ -621,156 +676,222 @@ const handleReset = () => {
 
                 <>
                     {/* User */}
-                    <div className="routing-form-group">
-                    <label>
-                        User <span>*</span>
-                    </label>
+                  <div className="routing-form-group">
+                  <label>
+                    User <span style={{ color: "#d83b2d" }}>*</span>
+                  </label>
 
-                    <select
+                  <select
+                    className={singleErrors.user ? "input-errors" : ""}
                     value={singleUser}
-                    onChange={(e) => setSingleUser(e.target.value)}
-                    >
+                    onChange={(e) => {
+                      setSingleUser(e.target.value);
+                      if (singleErrors.user) setSingleErrors((prev) => ({ ...prev, user: "" }));
+                    }}
+                  >
                     <option value="">Select a user...</option>
-
                     {users.map((user) => (
-                        <option key={user.id} value={user.id}>
+                      <option key={user.id} value={user.id}>
                         {user.name}
-                        </option>
+                      </option>
                     ))}
-                    </select>
-                    </div>
+                  </select>
+                  {singleErrors.user && (
+                    <p className="error-text">
+                      ⚠{" "} {singleErrors.user}
+                    </p>
+                  )}
+                </div>
 
                     {/* Mobile */}
-                    <div className="routing-form-group">
+                   <div className="routing-form-group">
                     <label>
-                        Mobile Number <span>*</span>
+                      Mobile Number <span style={{ color: "#d83b2d" }}>*</span>
                     </label>
 
                     <div className="user-mobile-input">
+                      <div className="country-code">+91</div>
 
-                        <div className="country-code">
-                        +91
-                        </div>
-
-                       <input
+                      <input
                         type="text"
+                        className={singleErrors.mobile ? "input-errors" : ""}
                         maxLength={10}
                         placeholder="10-digit mobile number"
                         value={singleMobileNumber}
-                        onChange={(e) =>
-                            setSingleMobileNumber(e.target.value.replace(/\D/g, ""))
-                        }
-                        />
-
+                        onChange={(e) => {
+                          setSingleMobileNumber(e.target.value.replace(/\D/g, ""));
+                          if (singleErrors.mobile) setSingleErrors((prev) => ({ ...prev, mobile: "" }));
+                        }}
+                      />
                     </div>
-                    </div>
+                    {singleErrors.mobile && (
+                      <p className="error-text">
+                        ⚠{" "} {singleErrors.mobile}
+                      </p>
+                    )}
+                  </div>
 
                     {/* Group */}
                    <div className="routing-form-group">
                     <label>
-                        Group Name <span>*</span>
+                      Group Name <span style={{ color: "#d83b2d" }}>*</span>
                     </label>
 
                     <select
-                    value={singleRoutingGroup}
-                    onChange={(e) => setSingleRoutingGroup(e.target.value)}
+                      className={singleErrors.group ? "input-errors" : ""}
+                      value={singleRoutingGroup}
+                      onChange={(e) => {
+                        setSingleRoutingGroup(e.target.value);
+                        if (singleErrors.group) setSingleErrors((prev) => ({ ...prev, group: "" }));
+                      }}
                     >
-                    <option value="">Select a routing group...</option>
-
-                    {routingGroups.map((group) => (
+                      <option value="">Select a routing group...</option>
+                      {routingGroups.map((group) => (
                         <option key={group.id} value={group.id}>
-                        {group.groupName}
+                          {group.groupName}
                         </option>
-                    ))}
+                      ))}
                     </select>
-                    </div>
+                    {singleErrors.group && (
+                      <p className="error-text">
+                        ⚠{" "} {singleErrors.group}
+                      </p>
+                    )}
+                  </div>
 
                     {/* Description */}
-                    <div className="routing-form-group">
-                    <label>
-                        Description <span>*</span>
-                    </label>
+                  <div className="routing-form-group">
+                  <label>
+                    Description <span style={{ color: "#d83b2d" }}>*</span>
+                  </label>
 
-                   <input
+                  <input
                     type="text"
+                    className={singleErrors.description ? "input-errors" : ""}
                     placeholder="Why is this number on premium routing?"
                     value={singleDescription}
-                    onChange={(e) => setSingleDescription(e.target.value)}
-                    />
-                    </div>
-
+                    onChange={(e) => {
+                      setSingleDescription(e.target.value);
+                      if (singleErrors.description)
+                        setSingleErrors((prev) => ({ ...prev, description: "" }));
+                    }}
+                  />
+                  {singleErrors.description && (
+                    <p className="error-text">
+                      ⚠{" "} {singleErrors.description}
+                    </p>
+                  )}
+                </div>
                 </>
 
                 ) : (
 
                 <>
 
-                    <div className="routing-form-group">
+                  <div className="routing-form-group">
                     <label>
-                        User <span>*</span>
+                      User <span style={{ color: "#d83b2d" }}>*</span>
                     </label>
 
                     <select
-                    value={bulkUser}
-                    onChange={(e) => setBulkUser(e.target.value)}
+                      className={bulkErrors.user ? "input-errors" : ""}
+                      value={bulkUser}
+                      onChange={(e) => {
+                        setBulkUser(e.target.value);
+                        if (bulkErrors.user) setBulkErrors((prev) => ({ ...prev, user: "" }));
+                      }}
                     >
-                    <option value="">Select a user...</option>
-
-                    {users.map((user) => (
+                      <option value="">Select a user...</option>
+                      {users.map((user) => (
                         <option key={user.id} value={user.id}>
-                        {user.name}
+                          {user.name}
                         </option>
-                    ))}
+                      ))}
                     </select>
-                    </div>
+                    {bulkErrors.user && (
+                      <p className="error-text">
+                        ⚠{" "} {bulkErrors.user}
+                      </p>
+                    )}
+                  </div>
 
-                    <div className="routing-form-group">
+                   <div className="routing-form-group">
                     <label>
-                        Group Name <span>*</span>
+                      Group Name <span style={{ color: "#d83b2d" }}>*</span>
                     </label>
 
                     <select
-                    value={bulkRoutingGroup}
-                    onChange={(e) => setBulkRoutingGroup(e.target.value)}
+                      className={bulkErrors.group ? "input-errors" : ""}
+                      value={bulkRoutingGroup}
+                      onChange={(e) => {
+                        setBulkRoutingGroup(e.target.value);
+                        if (bulkErrors.group) setBulkErrors((prev) => ({ ...prev, group: "" }));
+                      }}
                     >
-                    <option value="">Select a routing group...</option>
-
-                    {routingGroups.map((group) => (
+                      <option value="">Select a routing group...</option>
+                      {routingGroups.map((group) => (
                         <option key={group.id} value={group.id}>
-                        {group.groupName}
+                          {group.groupName}
                         </option>
-                    ))}
+                      ))}
                     </select>
-                    </div>
+                    {bulkErrors.group && (
+                      <p className="error-text">
+                        ⚠{" "} {bulkErrors.group}
+                      </p>
+                    )}
+                  </div>
 
                     <div className="routing-form-group">
-                    <label>
-                        Upload File <span>*</span>
-                    </label>
-                    <div className="user-upload-box">
+                      <label>
+                        Upload File <span style={{ color: "#d83b2d" }}>*</span>
+                      </label>
+                      <div className={`user-upload-box ${bulkErrors.file ? "has-error" : ""}`}>
                         <input
-                        type="file"
-                        accept=".txt,.csv,.xlsx"
-                        onChange={(e) => setBulkFile(e.target.files[0])}
+                          type="file"
+                          className={bulkErrors.file ? "input-errors" : ""}
+                          accept=".txt,.csv,.xlsx"
+                          onChange={(e) => {
+                            setBulkFile(e.target.files[0]);
+                            if (bulkErrors.file) setBulkErrors((prev) => ({ ...prev, file: "" }));
+                          }}
                         />
-                        <p>
-                        Only .txt, .csv or .xlsx files are allowed · max 500 numbers per file
+                        <p style={{ color: bulkErrors.file ? "#d83b2d" : undefined }}>
+                          Only .txt, .csv or .xlsx files are allowed · max 500 numbers per file
                         </p>
-                    </div>
+                      </div>
+                      {bulkErrors.file && (
+                        <p className="error-text">
+                          ⚠{" "} {bulkErrors.file}
+                        </p>
+                      )}
                     </div>
 
-                    <div className="routing-form-group">
+                   <div className="routing-form-group">
                     <label>
-                        Description <span>*</span>
+                      Description <span style={{ color: "#d83b2d" }}>*</span>{" "}
+                      <span style={{ fontSize: "12px", color: "#6c757d", fontWeight: "normal" }}>
+                        (applied to every number in the file)
+                      </span>
                     </label>
 
                     <input
-                    type="text"
-                    placeholder="Description"
-                    value={bulkDescription}
-                    onChange={(e) => setBulkDescription(e.target.value)}
+                      type="text"
+                      className={bulkErrors.description ? "input-errors" : ""}
+                      placeholder="e.g. Q3 premium routing batch"
+                      value={bulkDescription}
+                      onChange={(e) => {
+                        setBulkDescription(e.target.value);
+                        if (bulkErrors.description)
+                          setBulkErrors((prev) => ({ ...prev, description: "" }));
+                      }}
                     />
-                    </div>
+                    {bulkErrors.description && (
+                      <p className="error-text">
+                        ⚠{" "} {bulkErrors.description}
+                      </p>
+                    )}
+                  </div>
 
                 </>
 
@@ -782,7 +903,7 @@ const handleReset = () => {
             <div className="user-drawer-footer">
             <button
                 className="cancel-button"
-                onClick={() => setShowUserDrawer(false)}
+                onClick={handleCloseDrawer}
             >
                 Cancel
             </button>
@@ -864,7 +985,6 @@ const handleReset = () => {
               </tr>
             </thead>
           )}
-
           <tbody>
             {loading ? (
               <tr>
@@ -895,11 +1015,20 @@ const handleReset = () => {
               </tr>
             ) : filteredRoutingData.length === 0 ? (
               <tr>
-                <td colSpan="7" className="empty-table-cell"> {/* Updated colSpan */}
-                  <div className="empty-state">
-                    <h2>No data found</h2>
-                    <p>No data found for the selected user.</p>
-                  </div>
+                <td colSpan="7" className="empty-table-premium">
+                 <div className="empty-state-premium not-found-state">
+                    <div className="empty-icon not-found-icon">
+                        <i className="fa-solid fa-magnifying-glass"></i>
+                    </div>
+
+                    <h2>No matches found</h2>
+
+                    <p>
+                        No routing entries match your search or filters
+                        <br />
+                        Try adjusting them.
+                    </p>
+                    </div>
                 </td>
               </tr>
             ) : (
@@ -953,7 +1082,7 @@ const handleReset = () => {
 
                   {/* New Group Name Column */}
                   <td>
-                    <span className="group-badge">
+                    <span className="user-group-badge">
                       {getGroupNameById(item.groupid)}
                     </span>
                   </td>
@@ -981,13 +1110,60 @@ const handleReset = () => {
                 </tr>
               ))
             )}
+          </tbody>
+        </table>
+
+        {showDiscardModal && (
+            <div className="discard-modal-overlay">
+              <div className="discard-modal">
+                {/* Header */}
+                <div className="discard-modal-header">
+                  <div className="trash-icon-container">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#e5484d"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M3 6h18" />
+                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                    </svg>
+                  </div>
+                  <h2>Discard changes?</h2>
+                </div>
+
+                {/* Content */}
+                <div className="discard-modal-body">
+                  <p>You have unsaved changes. Discard them?</p>
+                </div>
+
+                {/* Actions */}
+                <div className="discard-modal-footer">
+                  <button
+                    className="btn-secondary"
+                    onClick={() => setShowDiscardModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button className="btn-danger" onClick={handleConfirmDiscard}>
+                    Discard
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
             {/* Modals and Drawers placed outside single row mapping */}
             {showEditDrawer && (
               <>
                 <div
                   className="drawer-overlay"
-                  onClick={() => setShowEditDrawer(false)}
+                  onClick={handleCloseEditDrawer}
                 ></div>
 
                 <div className="user-add-drawer">
@@ -998,7 +1174,7 @@ const handleReset = () => {
                     </div>
                     <button
                       className="user-close-drawer"
-                      onClick={() => setShowEditDrawer(false)}
+                      onClick={handleCloseEditDrawer}
                     >
                       <i className="fa-solid fa-xmark"></i>
                     </button>
@@ -1038,7 +1214,7 @@ const handleReset = () => {
                   <div className="user-drawer-footer">
                     <button
                       className="cancel-button"
-                      onClick={() => setShowEditDrawer(false)}
+                      onClick={handleCloseEditDrawer}
                     >
                       Cancel
                     </button>
@@ -1049,7 +1225,26 @@ const handleReset = () => {
                 </div>
               </>
             )}
+            {routingData.length > 0 && (
+                <div className="routing-table-footer">
+                    <span>
+                    Showing 1-{routingData.length} of {routingData.length}
+                    </span>
 
+                    <div className="pagination">
+                    <button disabled>
+                        <i className="fa-solid fa-angle-left"></i>
+                    </button>
+
+                    <button className="active">1</button>
+
+                    <button disabled>
+                        <i className="fa-solid fa-angle-right"></i>
+                    </button>
+                    </div>
+                </div>
+                )}
+                
             {showDeleteModal && (
               <>
                 <div
@@ -1100,27 +1295,6 @@ const handleReset = () => {
                 </div>
               </>
             )}
-          </tbody>
-        </table>
-            {routingData.length > 0 && (
-                <div className="routing-table-footer">
-                    <span>
-                    Showing 1-{routingData.length} of {routingData.length}
-                    </span>
-
-                    <div className="pagination">
-                    <button disabled>
-                        <i className="fa-solid fa-angle-left"></i>
-                    </button>
-
-                    <button className="active">1</button>
-
-                    <button disabled>
-                        <i className="fa-solid fa-angle-right"></i>
-                    </button>
-                    </div>
-                </div>
-                )}
         </div>
     </div>
   )

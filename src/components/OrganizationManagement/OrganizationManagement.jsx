@@ -14,8 +14,29 @@ const OrganizationManagement = () => {
     // State to handle the Discard Confirmation Modal
     const [showDiscardModal, setShowDiscardModal] = useState(false);
 
+    const initialFormState = {
+    orgName: "",
+    orgEmailId: "",
+    orgContactNumber: "",
+    orgPrimaryContact: "",
+    orgGstNumber: "",
+    orgBillingCycle: "monthly",
+    orgBillingType: "prepaid",
+    orgStatus: "active",
+    orgAddress: "",
+    };
+
     // Helper to trigger closing the active form modal
     const handleConfirmDiscard = () => {
+        setOrgForm(initialFormState);
+        setErrors({});
+
+        // Reset Edit Form State
+        setEditOrgForm({});
+        setEditErrors({});
+        setSelectedOrg(null);
+
+        // Close Drawers & Modal
         setShowAddOrg(false);
         setShowEditOrg(false);
         setShowDiscardModal(false);
@@ -217,10 +238,6 @@ const editOrganization = async () => {
     newErrors.orgPrimaryContact = "Primary Contact Number must be 10 digits.";
   }
 
-  if (!editOrgForm.orgAddress?.trim()) {
-    newErrors.orgAddress = "Address is required.";
-  }
-
   // 2. Optional Field Checks
   if (editOrgForm.orgGstNumber && editOrgForm.orgGstNumber.length < 12) {
     newErrors.orgGstNumber = "GST Number must be at least 12 characters.";
@@ -291,7 +308,7 @@ const editOrganization = async () => {
         </div>
 
         {showAddOrg && (
-        <div className="drawer-overlay" onClick={() => setShowAddOrg(false)}>
+        <div className="drawer-overlay" onClick={() => setShowDiscardModal(true)}>
             <div className="organization-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="drawer-header">
                 <div>
@@ -299,7 +316,7 @@ const editOrganization = async () => {
                 <p>Create a new organization</p>
                 </div>
 
-                <button className="close-btn" onClick={() => setShowAddOrg(false)}>
+                <button className="close-btn" onClick={() => setShowDiscardModal(true)}>
                 <i className="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -322,7 +339,7 @@ const editOrganization = async () => {
                 />
                 {errors.orgName && (
                     <span className="org-error-text">
-                    <i className="fa-solid fa-triangle-exclamation"></i> {errors.orgName}
+                    ⚠{" "} {errors.orgName}
                     </span>
                 )}
                 </div>
@@ -345,7 +362,7 @@ const editOrganization = async () => {
                     />
                     {errors.orgEmailId && (
                     <span className="org-error-text">
-                        <i className="fa-solid fa-triangle-exclamation"></i> {errors.orgEmailId}
+                    ⚠{" "} {errors.orgEmailId}
                     </span>
                     )}
                 </div>
@@ -371,7 +388,7 @@ const editOrganization = async () => {
                     </div>
                     {errors.orgContactNumber && (
                     <span className="org-error-text">
-                        <i className="fa-solid fa-triangle-exclamation"></i> {errors.orgContactNumber}
+                     ⚠{" "} {errors.orgContactNumber}
                     </span>
                     )}
                 </div>
@@ -399,7 +416,7 @@ const editOrganization = async () => {
                     </div>
                     {errors.orgPrimaryContact && (
                     <span className="org-error-text">
-                        <i className="fa-solid fa-triangle-exclamation"></i> {errors.orgPrimaryContact}
+                     ⚠{" "} {errors.orgPrimaryContact}
                     </span>
                     )}
                 </div>
@@ -419,7 +436,7 @@ const editOrganization = async () => {
                     />
                     {errors.orgGstNumber && (
                     <span className="org-error-text">
-                        <i className="fa-solid fa-triangle-exclamation"></i> {errors.orgGstNumber}
+                     ⚠{" "} {errors.orgGstNumber}
                     </span>
                     )}
                 </div>
@@ -665,13 +682,12 @@ const editOrganization = async () => {
                 </td>
                 </tr>
             )}
+          </tbody>
+        </table>
             {showEditOrg && selectedOrg && (
             <div
                 className="drawer-overlay"
-                onClick={() => {
-                setShowEditOrg(false);
-                setEditErrors({}); // Clear errors when drawer closes
-                }}
+                onClick={() => setShowDiscardModal(true)}
             >
                 <div className="organization-drawer" onClick={(e) => e.stopPropagation()}>
                 <div className="drawer-header">
@@ -682,10 +698,7 @@ const editOrganization = async () => {
 
                     <button
                     className="close-btn"
-                    onClick={() => {
-                        setShowEditOrg(false);
-                        setEditErrors({});
-                    }}
+                    onClick={() => setShowDiscardModal(true)}
                     >
                     <i className="fa-solid fa-xmark"></i>
                     </button>
@@ -700,7 +713,7 @@ const editOrganization = async () => {
                     <input
                         type="text"
                         className={editErrors.orgName ? "error-input" : ""}
-                        value={editOrgForm.orgName}
+                        value={editOrgForm.orgName || ""}
                         disabled
                         onChange={(e) => {
                         setEditOrgForm({
@@ -714,7 +727,7 @@ const editOrganization = async () => {
                     />
                     {editErrors.orgName && (
                         <span className="org-error-text">
-                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        ⚠{" "}
                         {editErrors.orgName}
                         </span>
                     )}
@@ -729,7 +742,7 @@ const editOrganization = async () => {
                         <input
                         type="email"
                         className={editErrors.orgEmailId ? "error-input" : ""}
-                        value={editOrgForm.orgEmailId}
+                        value={editOrgForm.orgEmailId || ""}
                         onChange={(e) => {
                             setEditOrgForm({
                             ...editOrgForm,
@@ -742,7 +755,7 @@ const editOrganization = async () => {
                         />
                         {editErrors.orgEmailId && (
                         <span className="org-error-text">
-                            <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                          ⚠{" "}
                             {editErrors.orgEmailId}
                         </span>
                         )}
@@ -761,7 +774,7 @@ const editOrganization = async () => {
                         <span className="country-code">+91</span>
                         <input
                             type="text"
-                            value={editOrgForm.orgContactNumber}
+                            value={editOrgForm.orgContactNumber || ""}
                             maxLength={10}
                             onChange={(e) => {
                             const value = e.target.value.replace(/\D/g, "");
@@ -777,7 +790,7 @@ const editOrganization = async () => {
                         </div>
                         {editErrors.orgContactNumber && (
                         <span className="org-error-text">
-                            <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                           ⚠{" "}
                             {editErrors.orgContactNumber}
                         </span>
                         )}
@@ -798,7 +811,7 @@ const editOrganization = async () => {
                         <span className="country-code">+91</span>
                         <input
                             type="text"
-                            value={editOrgForm.orgPrimaryContact}
+                            value={editOrgForm.orgPrimaryContact || ""}
                             maxLength={10}
                             onChange={(e) => {
                             const value = e.target.value.replace(/\D/g, "");
@@ -814,7 +827,7 @@ const editOrganization = async () => {
                         </div>
                         {editErrors.orgPrimaryContact && (
                         <span className="org-error-text">
-                            <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                           ⚠{" "}
                             {editErrors.orgPrimaryContact}
                         </span>
                         )}
@@ -826,7 +839,7 @@ const editOrganization = async () => {
                         <input
                         type="text"
                         className={editErrors.orgGstNumber ? "error-input" : ""}
-                        value={editOrgForm.orgGstNumber}
+                        value={editOrgForm.orgGstNumber || ""}
                         onChange={(e) => {
                             setEditOrgForm({
                             ...editOrgForm,
@@ -839,7 +852,7 @@ const editOrganization = async () => {
                         />
                         {editErrors.orgGstNumber && (
                         <span className="org-error-text">
-                            <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                           ⚠{" "}
                             {editErrors.orgGstNumber}
                         </span>
                         )}
@@ -850,7 +863,7 @@ const editOrganization = async () => {
                     <div className="org-form-group">
                         <label>Billing Cycle</label>
                         <select
-                        value={editOrgForm.orgBillingCycle}
+                        value={editOrgForm.orgBillingCycle || "monthly"}
                         onChange={(e) =>
                             setEditOrgForm({
                             ...editOrgForm,
@@ -868,7 +881,7 @@ const editOrganization = async () => {
                     <div className="org-form-group">
                         <label>Billing Type</label>
                         <select
-                        value={editOrgForm.orgBillingType}
+                        value={editOrgForm.orgBillingType || "prepaid"}
                         onChange={(e) =>
                             setEditOrgForm({
                             ...editOrgForm,
@@ -886,7 +899,7 @@ const editOrganization = async () => {
                     <div className="org-form-group">
                         <label>Status</label>
                         <select
-                        value={editOrgForm.orgStatus}
+                        value={editOrgForm.orgStatus || "active"}
                         onChange={(e) =>
                             setEditOrgForm({
                             ...editOrgForm,
@@ -902,13 +915,11 @@ const editOrganization = async () => {
 
                     {/* Address */}
                     <div className="org-form-group">
-                    <label>
-                        Address <span>*</span>
-                    </label>
+                    <label>Address</label>
                     <textarea
                         rows="5"
                         className={editErrors.orgAddress ? "error-input" : ""}
-                        value={editOrgForm.orgAddress}
+                        value={editOrgForm.orgAddress || ""}
                         onChange={(e) => {
                         setEditOrgForm({
                             ...editOrgForm,
@@ -919,12 +930,6 @@ const editOrganization = async () => {
                         }
                         }}
                     />
-                    {editErrors.orgAddress && (
-                        <span className="org-error-text">
-                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
-                        {editErrors.orgAddress}
-                        </span>
-                    )}
                     </div>
                 </div>
 
@@ -943,8 +948,6 @@ const editOrganization = async () => {
                 </div>
             </div>
             )}
-          </tbody>
-        </table>
 
         {showDiscardModal && (
         <div className="discard-modal-overlay">

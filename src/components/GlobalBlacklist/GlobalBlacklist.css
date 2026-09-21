@@ -193,6 +193,28 @@
   line-height: 1.6;
 }
 
+.empty-icon.not-found-icon {
+  width: 55px;
+  height: 55px;
+  background: #f0f4f9;
+  color: #64748b;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.empty-state-blacklist.not-found-state h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.empty-state-blacklist.not-found-state p {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #8391a1;
+  line-height: 1.4;
+}
+
 .phone-number-cell {
   display: flex;
   align-items: center;
@@ -430,9 +452,9 @@
     font-size: 16px;
 }
 
-/* .form-group span{
+.form-group span{
     color:#ef4444;
-} */
+}
 
 .form-group small{
     color:#8b8b8b;
@@ -448,7 +470,6 @@
 }
 
 /* Mobile */
-
 .mobile-input{
     display:flex;
     gap:10px;
@@ -467,25 +488,65 @@
     font-size: 14px;
 }
 
-/* Upload */
-
-.upload-box{
-    border:1px dashed #f3f5f9;
-    border-radius:14px;
-    padding:10px 22px;
-    text-align:center;
-    background: #f3f5f9;
+/* Red border and soft pink background on input error */
+.form-group input.error-input {
+  border: 1px solid #ef4444 !important;
+  background-color: #fef2f2 !important;
 }
 
-.upload-box input{
+/* Error text styling with warning icon */
+.error-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ef4444;
+  font-size: 13px;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.error-text i {
+  font-size: 12px;
+}
+
+/* Upload */
+.global-upload-box{
+  width: 100%;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px dashed #d7deea;
+  border-radius: 13px;
+  background: #fbfcfe;
+  flex-direction: column;
+  text-align: left;
+}
+
+.global-upload-box input{
     width:100%;
 }
 
-.upload-box p{
-    margin-top:14px;
+.global-upload-box p{
     color:#d83b2d;
     font-size:12px;
     font-weight: 600;
+    width: 100%;
+}
+
+/* Red error border on the global upload box container */
+.global-upload-box.error-upload-box {
+  border: 1px dashed #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
+/* Red border and soft background inside file input button when error occurs */
+.global-upload-box.error-upload-box input[type="file"] {
+  border: 1px solid #ef4444;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 6px 10px;
 }
 
 /* Footer */

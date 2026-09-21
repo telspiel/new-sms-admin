@@ -26,11 +26,28 @@ const DepartmentManagement = () => {
      // State to handle the Discard Confirmation Modal
     const [showDiscardModal, setShowDiscardModal] = useState(false);
 
+    const initialDeptFormState = {
+    orgId: "",
+    deptName: "",
+    deptEmailId: "",
+    deptContactNumber: "",
+    deptStatus: "active",
+    };
+
     // Helper to trigger closing the active form modal
     const handleConfirmDiscard = () => {
-        setShowAddDepartment(false);
-        setShowEditDepartment(false);
-        setShowDiscardModal(false);
+    // Reset Add Department state
+    setDeptForm(initialDeptFormState);
+    setDeptErrors({});
+
+    // Reset Edit Department state
+    setEditDeptForm({});
+    setEditDeptErrors({});
+
+    // Close Drawers & Modal
+    setShowAddDepartment(false);
+    setShowEditDepartment(false);
+    setShowDiscardModal(false);
     };
     
     const [searchDepartment, setSearchDepartment] = useState("");
@@ -323,10 +340,7 @@ const currentDepartments = filteredDepartments.slice(
             {showAddDepartment && (
             <div
                 className="drawer-overlay"
-                onClick={() => {
-                setShowAddDepartment(false);
-                setDeptErrors({});
-                }}
+                onClick={() => setShowDiscardModal(true)}
             >
                 <div
                 className="department-drawer"
@@ -340,10 +354,7 @@ const currentDepartments = filteredDepartments.slice(
 
                     <button
                     className="close-btn"
-                    onClick={() => {
-                        setShowAddDepartment(false);
-                        setDeptErrors({});
-                    }}
+                    onClick={() => setShowDiscardModal(true)}
                     >
                     <i className="fa-solid fa-xmark"></i>
                     </button>
@@ -377,7 +388,7 @@ const currentDepartments = filteredDepartments.slice(
                     </select>
                     {deptErrors.orgId && (
                         <span className="dept-error-text">
-                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        ⚠{" "}
                         {deptErrors.orgId}
                         </span>
                     )}
@@ -405,7 +416,7 @@ const currentDepartments = filteredDepartments.slice(
                     />
                     {deptErrors.deptName && (
                         <span className="dept-error-text">
-                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        ⚠{" "}
                         {deptErrors.deptName}
                         </span>
                     )}
@@ -433,7 +444,7 @@ const currentDepartments = filteredDepartments.slice(
                     />
                     {deptErrors.deptEmailId && (
                         <span className="dept-error-text">
-                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        ⚠{" "}
                         {deptErrors.deptEmailId}
                         </span>
                     )}
@@ -469,7 +480,7 @@ const currentDepartments = filteredDepartments.slice(
                     </div>
                     {deptErrors.deptContactNumber && (
                         <span className="dept-error-text">
-                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        ⚠{" "}
                         {deptErrors.deptContactNumber}
                         </span>
                     )}
@@ -724,10 +735,7 @@ const currentDepartments = filteredDepartments.slice(
          {showEditDepartment && (
             <div
                 className="drawer-overlay"
-                onClick={() => {
-                setShowEditDepartment(false);
-                setEditDeptErrors({});
-                }}
+                onClick={() => setShowDiscardModal(true)}
             >
                 <div
                 className="department-drawer"
@@ -741,10 +749,7 @@ const currentDepartments = filteredDepartments.slice(
 
                     <button
                     className="close-btn"
-                    onClick={() => {
-                        setShowEditDepartment(false);
-                        setEditDeptErrors({});
-                    }}
+                    onClick={() => setShowDiscardModal(true)}
                     >
                     <i className="fa-solid fa-xmark"></i>
                     </button>
@@ -766,7 +771,7 @@ const currentDepartments = filteredDepartments.slice(
                         ))}
                         </select>
 
-                        <Lock size={18} className="dept-lock-icon"/>
+                        <Lock size={18} className="dept-lock-icon" />
                     </div>
                     </div>
 
@@ -779,7 +784,7 @@ const currentDepartments = filteredDepartments.slice(
                     <input
                         type="text"
                         className={editDeptErrors.deptName ? "error-input" : ""}
-                        value={editDeptForm.deptName}
+                        value={editDeptForm.deptName || ""}
                         onChange={(e) => {
                         setEditDeptForm({
                             ...editDeptForm,
@@ -792,7 +797,7 @@ const currentDepartments = filteredDepartments.slice(
                     />
                     {editDeptErrors.deptName && (
                         <span className="dept-error-text">
-                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        ⚠{" "}
                         {editDeptErrors.deptName}
                         </span>
                     )}
@@ -807,7 +812,7 @@ const currentDepartments = filteredDepartments.slice(
                     <input
                         type="email"
                         className={editDeptErrors.deptEmailId ? "error-input" : ""}
-                        value={editDeptForm.deptEmailId}
+                        value={editDeptForm.deptEmailId || ""}
                         onChange={(e) => {
                         setEditDeptForm({
                             ...editDeptForm,
@@ -820,7 +825,7 @@ const currentDepartments = filteredDepartments.slice(
                     />
                     {editDeptErrors.deptEmailId && (
                         <span className="dept-error-text">
-                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        ⚠{" "}
                         {editDeptErrors.deptEmailId}
                         </span>
                     )}
@@ -842,7 +847,7 @@ const currentDepartments = filteredDepartments.slice(
                         <input
                         type="text"
                         maxLength={10}
-                        value={editDeptForm.deptContactNumber}
+                        value={editDeptForm.deptContactNumber || ""}
                         onChange={(e) => {
                             const value = e.target.value.replace(/\D/g, "");
 
@@ -861,7 +866,7 @@ const currentDepartments = filteredDepartments.slice(
                     </div>
                     {editDeptErrors.deptContactNumber && (
                         <span className="dept-error-text">
-                        <i className="fa-solid fa-triangle-exclamation"></i>{" "}
+                        ⚠{" "}
                         {editDeptErrors.deptContactNumber}
                         </span>
                     )}
@@ -872,7 +877,7 @@ const currentDepartments = filteredDepartments.slice(
                     <label>Status</label>
 
                     <select
-                        value={editDeptForm.deptStatus}
+                        value={editDeptForm.deptStatus || "active"}
                         onChange={(e) =>
                         setEditDeptForm({
                             ...editDeptForm,

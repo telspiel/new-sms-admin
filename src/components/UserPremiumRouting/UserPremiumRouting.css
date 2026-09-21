@@ -288,6 +288,82 @@ text-align: center;
   line-height: 1.6;
 }
 
+.empty-table-premium {
+  padding: 0 !important;
+  border: none !important;
+}
+
+.empty-state-premium {
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #6b7280;
+  text-align: center;
+}
+
+.empty-icon {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background: #fff5db;
+  color: #f4b400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.empty-state-premium h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.empty-state-premium p {
+  margin-top: 14px;
+  font-size: 12px;
+  color: #8b8b8b;
+  line-height: 1.6;
+}
+
+.empty-icon.not-found-icon {
+  width: 55px;
+  height: 55px;
+  background: #f0f4f9;
+  color: #64748b;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.empty-state-premium.not-found-state h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.empty-state-premium.not-found-state p {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #8391a1;
+  line-height: 1.4;
+}
+
+.user-group-badge {
+  display: inline-block;
+  background-color: #f1eaff; 
+  color: #7c4dbe;            
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 50px;      
+  text-align: center;
+  white-space: nowrap;
+}
+
 .user-action-buttons {
   display: flex;
   align-items: center;
@@ -475,6 +551,10 @@ text-align: center;
     margin-bottom: 15px;
 }
 
+.routing-form-group span {
+  color: #ef4444;
+}
+
 .routing-form-group label{
     display:block;
     margin-bottom:10px;
@@ -527,23 +607,65 @@ text-align: center;
 }
 
 /* Upload */
-.user-upload-box{
-    border:1px dashed #f3f5f9;
-    border-radius:14px;
-    padding:10px 22px;
-    text-align:center;
-    background: #f3f5f9;
+/* Base Upload Box Style */
+.user-upload-box {
+  width: 100%;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px dashed #d7deea;
+  border-radius: 13px;
+  background: #fbfcfe;
+  flex-direction: column;
+  text-align: left;
 }
 
-.user-upload-box input{
-    width:100%;
+.user-upload-box input {
+  width: 100%;
 }
 
-.user-upload-box p{
-    margin-top:14px;
-    color:#d83b2d;
-    font-size:12px;
-    font-weight: 600;
+.user-upload-box p {
+  color: #d83b2d;
+  font-size: 12px;
+  font-weight: 600;
+  width: 100%;
+  margin: 0;
+}
+
+/* Error State Styles */
+.user-upload-box.error-upload-box {
+  border: 1px dashed #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
+/* Red border and background for the input control on error */
+.user-upload-box.error-upload-box input[type="file"] {
+  border: 1px solid #ef4444;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.input-errors {
+  border: 1px solid #f87171 !important;
+  background-color: #fef2f2 !important;
+}
+
+/* Error text message below input fields */
+.error-text {
+  color: #dc3545;
+  font-size: 13px;
+  margin-top: 5px;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.error-text i {
+  font-size: 12px;
 }
 
 /* Footer */

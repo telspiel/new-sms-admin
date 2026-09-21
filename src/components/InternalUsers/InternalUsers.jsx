@@ -221,34 +221,45 @@ const getInternalUserData = async (targetUserName) => {
 
         if (response.code === 9001) {
         setUsernameAvailable(true);
-        setUsernameMessage(response.message);
+        setUsernameMessage(response.message || "Username is available");
         } else {
         setUsernameAvailable(false);
-        setUsernameMessage(response.message);
+        setUsernameMessage(response.message || "Username is not available");
         }
     } catch (error) {
-        console.error(error);
+        console.error("Error checking username:", error);
         setUsernameAvailable(false);
-        setUsernameMessage("");
+        setUsernameMessage("Error checking username availability");
     } finally {
         setCheckingUsername(false);
     }
-    }; 
+    };
 
     useEffect(() => {
-        if (username.trim().length < 4) {
-            setUsernameMessage("");
-            setUsernameAvailable(false);
-            return;
-        }
+    const trimmedLength = username.trim().length;
 
-        const timer = setTimeout(() => {
-            checkUsernameAvailability(username.trim());
-        }, 500); // waits until user stops typing
+    // Case 1: Empty input -> Clear message and availability
+    if (trimmedLength === 0) {
+        setUsernameMessage("");
+        setUsernameAvailable(false);
+        return;
+    }
 
-        return () => clearTimeout(timer);
+    // Case 2: Entered 1 to 3 characters -> Prompt minimum character requirement
+    if (trimmedLength < 4) {
+        setUsernameAvailable(false);
+        setUsernameMessage("Minimum 4 characters required");
+        return;
+    }
+
+    // Case 3: 4 or more characters -> Trigger API call with 500ms debounce
+    const timer = setTimeout(() => {
+        checkUsernameAvailability(username.trim());
+    }, 500);
+
+    return () => clearTimeout(timer);
     }, [username]);
-    
+
     //To get unique dropdown values
     const userTypes = [
     ...new Set(internalUsers.map(user => user.customerType))
@@ -646,18 +657,21 @@ const handleEditClick = (user) => {
                 className={errors.username ? "input-error" : ""}
             />
 
+            {/* Field Validation Error */}
             {errors.username && (
                 <div className="field-error">
                 ⚠ {errors.username}
                 </div>
             )}
 
+            {/* Loading Indicator */}
             {checkingUsername && (
                 <div className="username-checking">
                 Checking username...
                 </div>
             )}
 
+            {/* Availability Status / Character Hint Message */}
             {!checkingUsername && !errors.username && usernameMessage && (
                 <div
                 className={`username-status ${
@@ -668,11 +682,6 @@ const handleEditClick = (user) => {
                 {usernameMessage}
                 </div>
             )}
-
-            <small>
-                4-20 characters · letters, numbers, "." and "_" only · must start with a
-                letter
-            </small>
             </div>
 
             {/* Password */}
@@ -970,7 +979,7 @@ const handleEditClick = (user) => {
                 {/* STATUS */}
                 <td>
                 <span
-                    className={`status-badge ${
+                    className={`internal-status-badge ${
                     user.status.toLowerCase() === "active"
                         ? "status-active"
                         : "status-inactive"

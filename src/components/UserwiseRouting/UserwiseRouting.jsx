@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import "./UserwiseRouting.css";
-import { MoveDiagonal2 } from "lucide-react";
+import { Shuffle } from "lucide-react";
 import Endpoints from "../../api/endpoint";
 import { AuthContext } from "../../context/AuthContext";
 
@@ -537,7 +537,7 @@ const updateUserRouting = async () => {
 
       {routingData.length === 0 ? (
         <div className="userwise-empty-card">
-            <MoveDiagonal2 size={54} strokeWidth={1.5} />
+            <GitCompare size={54} strokeWidth={1.5} />
 
             <h2>Select a type and user to view routing</h2>
 

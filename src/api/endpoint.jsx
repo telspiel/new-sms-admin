@@ -34,7 +34,11 @@ class Endpoints {
 
       //External User
       externalListUser: { path: "staticService/getAllChildUserDetails", server: "newAdmin" },
+      getAllChildForUser: { path: "reseller/getAllChildForUser", server: "newAdmin" },
+      viewExternalUser: { path: "userService/viewUser", server: "newAdmin" },
+      saveExternalUser: { path: "userService/saveUser", server: "newAdmin" },
 
+      //Generate API Key
       getUserApiKey: { path: "pushApiKeyService/getUserApiKey", server: "newAdmin" },
       generateNewApiKey: { path: "pushApiKeyService/generateUserApiKey", server: "newAdmin" },
 
@@ -54,6 +58,10 @@ class Endpoints {
 
       //Errorcode Report
       errorcodeReport: {path: "reportService/errorCodeWiseReport", server: "newAdmin"},
+
+      //Download Report
+      downloadReport: { path: "mis/viewGeneratedReports", server: "newAdmin" },
+      generateReport: { path: "mis/generateReport", server: "newAdmin" },
 
       //Manage Connect
       getUserRoutingGroups: { path: "reseller/getUserRoutingGroups", server: "newAdmin" },

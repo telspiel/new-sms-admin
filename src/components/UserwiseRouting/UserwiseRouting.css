@@ -105,7 +105,7 @@
 .wrap-add-routing-btn .add-routing-btn{
     border: none;
     outline: none;
-    background: linear-gradient(to right, rgb(241 221 137), rgba(255, 204, 41, 1));
+    background: linear-gradient(to right, #f2c94c, #e0a800);
     color: #111;
     padding: 12px 22px;
     border-radius: 14px;
@@ -272,6 +272,10 @@
   margin-bottom:10px;
 }
 
+.routing-modal-field span {
+  color: #ef4444;
+}
+
 .routing-modal-field label{
   display:block;
   margin-bottom:5px;
@@ -328,16 +332,22 @@
 
 .routing-modal-footer button{
   flex:1;
+  height: 42px;
 }
 
 .routing-modal-footer .save-btn {
-    background: #ffc107;
+    background: linear-gradient(to right, #f2c94c, #e0a800);
     color: #202020;
     border-radius: 12px;
     font-weight: 700;
     cursor: pointer;
     border: none;
     box-shadow: 0 8px 18px rgba(255, 193, 7, 0.35);
+}
+
+.routing-modal-footer .save-btn:hover {
+  box-shadow: 0 6px 16px rgba(224,168,0,.32);
+  filter: brightness(1.03);
 }
 
 .routing-modal-footer .cancel-btn {
@@ -348,4 +358,9 @@
     font-weight: 700;
     cursor: pointer;
     border: none;
+}
+
+.routing-modal-footer .cancel-btn:hover {
+  box-shadow: 0 6px 16px #e9ecf2;
+  filter: brightness(1.03);
 }
