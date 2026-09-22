@@ -1,7 +1,7 @@
 import React, { useState, useContext, useRef } from "react";
 import Cropper from "react-easy-crop";
 import "./AppearanceBranding.css";
-import { Layers, Send, Save, X } from "lucide-react";
+import { Layers, Send, Save, X, Trash2 } from "lucide-react";
 import Endpoints from "../../api/endpoint";
 import { AuthContext } from "../../context/AuthContext";
 
@@ -131,89 +131,177 @@ const AppearanceBranding = () => {
     setShowCropModal(false);
   };
 
-  
-  // Remove handlers
-  const handleRemoveLogo = () => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteLogoModal, setShowDeleteLogoModal] = useState(false);
+
+  const handleRemoveLogoClick = () => {
+  // If user only selected a local file (not saved yet), clear it directly
+  if (finalLogoFile && !userData?.logoUrl) {
     setLogoPreview(null);
     setFinalLogoFile(null);
     if (logoInputRef.current) logoInputRef.current.value = "";
-  };
+    return;
+  }
 
-  const handleRemoveFavicon = () => {
+  // Show modal if an existing logo is stored on the server
+  setShowDeleteLogoModal(true);
+};
+
+  
+  // Remove handlers
+  const handleConfirmDeleteLogo = async () => {
+  setShowDeleteLogoModal(false);
+
+  try {
+    const username = encodeURIComponent(userData?.username || "");
+    const removeUrl = `${Endpoints.get("removeLogo")}?loggedInUserName=${username}`;
+
+    const response = await fetch(removeUrl, {
+      method: "POST", 
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: userData?.authJwtToken || "",
+      },
+    });
+
+    const resData = await response.json();
+
+    if (resData.code === 1000) {
+      setLogoPreview(null);
+      setFinalLogoFile(null);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+      setToastMessage("Logo removed successfully.");
+    } else {
+      setToastMessage("Failed to remove logo.");
+    }
+  } catch (error) {
+    console.error("Error removing logo:", error);
+    setToastMessage("Something went wrong while removing the logo.");
+  } finally {
+    setTimeout(() => setToastMessage(""), 4000);
+  }
+};
+
+const handleRemoveFaviconClick = () => {
+  // If user only selected a new local image (not saved yet), clear it immediately
+  if (finalFaviconFile && !userData?.faviconUrl) {
     setFaviconPreview(null);
     setFinalFaviconFile(null);
     if (faviconInputRef.current) faviconInputRef.current.value = "";
-  };
+    return;
+  }
+  
+  setShowDeleteModal(true);
+};
+
+ const handleConfirmDeleteFavicon = async () => {
+  setShowDeleteModal(false);
+
+  try {
+    const username = encodeURIComponent(userData?.username || "");
+    const removeUrl = `${Endpoints.get("removeFavicon")}?loggedInUserName=${username}`;
+
+    const response = await fetch(removeUrl, {
+      method: "POST", // Change to "POST" if required by your endpoint
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: userData?.authJwtToken || "",
+      },
+    });
+
+    const resData = await response.json();
+
+    if (resData.code === 1000) {
+      setFaviconPreview(null);
+      setFinalFaviconFile(null);
+      if (faviconInputRef.current) faviconInputRef.current.value = "";
+      setToastMessage("Favicon removed successfully.");
+    } else {
+      setToastMessage("Failed to remove favicon.");
+    }
+  } catch (error) {
+    console.error("Error removing favicon:", error);
+    setToastMessage("Something went wrong while removing the favicon.");
+  } finally {
+    setTimeout(() => setToastMessage(""), 4000);
+  }
+};
 
   // Unified Save Changes Handler
   const handleSaveChanges = async () => {
-    if (!finalLogoFile && !finalFaviconFile && brandName === userData?.brandName) {
-      return;
+  if (!finalLogoFile && !finalFaviconFile && brandName === userData?.brandName) {
+    return;
+  }
+
+  try {
+    let successMessages = [];
+
+    // 1. Upload Logo API
+    if (finalLogoFile) {
+      const logoData = new FormData();
+      logoData.append("loggedInUserName", userData?.username || "");
+      logoData.append("file", finalLogoFile);
+      logoData.append("brandName", brandName ? brandName.trim() : "");
+
+      const logoUrl = Endpoints.get("uploadLogo");
+      const resLogo = await fetch(logoUrl, {
+        method: "POST",
+        headers: {
+          Authorization: userData?.authJwtToken || "",
+        },
+        body: logoData,
+      });
+
+      const responseLogo = await resLogo.json();
+      if (responseLogo.code === 1000) {
+        successMessages.push("Logo updated");
+        
+        // Reset the raw file & input reference while keeping the preview active
+        setFinalLogoFile(null);
+        if (logoInputRef.current) logoInputRef.current.value = "";
+      }
     }
 
-    try {
-      let successMessages = [];
+    // 2. Upload Favicon API
+    if (finalFaviconFile) {
+      const faviconData = new FormData();
+      faviconData.append("loggedInUserName", userData?.username || "");
+      faviconData.append("file", finalFaviconFile);
 
-      // 1. Upload Logo API
-      if (finalLogoFile) {
-        const logoData = new FormData();
-        logoData.append("loggedInUserName", userData?.username || "");
-        logoData.append("file", finalLogoFile);
-        logoData.append("brandName", brandName ? brandName.trim() : "");
+      const faviconUrl = Endpoints.get("uploadFavicon");
+      const resFavicon = await fetch(faviconUrl, {
+        method: "POST",
+        headers: {
+          Authorization: userData?.authJwtToken || "",
+        },
+        body: faviconData,
+      });
 
-        const logoUrl = Endpoints.get("uploadLogo");
-        const resLogo = await fetch(logoUrl, {
-          method: "POST",
-          headers: {
-            Authorization: userData?.authJwtToken || "",
-          },
-          body: logoData,
-        });
+      const responseFavicon = await resFavicon.json();
+      if (responseFavicon.code === 1000) {
+        successMessages.push("Favicon updated");
 
-        const responseLogo = await resLogo.json();
-        if (responseLogo.code === 1000) {
-          successMessages.push("Logo updated");
-          handleRemoveLogo();
-        }
+        // Reset the raw file & input reference while keeping the preview active
+        setFinalFaviconFile(null);
+        if (faviconInputRef.current) faviconInputRef.current.value = "";
       }
-
-      // 2. Upload Favicon API (Only sending loggedInUserName and file)
-      if (finalFaviconFile) {
-        const faviconData = new FormData();
-        faviconData.append("loggedInUserName", userData?.username || "");
-        faviconData.append("file", finalFaviconFile);
-
-        const faviconUrl = Endpoints.get("uploadFavicon");
-        const resFavicon = await fetch(faviconUrl, {
-          method: "POST",
-          headers: {
-            Authorization: userData?.authJwtToken || "",
-          },
-          body: faviconData,
-        });
-
-        const responseFavicon = await resFavicon.json();
-        if (responseFavicon.code === 1000) {
-          successMessages.push("Favicon updated");
-          handleRemoveFavicon();
-        }
-      }
-
-      if (successMessages.length > 0) {
-        setToastMessage(
-          `${successMessages.join(" & ")} successfully. Changes will be visible from next login.`
-        );
-      } else {
-        setToastMessage("Saved successfully.");
-      }
-
-      setTimeout(() => setToastMessage(""), 4000);
-    } catch (error) {
-      console.error("Upload error:", error);
-      setToastMessage("Something went wrong while saving changes.");
-      setTimeout(() => setToastMessage(""), 4000);
     }
-  };
+
+    if (successMessages.length > 0) {
+      setToastMessage(
+        `${successMessages.join(" & ")} successfully. Changes will be visible from next login.`
+      );
+    } else {
+      setToastMessage("Saved successfully.");
+    }
+
+    setTimeout(() => setToastMessage(""), 4000);
+  } catch (error) {
+    console.error("Upload error:", error);
+    setToastMessage("Something went wrong while saving changes.");
+    setTimeout(() => setToastMessage(""), 4000);
+  }
+};
 
   // Enable save button if logo, favicon, or brand name is changed
   const isSaveDisabled =
@@ -291,88 +379,156 @@ const AppearanceBranding = () => {
 
         {/* Logo Section */}
         <div className="branding-field">
-  <label>Logo</label>
-  <div className="upload-box">
-    {logoPreview ? (
-      <div className="upload-icon preview-icon">
-        <img src={logoPreview} alt="Logo preview" />
-      </div>
-    ) : (
-      <div className="upload-icon">
-        <Send size={32} strokeWidth={1.8} />
-      </div>
-    )}
+          <label>Logo</label>
+          <div className="upload-box">
+            {logoPreview ? (
+              <div className="upload-icon preview-icon">
+                <img src={logoPreview} alt="Logo preview" />
+              </div>
+            ) : (
+              <div className="upload-icon">
+                <Send size={32} strokeWidth={1.8} />
+              </div>
+            )}
 
-    <div className="upload-content">
-      <h3>Upload your logo</h3>
-      <p>
-        PNG, JPG or SVG · max 1 MB · square works best · crop after choosing
-      </p>
+            <div className="upload-content">
+              <h3>Upload your logo</h3>
+              <p>
+                PNG, JPG or SVG · max 1 MB · square works best · crop after choosing
+              </p>
 
-      <div className="upload-actions">
-        <button
-          type="button"
-          className="choose-file-btn"
-          onClick={handleChooseLogoClick}
-        >
-          Choose file
-        </button>
-        {logoPreview && (
-          <button
-            type="button"
-            className="remove-file-btn"
-            onClick={handleRemoveLogo}
-          >
-            Remove
-          </button>
+              <div className="upload-actions">
+                <button
+                  type="button"
+                  className="choose-file-btn"
+                  onClick={handleChooseLogoClick}
+                >
+                  Choose file
+                </button>
+
+                {logoPreview && (
+                  <button
+                    type="button"
+                    className="remove-file-btn"
+                    onClick={handleRemoveLogoClick}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Remove Logo Confirmation Modal */}
+        {showDeleteLogoModal && (
+          <div className="image-modal-overlay">
+            <div className="image-confirmation-modal">
+              <div className="image-modal-header">
+                <div className="modal-icon-badge">
+                  <Trash2 size={22} color="#e53e3e" />
+                </div>
+                <h2>Remove logo?</h2>
+              </div>
+
+              <div className="image-modal-body">
+                <p>Are you sure, you want to remove logo?</p>
+              </div>
+
+              <div className="image-modal-actions">
+                <button
+                  className="image-modal-btn image-cancel-btn"
+                  onClick={() => setShowDeleteLogoModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="image-modal-btn image-delete-btn"
+                  onClick={handleConfirmDeleteLogo}
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
         )}
-      </div>
-    </div>
-  </div>
-</div>
 
         {/* Favicon Section */}
-        <div className="branding-field favicon-field">
-  <label>Favicon</label>
-  <div className="upload-box">
-    {faviconPreview ? (
-      <div className="upload-icon preview-icon">
-        <img src={faviconPreview} alt="Favicon preview" />
-      </div>
-    ) : (
-      <div className="upload-icon">
-        <Send size={32} strokeWidth={1.8} />
-      </div>
-    )}
+       <div className="branding-field favicon-field">
+        <label>Favicon</label>
+        <div className="upload-box">
+          {faviconPreview ? (
+            <div className="upload-icon preview-icon">
+              <img src={faviconPreview} alt="Favicon preview" />
+            </div>
+          ) : (
+            <div className="upload-icon">
+              <Send size={32} strokeWidth={1.8} />
+            </div>
+          )}
 
-    <div className="upload-content">
-      <h3>Upload your favicon</h3>
-      <p>
-        PNG, ICO or SVG · max 512 KB · square, 32×32 or 512×512 works
-        best · crop after choosing
-      </p>
+          <div className="upload-content">
+            <h3>Upload your favicon</h3>
+            <p>
+              PNG, ICO or SVG · max 512 KB · square, 32×32 or 512×512 works best · crop after choosing
+            </p>
 
-      <div className="upload-actions">
-        <button
-          type="button"
-          className="choose-file-btn"
-          onClick={handleChooseFaviconClick}
-        >
-          Choose file
-        </button>
-        {faviconPreview && (
-          <button
-            type="button"
-            className="remove-file-btn"
-            onClick={handleRemoveFavicon}
-          >
-            Remove
-          </button>
+            <div className="upload-actions">
+              <button
+                type="button"
+                className="choose-file-btn"
+                onClick={handleChooseFaviconClick}
+              >
+                Choose file
+              </button>
+
+              {faviconPreview && (
+                <button
+                  type="button"
+                  className="remove-file-btn"
+                  onClick={handleRemoveFaviconClick}
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+        {/* Remove Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="image-modal-overlay">
+            <div className="image-confirmation-modal">
+              <div className="image-modal-header">
+                <div className="modal-icon-badge">
+                  {/* Trash icon from lucide-react */}
+                  <Trash2 size={22} color="#e53e3e" />
+                </div>
+                <h2>Remove favicon?</h2>
+              </div>
+
+              <div className="image-modal-body">
+                <p>Are you sure, you want to remove favicon?</p>
+              </div>
+
+              <div className="image-modal-actions">
+                <button
+                  className="image-modal-btn image-cancel-btn"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="image-modal-btn image-delete-btn"
+                  onClick={handleConfirmDeleteFavicon}
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
         )}
-      </div>
-    </div>
-  </div>
-</div>
       </div>
 
       {/* Crop Modal */}

@@ -108,7 +108,8 @@ class Endpoints {
 
       uploadLogo: { path: "reseller/uploadLogo", server: "newAdmin" },
       uploadFavicon: { path: "reseller/uploadFavicon", server: "newAdmin" },
-      getFavicon: { path: "reseller/getFavicon", server: "newAdmin" },
+      removeLogo: { path: "reseller/removeLogo", server: "newAdmin"},
+      removeFavicon: { path: "reseller/removeFavicon", server: "newAdmin"},
     };
   }
 
