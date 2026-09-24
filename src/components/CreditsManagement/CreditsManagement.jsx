@@ -681,8 +681,8 @@ const exportData = (format) => {
                 </small>
                 </div>
 
-                {creditData.loggedInUserCredit !== null &&
-                creditData.userAvailableCredit !== null &&
+                {creditData.userAvailableCredit !== null &&
+                creditData.loggedInUserCredit !== null &&
                 addAmount > 0 &&
                 (Number(addAmount) > Number(creditData.userAvailableCredit) ? (
                   /* Error Banner */
@@ -729,7 +729,7 @@ const exportData = (format) => {
                 </button>
 
                 </div>
-
+                
             </div>
             </>
         )}
@@ -1292,7 +1292,7 @@ const exportData = (format) => {
 
                       <td>
                         <span
-                          className={`status-badge ${
+                          className={`credits-status-badge ${
                             item.status === "Add" ? "credit" : "debit"
                           }`}
                         >

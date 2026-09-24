@@ -54,9 +54,7 @@ const DepartmentManagement = () => {
 
     const [toastMessage, setToastMessage] = useState("");
 
-    const [selectedOrganizations, setSelectedOrganizations] = useState(
-    deptOrganizationList.map((org) => org.orgId)
-    );
+    const [selectedOrganizations, setSelectedOrganizations] = useState(["ALL"]);
 
     const initialDeptForm = {
     orgId: "",
@@ -79,31 +77,30 @@ const DepartmentManagement = () => {
 
     //==============To get all Organization list data==================
     const getOrganizationList = async () => {
-    try {
+  try {
     const payload = {
-        loggedInUserName: userData.username,
+      loggedInUserName: userData.username,
     };
 
     const response = await Endpoints.post(
-        "getAllOrganization",
-        payload,
-        userData.authJwtToken
+      "getAllOrganization",
+      payload,
+      userData.authJwtToken
     );
 
     if (response.code === 11000) {
-    const orgs = response.data.organisationList || [];
-
-    setDeptOrganizationList(orgs);
-
-    // Select all by default
-    setSelectedOrganizations(orgs.map((org) => org.orgId));
+      const orgs = response.data.organisationList || [];
+      setDeptOrganizationList(orgs);
+      
+      // Default selection is just "ALL"
+      setSelectedOrganizations(["ALL"]);
     } else {
-        alert(response.message);
+      alert(response.message);
     }
-    } catch (error) {
+  } catch (error) {
     console.error(error);
-    }
-  };
+  }
+};
     
   useEffect(() => {
     getOrganizationList();
@@ -111,11 +108,16 @@ const DepartmentManagement = () => {
 
   //To get all department list data 
   const getDepartmentList = async () => {
-     setLoading(true);
+  setLoading(true);
   try {
+    // If "ALL" is selected, send all orgIds to the API, otherwise send selected IDs
+    const orgIdsToSend = selectedOrganizations.includes("ALL")
+      ? deptOrganizationList.map((org) => org.orgId)
+      : selectedOrganizations;
+
     const payload = {
       loggedInUserName: userData.username,
-      orgId: selectedOrganizations,
+      orgId: orgIdsToSend,
     };
 
     const response = await Endpoints.post(
@@ -137,12 +139,46 @@ const DepartmentManagement = () => {
 };
 
 useEffect(() => {
+  if (selectedOrganizations.includes("ALL") && deptOrganizationList.length === 0) {
+    return;
+  }
+
   if (selectedOrganizations.length > 0) {
     getDepartmentList();
   } else {
     setDepartmentList([]);
   }
-}, [selectedOrganizations]);
+}, [selectedOrganizations, deptOrganizationList]);
+
+// Handle "All Organizations" Checkbox Click
+const handleSelectAll = (checked) => {
+  if (checked) {
+    setSelectedOrganizations(["ALL"]);
+  } else {
+    setSelectedOrganizations([]);
+  }
+};
+
+// Handle Individual Organization Checkbox Click
+const handleSelectOrg = (orgId) => {
+  let updatedList = selectedOrganizations.filter((id) => id !== "ALL");
+
+  if (updatedList.includes(orgId)) {
+    updatedList = updatedList.filter((id) => id !== orgId);
+  } else {
+    updatedList.push(orgId);
+  }
+
+  // If all individual items end up being selected, switch back to "ALL"
+  if (
+    deptOrganizationList.length > 0 &&
+    updatedList.length === deptOrganizationList.length
+  ) {
+    setSelectedOrganizations(["ALL"]);
+  } else {
+    setSelectedOrganizations(updatedList);
+  }
+};
 
 const [deptErrors, setDeptErrors] = useState({});
 const [editDeptErrors, setEditDeptErrors] = useState({});
@@ -544,75 +580,46 @@ const currentDepartments = filteredDepartments.slice(
                     className="org-dropdown-header"
                     onClick={() => setShowOrgDropdown(!showOrgDropdown)}
                 >
-                    {selectedOrganizations.length === deptOrganizationList.length
+                    {selectedOrganizations.includes("ALL")
                     ? "All Organizations"
+                    : selectedOrganizations.length === 0
+                    ? "Select Organization"
                     : `${selectedOrganizations.length} Selected`}
 
-                    <i className="fa-solid fa-chevron-down"></i>
+                    <i className={`fa-solid fa-chevron-${showOrgDropdown ? "up" : "down"}`}></i>
                 </div>
 
                 {showOrgDropdown && (
                     <div className="department-dropdown-menu">
-
+                    {/* "All Organizations" option */}
                     <label className="department-option">
                         <input
                         type="checkbox"
-                        checked={
-                            selectedOrganizations.length ===
-                            deptOrganizationList.length
-                        }
-                        onChange={(e) => {
-                            if (e.target.checked) {
-                            setSelectedOrganizations(
-                                deptOrganizationList.map((org) => org.orgId)
-                            );
-                            } else {
-                            setSelectedOrganizations([]);
-                            }
-                        }}
+                        checked={selectedOrganizations.includes("ALL")}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
                         />
-
                         All Organizations
                     </label>
 
-                    {/* Organization List */}
+                    {/* Separator line */}
+                    <div className="dropdown-divider"></div>
+
+                    {/* Individual Organizations List */}
                     {deptOrganizationList.map((org) => (
-                        <label
-                        key={org.orgId}
-                        className="department-option"
-                        >
+                        <label key={org.orgId} className="department-option">
                         <input
                             type="checkbox"
-                            checked={selectedOrganizations.includes(org.orgId)}
-                            onChange={(e) => {
-
-                            if (e.target.checked) {
-
-                                setSelectedOrganizations([
-                                ...selectedOrganizations,
-                                org.orgId,
-                                ]);
-
-                            } else {
-
-                                setSelectedOrganizations(
-                                selectedOrganizations.filter(
-                                    (id) => id !== org.orgId
-                                )
-                                );
-
+                            checked={
+                            !selectedOrganizations.includes("ALL") &&
+                            selectedOrganizations.includes(org.orgId)
                             }
-
-                            }}
+                            onChange={() => handleSelectOrg(org.orgId)}
                         />
-
                         {org.orgName}
                         </label>
                     ))}
-
                     </div>
                 )}
-
                 </div>
 
               <select
@@ -731,7 +738,9 @@ const currentDepartments = filteredDepartments.slice(
             </td>
             </tr>  
         )}
-         
+        </tbody>
+        </table>
+
          {showEditDepartment && (
             <div
                 className="drawer-overlay"
@@ -906,8 +915,6 @@ const currentDepartments = filteredDepartments.slice(
                 </div>
             </div>
             )}
-        </tbody>
-        </table>
 
         {showDiscardModal && (
         <div className="discard-modal-overlay">

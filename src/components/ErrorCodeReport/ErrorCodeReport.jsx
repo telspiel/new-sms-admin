@@ -260,132 +260,151 @@ const getPageNumbers = () => {
         </div>
       </form>
 
-      <div className="errorcode-record-count">{totalRecords} records</div>
+      {/* <div className="errorcode-record-count">{totalRecords} records</div> */}
+
+      <>
+      {!isLoading && currentTableData.length > 0 && (
+        <div className="errorcode-record-count">{totalRecords} records</div>
+      )}
 
       {errorMessage && <div className="errorcode-error-msg">{errorMessage}</div>}
 
-      <div className="errorcode-table-wrapper">
-        <table className="errorcode-table">
-          <thead>
-            <tr>
-              <th>DATE</th>
-              <th>USERNAME</th>
-              <th>ERROR CODE</th>
-              <th>ERROR DESCRIPTION</th>
-              <th>COUNT</th>
-            </tr>
-          </thead>
+      {!isLoading && currentTableData.length === 0 ? (
+        <div className="error-state-blacklist not-found-state" style={{ padding: "40px 20px", textAlign: "center" }}>
+          <div className="errorCode-icon not-found-icon">
+            <i className="fa-solid fa-magnifying-glass"></i>
+          </div>
 
-          <tbody>
-            {isLoading ? (
-                <tr>
-                <td colSpan="5">
-                    <div className="table-loader">
-                    <div className="spinner"></div>
-                    <p>Loading Error Report...</p>
-                    </div>
-                </td>
-                </tr>
-            ) : currentTableData.length > 0 ? (
-              currentTableData.map((item, index) => (
-                <tr key={index}>
-                  <td>{item.date}</td>
-                  <td>{item.username}</td>
-                  <td>
-                    <span className="error-code-badge">{item.errorCode}</span>
-                  </td>
-                  <td>{item.errorDesc}</td>
-                  <td className="error-count">{item.count}</td>
-                </tr>
-              ))
-            ) : (
+          <h2>No failures found</h2>
+
+          <p>
+            No failed messages match your filters in this date range. Try widening
+            <br />
+            number or keyword.
+          </p>
+        </div>
+      ) : (
+        <div className="errorcode-table-wrapper">
+          <table className="errorcode-table">
+            <thead>
               <tr>
-                <td colSpan="5" style={{ textAlign: "center", padding: "20px" }}>
-                  No record found.
-                </td>
+                <th>DATE</th>
+                <th>USERNAME</th>
+                <th>ERROR CODE</th>
+                <th>ERROR DESCRIPTION</th>
+                <th>COUNT</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
 
-        <div className="errorcode-pagination-summary">
-          <div className="errorcode-total">
-            <span>Total</span>
-            <strong>({totalRecords} records)</strong>
-          </div>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan="5">
+                    <div className="table-loader">
+                      <div className="spinner"></div>
+                      <p>Loading Error Report...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                currentTableData.map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.date}</td>
+                    <td>{item.username}</td>
+                    <td>
+                      <span className="error-code-badge">{item.errorCode}</span>
+                    </td>
+                    <td>{item.errorDesc}</td>
+                    <td className="error-count">{item.count}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
 
-          <div className="errorcode-grand-total">
-            {grandTotalCount.toLocaleString()}
-          </div>
-        </div>
+          {/* Hide summary footer during loading */}
+          {!isLoading && (
+            <div className="errorcode-pagination-summary">
+              <div className="errorcode-total">
+                <span>Total</span>
+                <strong>({totalRecords} records)</strong>
+              </div>
 
-        <div className="errorcode-pagination">
-          <div className="rows-per-page">
-            <span>Rows per page</span>
-            <select
-              value={rowsPerPage}
-              onChange={(e) => {
-                setRowsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-            >
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-          </div>
+              <div className="errorcode-grand-total">
+                {grandTotalCount.toLocaleString()}
+              </div>
+            </div>
+          )}
 
-          <div className="showing-records">
-            Showing {totalRecords === 0 ? 0 : startIndex + 1}–
-            {Math.min(startIndex + rowsPerPage, totalRecords)} of {totalRecords}
-          </div>
-
-          <div className="pagination-buttons">
-            {/* Previous Page Arrow */}
-            <button
-              className={`pagination-arrow ${currentPage === 1 ? "disabled" : ""}`}
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              ‹
-            </button>
-
-            {/* Page Numbers and Ellipses */}
-            {getPageNumbers().map((page, index) => {
-              if (page === "...") {
-                return (
-                  <span key={`dots-${index}`} className="pagination-dots">
-                    ...
-                  </span>
-                );
-              }
-
-              return (
-                <button
-                  key={page}
-                  className={`pagination-page ${currentPage === page ? "active" : ""}`}
-                  onClick={() => setCurrentPage(page)}
+          {/* Hide pagination buttons during loading */}
+          {!isLoading && (
+            <div className="errorcode-pagination">
+              <div className="rows-per-page">
+                <span>Rows per page</span>
+                <select
+                  value={rowsPerPage}
+                  onChange={(e) => {
+                    setRowsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
                 >
-                  {page}
-                </button>
-              );
-            })}
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
 
-            {/* Next Page Arrow */}
-            <button
-              className={`pagination-arrow ${
-                currentPage >= totalPages ? "disabled" : ""
-              }`}
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage >= totalPages || totalPages === 0}
-            >
-              ›
-            </button>
-          </div>
+              <div className="showing-records">
+                Showing {totalRecords === 0 ? 0 : startIndex + 1}–
+                {Math.min(startIndex + rowsPerPage, totalRecords)} of {totalRecords}
+              </div>
+
+              <div className="pagination-buttons">
+                <button
+                  className={`pagination-arrow ${currentPage === 1 ? "disabled" : ""}`}
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  ‹
+                </button>
+
+                {getPageNumbers().map((page, index) => {
+                  if (page === "...") {
+                    return (
+                      <span key={`dots-${index}`} className="pagination-dots">
+                        ...
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={page}
+                      className={`pagination-page ${currentPage === page ? "active" : ""}`}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+
+                <button
+                  className={`pagination-arrow ${
+                    currentPage >= totalPages ? "disabled" : ""
+                  }`}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage >= totalPages || totalPages === 0}
+                >
+                  ›
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
+    </>
     </div>
   );
 };

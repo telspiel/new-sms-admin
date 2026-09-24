@@ -187,9 +187,9 @@ const getPageNumbers = () => {
   return pages;
 };
 
-  const activeExtraColumnsCount =
-    (showUserColumn ? 1 : 0) + (showSenderColumn ? 1 : 0);
-  const totalColumns = 7 + activeExtraColumnsCount;
+const baseColumns = 7; // DATE, REQUEST, REJECTED, SUBMIT, DELIVERED, FAILED, AWAITED
+const activeExtraColumnsCount = (showUserColumn ? 1 : 0) + (showSenderColumn ? 1 : 0);
+const totalColumns = baseColumns + activeExtraColumnsCount;
 
   
   return (
@@ -293,133 +293,132 @@ const getPageNumbers = () => {
 
         <div className="summary-table-wrapper">
           <table className="summary-table">
-            <thead>
+          <thead>
+            <tr>
+              <th>SUMMARY DATE</th>
+              {showUserColumn && <th>CLIENT NAME</th>}
+              {showSenderColumn && <th>SENDER ID</th>}
+              <th>TOTAL REQUEST</th>
+              <th>TOTAL REJECTED</th>
+              <th>TOTAL SUBMIT</th>
+              <th>TOTAL DELIVERED</th>
+              <th>TOTAL FAILED</th>
+              <th>TOTAL AWAITED</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {loading ? (
               <tr>
-                <th>SUMMARY DATE</th>
-                {showUserColumn && <th>CLIENT NAME</th>}
-                {showSenderColumn && <th>SENDER ID</th>}
-                <th>TOTAL REQUEST</th>
-                <th>TOTAL REJECTED</th>
-                <th>TOTAL SUBMIT</th>
-                <th>TOTAL DELIVERED</th>
-                <th>TOTAL FAILED</th>
-                <th>TOTAL AWAITED</th>
+                <td colSpan={totalColumns}>
+                  <div className="table-loader">
+                    <div className="spinner"></div>
+                    <p>Loading Summary Report...</p>
+                  </div>
+                </td>
               </tr>
-            </thead>
+            ) : (
+              currentRows.map((row, index) => (
+                <tr key={index}>
+                  <td>{row.summaryDate}</td>
+                  {showUserColumn && <td>{row.username || "-"}</td>}
+                  {showSenderColumn && <td>{row.senderId || "-"}</td>}
 
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={totalColumns}>
-                    <div className="table-loader">
-                      <div className="spinner"></div>
-                      <p>Loading Summary Report...</p>
-                    </div>
+                  <td className="summary-number">
+                    {Number(row.totalRequest || 0).toLocaleString()}
                   </td>
-                </tr>
-              ) : (
-                currentRows.map((row, index) => (
-                  <tr key={index}>
-                    <td>{row.summaryDate}</td>
-                    {showUserColumn && <td>{row.username || "-"}</td>}
-                    {showSenderColumn && <td>{row.senderId || "-"}</td>}
-
-                    <td className="summary-number">
-                      {Number(row.totalRequest).toLocaleString()}
-                    </td>
-                    <td className="summary-number">
-                      {Number(row.totalRejected).toLocaleString()}
-                    </td>
-                    <td className="summary-number">
-                      {Number(row.totalSubmit).toLocaleString()}
-                    </td>
-
-                    <td className="summary-delivered-cell">
-                      <strong>
-                        {Number(row.totalDelivered).toLocaleString()}
-                      </strong>
-                      <span>
-                        {calculatePercentage(
-                          row.totalDelivered,
-                          row.totalSubmit
-                        )}
-                      </span>
-                    </td>
-
-                    <td className="summary-failed-cell">
-                      <strong>{Number(row.totalFailed).toLocaleString()}</strong>
-                      <span>
-                        {calculatePercentage(row.totalFailed, row.totalSubmit)}
-                      </span>
-                    </td>
-
-                    <td className="summary-awaited-cell">
-                      <strong>
-                        {Number(row.totalAwaited).toLocaleString()}
-                      </strong>
-                      <span>
-                        {calculatePercentage(row.totalAwaited, row.totalSubmit)}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-
-            {!loading && gridData.length > 0 && (
-              <tfoot>
-                <tr>
-                  <td
-                    className="summary-footer-label"
-                    colSpan={1 + activeExtraColumnsCount}
-                  >
-                    Total ({totalRecords}{" "}
-                    {totalRecords === 1 ? "record" : "records"})
+                  <td className="summary-number">
+                    {Number(row.totalRejected || 0).toLocaleString()}
                   </td>
-
-                  <td className="summary-footer-number">
-                    {totals.totalRequest.toLocaleString()}
-                  </td>
-                  <td className="summary-footer-number">
-                    {totals.totalRejected.toLocaleString()}
-                  </td>
-                  <td className="summary-footer-number">
-                    {totals.totalSubmit.toLocaleString()}
+                  <td className="summary-number">
+                    {Number(row.totalSubmit || 0).toLocaleString()}
                   </td>
 
                   <td className="summary-delivered-cell">
-                    <strong>{totals.totalDelivered.toLocaleString()}</strong>
+                    <strong>
+                      {Number(row.totalDelivered || 0).toLocaleString()}
+                    </strong>
                     <span>
-                      {calculatePercentage(
-                        totals.totalDelivered,
-                        totals.totalSubmit
-                      )}
+                      {calculatePercentage(row.totalDelivered, row.totalSubmit)}
                     </span>
                   </td>
 
                   <td className="summary-failed-cell">
-                    <strong>{totals.totalFailed.toLocaleString()}</strong>
+                    <strong>
+                      {Number(row.totalFailed || 0).toLocaleString()}
+                    </strong>
                     <span>
-                      {calculatePercentage(
-                        totals.totalFailed,
-                        totals.totalSubmit
-                      )}
+                      {calculatePercentage(row.totalFailed, row.totalSubmit)}
                     </span>
                   </td>
 
                   <td className="summary-awaited-cell">
-                    <strong>{totals.totalAwaited.toLocaleString()}</strong>
+                    <strong>
+                      {Number(row.totalAwaited || 0).toLocaleString()}
+                    </strong>
                     <span>
-                      {calculatePercentage(
-                        totals.totalAwaited,
-                        totals.totalSubmit
-                      )}
+                      {calculatePercentage(row.totalAwaited, row.totalSubmit)}
                     </span>
                   </td>
                 </tr>
-              </tfoot>
+              ))
             )}
-          </table>
+          </tbody>
+
+          {!loading && gridData.length > 0 && (
+            <tfoot>
+              <tr>
+                <td
+                  className="summary-footer-label"
+                  colSpan={1 + activeExtraColumnsCount}
+                >
+                  Total ({totalRecords}{" "}
+                  {totalRecords === 1 ? "record" : "records"})
+                </td>
+
+                <td className="summary-footer-number">
+                  {totals.totalRequest.toLocaleString()}
+                </td>
+                <td className="summary-footer-number">
+                  {totals.totalRejected.toLocaleString()}
+                </td>
+                <td className="summary-footer-number">
+                  {totals.totalSubmit.toLocaleString()}
+                </td>
+
+                <td className="summary-delivered-cell">
+                  <strong>{totals.totalDelivered.toLocaleString()}</strong>
+                  <span>
+                    {calculatePercentage(
+                      totals.totalDelivered,
+                      totals.totalSubmit
+                    )}
+                  </span>
+                </td>
+
+                <td className="summary-failed-cell">
+                  <strong>{totals.totalFailed.toLocaleString()}</strong>
+                  <span>
+                    {calculatePercentage(
+                      totals.totalFailed,
+                      totals.totalSubmit
+                    )}
+                  </span>
+                </td>
+
+                <td className="summary-awaited-cell">
+                  <strong>{totals.totalAwaited.toLocaleString()}</strong>
+                  <span>
+                    {calculatePercentage(
+                      totals.totalAwaited,
+                      totals.totalSubmit
+                    )}
+                  </span>
+                </td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
 
           {/* Pagination */}
           <div className="summary-pagination">

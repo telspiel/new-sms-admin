@@ -15,6 +15,14 @@ import {
   Filler,
 } from "chart.js";
 
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend
+);
+
 import { Bar, Line } from "react-chartjs-2";
 import Endpoints from "../../api/endpoint";
 
@@ -417,12 +425,23 @@ const formatIndianNumber = (num) => {
           </div>
         ) : hasSummaryData ? (
           <Bar
+          key={JSON.stringify(chartValues)} 
           data={summaryData}
           options={{
             responsive: true,
+            animation: {
+              duration: 1200,
+              easing: "easeOutQuart",
+              delay: (context) => context.dataIndex * 100,
+            },
+            animations: {
+              y: {
+                from: 0, 
+              },
+            },
             interaction: {
               mode: "index",
-              intersect: false, 
+              intersect: false,
             },
             plugins: {
               legend: {

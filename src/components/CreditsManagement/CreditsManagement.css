@@ -616,7 +616,7 @@
 }
 
 /* Status Badge */
-.status-badge {
+.credits-status-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -627,12 +627,12 @@
   font-weight: 700;
 }
 
-.status-badge.credit {
+.credits-status-badge.credit {
   background: #e7f7ee;
   color: #159451;
 }
 
-.status-badge.debit {
+.credits-status-badge.debit {
   background: #fdeaea;
   color: #f44336;
 }

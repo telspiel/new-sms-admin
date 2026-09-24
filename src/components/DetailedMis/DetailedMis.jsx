@@ -448,67 +448,101 @@ const getPageNumbers = () => {
       {/* Dedicated horizontal scroll container for the table only */}
       <div className="detailed-mis-table-scroll">
         <table className="detailed-mis-table">
-          <thead>
+        <thead>
+          <tr>
+            <th>RECEIVE DATE</th>
+            <th>SENT DATE</th>
+            <th>MESSAGE ID</th>
+            <th>MOBILE NO</th>
+            <th>SENDER ID</th>
+            <th>MESSAGE TEXT</th>
+            <th>MSG COUNT</th>
+            <th>TEMPLATE ID</th>
+            <th>DELIVERY STATUS</th>
+            <th>DELIVERY ERROR CODE</th>
+            <th>ERROR CODE DESC</th>
+            <th>DELIVERY DATE TIME</th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? (
             <tr>
-              <th>RECEIVE DATE</th>
-              <th>SENT DATE</th>
-              <th>MESSAGE ID</th>
-              <th>MOBILE NO</th>
-              <th>SENDER ID</th>
-              <th>MESSAGE TEXT</th>
-              <th>MSG COUNT</th>
-              <th>DELIVERY STATUS</th>
+              {/* Adjusted colSpan from 10 to 12 for the new columns */}
+              <td colSpan={12}>
+                <div className="table-loader">
+                  <div className="spinner"></div>
+                  <p>Loading Detailed MIS Report...</p>
+                </div>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={10}>
-                  <div className="table-loader">
-                    <div className="spinner"></div>
-                    <p>Loading Detailed MIS Report...</p>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              currentRows.map((row, index) => (
+          ) : (
+            currentRows.map((row, index) => {
+              const message = row.messageText || row.message || "-";
+              const status = (row.deliveryStatus || "").toLowerCase();
+
+              return (
                 <tr key={index}>
                   <td>{row.receiveDate || row.receive_date || "-"}</td>
                   <td>{row.sentDate || row.sent_date || row.sendDate || "-"}</td>
                   <td>{row.messageId || row.message_id || "-"}</td>
                   <td>{row.mobileNumber || row.mobileNo || "-"}</td>
                   <td>{row.senderId || row.sender_id || "-"}</td>
-                  <td className="message-content-cell" title={row.messageText || row.message || ""}>
-                    <span className="text-truncate">
-                      {row.messageText || row.message || "-"}
-                    </span>
+                  
+                  {/* Message Text with Hover Tooltip */}
+                  <td className="message-content-cell">
+                    <div className="tooltip-container">
+                      <span className="text-truncate">{message}</span>
+                      {message !== "-" && (
+                        <div className="custom-tooltip">{message}</div>
+                      )}
+                    </div>
                   </td>
+
                   <td>{row.messageCount || row.message_count || "-"}</td>
+
+                  {/* Template ID */}
+                  <td>{row.templateId || row.template_id || "-"}</td>
+
+                  {/* Delivery Status Badge */}
                   <td>
                     <span
                       className={`status-badge ${
-                        (row.deliveryStatus || "")
-                          .toLowerCase()
-                          .includes("delivered")
+                        status.includes("delivered")
                           ? "delivered"
-                          : (row.deliveryStatus || "")
-                              .toLowerCase()
-                              .includes("failed") ||
-                            (row.deliveryStatus || "")
-                              .toLowerCase()
-                              .includes("rejected")
+                          : status.includes("failed") || status.includes("rejected")
                           ? "failed"
+                          : status.includes("awaited")
+                          ? "awaited"
                           : "submitted"
                       }`}
                     >
                       {row.deliveryStatus || "-"}
                     </span>
                   </td>
+
+                  <td>{row.deliveryErrorCode || "-"}</td>
+
+                  {/* Error Code Description */}
+                  <td className="message-content-cell">
+                  <div className="tooltip-container">
+                    <span className="text-truncate">
+                      {row.errorCodeDesc || row.error_code_desc || "-"}
+                    </span>
+                    {(row.errorCodeDesc || row.error_code_desc) && (
+                      <div className="custom-tooltip">
+                        {row.errorCodeDesc || row.error_code_desc}
+                      </div>
+                    )}
+                  </div>
+                </td>
+
+                  <td>{row.deliveryDateTime || "-"}</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              );
+            })
+          )}
+        </tbody>
+      </table>
       </div>
 
         {/* Pagination stays fixed inside card wrapper below the table scroll */}

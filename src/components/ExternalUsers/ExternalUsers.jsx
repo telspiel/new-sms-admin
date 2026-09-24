@@ -625,6 +625,7 @@ const handleUpdateUser = async () => {
 
     if (response.code === 9003 || response.code === 9001 || response.code === 200) {
       setShowEditExternalUser(false);
+      getExternalUsers()
       setToastMessage(response.message || "User Updated successfully");
 
       setTimeout(() => {
@@ -636,40 +637,6 @@ const handleUpdateUser = async () => {
   } catch (error) {
     console.error("Error updating external user:", error);
   }
-};
-
-const [initialFormData, setInitialFormData] = useState(null);
-const [showDiscardModal, setShowDiscardModal] = useState(false);
-
-const hasFormChanged = () => {
-  if (!initialFormData || !editFormData) return false;
-  return JSON.stringify(initialFormData) !== JSON.stringify(editFormData);
-};
-
-// Call this when opening the Edit Drawer (e.g., inside handleOpenEditDrawer)
-const handleOpenEditDrawer = (userData) => {
-  setEditFormData(userData);
-  setInitialFormData(userData); // Store initial snapshot
-  setErrors({});
-  setShowEditExternalUser(true);
-};
-
-// Triggered when user clicks Cross (X), Cancel, or Overlay in Edit Drawer
-const handleAttemptClose = () => {
-  if (hasFormChanged()) {
-    setShowDiscardModal(true);
-  } else {
-    handleConfirmDiscard();
-  }
-};
-
-// Reset state and close drawer on confirmed discard
-const handleConfirmDiscard = () => {
-  setShowDiscardModal(false);
-  setShowEditExternalUser(false);
-  setEditFormData({});
-  setInitialFormData(null);
-  setErrors({});
 };
 
   return (
@@ -1505,7 +1472,7 @@ const handleConfirmDiscard = () => {
        {showEditExternalUser && (
           <div
             className="external-drawer-overlay"
-            onClick={handleAttemptClose}
+            onClick={() => setShowEditExternalUser(false)}
           >
             <div
               className="external-user-drawer"
@@ -1520,7 +1487,7 @@ const handleConfirmDiscard = () => {
 
                 <button
                   className="close-btn"
-                  onClick={handleAttemptClose}
+                  onClick={() => setShowEditExternalUser(false)}
                 >
                   <i className="fa-solid fa-xmark"></i>
                 </button>
@@ -2055,7 +2022,7 @@ const handleConfirmDiscard = () => {
               <div className="external-drawer-footer">
                 <button
                   className="cancel-btn"
-                  onClick={handleAttemptClose}
+                  onClick={() => setShowEditExternalUser(false)}
                 >
                   Cancel
                 </button>
@@ -2067,54 +2034,6 @@ const handleConfirmDiscard = () => {
             </div>
           </div>
         )}
-
-        {showDiscardModal && (
-        <div className="discard-modal-overlay">
-          <div className="discard-modal">
-            {/* Header */}
-            <div className="discard-modal-header">
-              <div className="trash-icon-container">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#e5484d"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M3 6h18" />
-                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                </svg>
-              </div>
-              <h2>Discard changes?</h2>
-            </div>
-
-            {/* Content */}
-            <div className="discard-modal-body">
-              <p>You have unsaved changes. Discard them?</p>
-            </div>
-
-            {/* Actions */}
-            <div className="discard-modal-footer">
-              <button
-                className="btn-secondary"
-                onClick={() => setShowDiscardModal(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn-danger"
-                onClick={handleConfirmDiscard}
-              >
-                Discard
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
           <div className="table-footer">
             <span>

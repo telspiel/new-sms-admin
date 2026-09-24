@@ -335,7 +335,7 @@
 .summary-search-btn {
   min-width: 82px;
   border: 1px solid #f4b900;
-  background: #fbc400;
+  background: linear-gradient(to right, #ffcc29, #e0a800);
   color: #171717;
   box-shadow: 0 5px 12px rgba(242, 187, 0, 0.18);
 }
@@ -372,7 +372,7 @@
 
 .summary-table-wrapper {
   width: 100%;
-  overflow: hidden;
+  overflow-x: auto;
   background: #fff;
   border: 1px solid #e4e8ef;
   border-radius: 15px;
@@ -382,7 +382,7 @@
 .summary-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .summary-table thead {
@@ -398,6 +398,7 @@
   letter-spacing: 0.2px;
   text-align: center;
   border-bottom: 1px solid #e5e9ef;
+  white-space: nowrap;
 }
 
 .summary-table th:nth-child(1) {

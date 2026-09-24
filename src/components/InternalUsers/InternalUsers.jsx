@@ -56,6 +56,8 @@ const InternalUsers = () => {
     const [editMobile, setEditMobile] = useState("");
     const [editErrors, setEditErrors] = useState({});
 
+    const [showDiscardModal, setShowDiscardModal] = useState(false);
+
    
     //Get all Internal User Data API
     const getInternalUsers = async () => {
@@ -396,7 +398,6 @@ const saveInternalUser = async () => {
 //Save Updated User
 const handleUpdateUser = async () => {
   try {
-    setLoadingUpdate(true);
 
     const payload = {
       loggedInUserName: userData.username,
@@ -410,7 +411,6 @@ const handleUpdateUser = async () => {
       userExpiryDate: "",
     };
 
-    // Set customerType string based on selected dropdown value
     if (editUserType === "Account Manager") {
       payload.customerType = "accountmanager";
     } else if (editUserType === "Regional Manager") {
@@ -425,22 +425,33 @@ const handleUpdateUser = async () => {
       userData.authJwtToken
     );
 
-    if (response.code === 9001 || response.code === 9000) {
-      setToastMessage(response.message || "User updated successfully");
+    // Extract code, result, and message safely across nested or direct structures
+    const resCode = response?.code ?? response?.data?.code;
+    const resResult = response?.result || response?.data?.result;
+    const resMessage = response?.message || response?.data?.message;
+
+    if (
+      resCode === 9003 ||
+      resCode === 9001 ||
+      resCode === 9000 ||
+      resResult === "Success" ||
+      response?.status === 200
+    ) {
+      setToastMessage(resMessage || "User Updated successfully");
+
+      // Close both modal and drawer overlays
       setShowEditModal(false);
       setShowEditDrawer(false);
 
-      // Refresh list
-      getInternalUsers();
+      // Refresh table list
+      await getInternalUsers();
     } else {
-      setToastMessage(response.message || "Failed to update user");
+      setToastMessage(resMessage || "Failed to update user");
     }
   } catch (err) {
     console.error("Error updating internal user:", err);
     setToastMessage("An error occurred while updating the user");
-  } finally {
-    setLoadingUpdate(false);
-  }
+  } 
 };
 
 //Edit Internal User Logic
@@ -459,6 +470,16 @@ const handleEditClick = (user) => {
   setPassword(""); // Reset password field for security
   setErrors({});
   setShowEditDrawer(true);
+};
+
+const handleCloseEditDrawer = () => {
+  setShowDiscardModal(true);
+};
+
+// Discards changes: closes both the confirmation modal and the edit drawer
+const handleConfirmDiscard = () => {
+  setShowDiscardModal(false);
+  setShowEditDrawer(false);
 };
 
   return (
@@ -1031,7 +1052,7 @@ const handleEditClick = (user) => {
 
                 <button
                 className="close-btn"
-                onClick={() => setShowEditDrawer(false)}
+                onClick={handleCloseEditDrawer}
                 >
                 <i className="fa-solid fa-xmark"></i>
                 </button>
@@ -1089,6 +1110,7 @@ const handleEditClick = (user) => {
                     type="text"
                     placeholder="Enter username"
                     value={editUsername}
+                    disabled
                     onChange={(e) => {
                     setEditUsername(e.target.value);
                     if (editErrors.username) {
@@ -1175,7 +1197,7 @@ const handleEditClick = (user) => {
             <div className="drawer-footer-internal">
                 <button
                 className="cancel-btn"
-                onClick={() => setShowEditDrawer(false)}
+                onClick={handleCloseEditDrawer}
                 >
                 Cancel
                 </button>
@@ -1229,6 +1251,54 @@ const handleEditClick = (user) => {
             </div>
         </div>
         )}
+
+         {showDiscardModal && (
+        <div className="discard-modal-overlay">
+          <div className="discard-modal">
+            {/* Header */}
+            <div className="discard-modal-header">
+              <div className="trash-icon-container">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#e5484d"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+              </div>
+              <h2>Discard changes?</h2>
+            </div>
+
+            {/* Content */}
+            <div className="discard-modal-body">
+              <p>You have unsaved changes. Discard them?</p>
+            </div>
+
+            {/* Actions */}
+            <div className="discard-modal-footer">
+              <button
+                className="btn-secondary"
+                onClick={() => setShowDiscardModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-danger"
+                onClick={handleConfirmDiscard}
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
         <div className="internal-table-footer">
         <span>

@@ -144,6 +144,12 @@
     font-size: 17px;
 }
 
+.dropdown-divider {
+  height: 1px;
+  background-color: #eee;
+  margin: 4px 0;
+}
+
 .department-data-table {
     width: 100%;
     border-collapse: collapse;

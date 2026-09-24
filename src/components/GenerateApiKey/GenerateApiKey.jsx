@@ -185,7 +185,7 @@ const GenerateApiKey = () => {
         <div className="section">
           <h3>SELECT ACCOUNT</h3>
 
-          <div className="form-group">
+          <div className="api-form-group">
             <label>Client name</label>
 
             <div className="select-wrapper" ref={dropdownRef}>
@@ -204,7 +204,7 @@ const GenerateApiKey = () => {
               </div>
 
               {isDropdownOpen && (
-                <div className="custom-dropdown-menu">
+                <div className="api-dropdown-menu">
                   <div className="dropdown-search-wrapper">
                     <input
                       type="text"
@@ -247,7 +247,7 @@ const GenerateApiKey = () => {
         <div className="section">
           <h3>API KEY</h3>
 
-          <div className="form-group">
+          <div className="api-form-group">
             <label>Existing API Key</label>
 
             <div className="key-row">
@@ -269,7 +269,7 @@ const GenerateApiKey = () => {
             >
               <i
                 className={`fa-regular ${
-                  showApiKey ? "fa-eye-slash" : "fa-eye"
+                  showApiKey ? "fa-eye" : "fa-eye-slash"
                 }`}
               ></i>
             </button>
