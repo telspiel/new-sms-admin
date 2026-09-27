@@ -537,7 +537,7 @@ const updateUserRouting = async () => {
 
       {routingData.length === 0 ? (
         <div className="userwise-empty-card">
-            <GitCompare size={54} strokeWidth={1.5} />
+            <Shuffle size={54} strokeWidth={1.5} />
 
             <h2>Select a type and user to view routing</h2>
 
