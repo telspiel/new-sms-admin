@@ -3,18 +3,13 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
-  UserRound,
   KeyRound,
-  IndianRupee,
   BarChart3,
   FileText,
   ArrowLeftRight,
   Monitor,
   Settings,
   Waypoints, 
-  TriangleAlert,
-  ChevronRight,
-  ChevronDown,
   Banknote,
 } from "lucide-react";
 import "./Sidebar.css";
@@ -27,6 +22,11 @@ function Sidebar() {
   const [reportsOpen, setReportsOpen] = useState(false);
   const [routingOpen, setRoutingOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
+
+  const storedUser = JSON.parse(
+    sessionStorage.getItem("userData") || localStorage.getItem("userData") || "{}"
+  );
+  const role = storedUser.role;
 
   useEffect(() => {
     // Management Console
@@ -166,6 +166,7 @@ function Sidebar() {
                       </NavLink>
                     </li>
 
+                     {!["seller", "reseller"].includes(role) && (
                     <li>
                       <NavLink
                         to="/internal-users"
@@ -176,6 +177,7 @@ function Sidebar() {
                         Internal Users
                       </NavLink>
                     </li>
+                     )}
                   </ul>
                 )}
               </li>
@@ -280,6 +282,7 @@ function Sidebar() {
         </li>
 
         {/* DR Summary */}
+        {!["admin", "seller"].includes(role) && (
         <li className="menu-item">
           <NavLink
             to="/dr-summary"
@@ -291,8 +294,10 @@ function Sidebar() {
             <span>DR Summary</span>
           </NavLink>
         </li>
+        )}
 
         {/* Routing */}
+        {!["seller", "reseller"].includes(role) && (
         <li>
           <div
             className="menu-header"
@@ -312,7 +317,8 @@ function Sidebar() {
 
           {routingOpen && (
             <ul className="submenu">
-
+              {role !== "admin" && (
+                <>
               <li>
                 <NavLink
                   to="/manage-connect"
@@ -356,6 +362,8 @@ function Sidebar() {
                   Userwise Routing
                 </NavLink>
               </li>
+              </>
+              )}
 
               <li>
                 <NavLink
@@ -371,8 +379,10 @@ function Sidebar() {
             </ul>
           )}
         </li>
+        )}
 
         {/* Operator Traffic */}
+        {!["admin", "seller", "reseller"].includes(role) && (  
         <li className="menu-item">
           <NavLink
             to="/operator-traffic"
@@ -384,8 +394,11 @@ function Sidebar() {
             <span>Operator Traffic</span>
           </NavLink>
         </li>
+        )}
 
         {/* Config */}
+        
+        {!["seller", "reseller"].includes(role) && (
         <li>
           <div
             className="menu-header"
@@ -431,6 +444,7 @@ function Sidebar() {
             </ul>
           )}
         </li>
+        )}
 
         {/* Logo Upload */}
         <li className="menu-item">

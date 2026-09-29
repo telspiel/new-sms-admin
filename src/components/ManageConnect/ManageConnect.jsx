@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import "./ManageConnect.css";
 import Endpoints from "../../api/endpoint";
 import { AuthContext } from "../../context/AuthContext";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 const ManageConnect = () => {
     
@@ -19,6 +20,73 @@ const ManageConnect = () => {
 
    const [originalRows, setOriginalRows] = useState([]);
    const [isSubmitted, setIsSubmitted] = useState(false);
+
+   const [isGroupOpen, setIsGroupOpen] = useState(false);
+const [groupSearchTerm, setGroupSearchTerm] = useState("");
+const groupDropdownRef = useRef(null);
+
+// Find selected group object to render label
+const selectedGroupObj = groups.find(
+  (g) => String(g.id) === String(selectedGroup)
+);
+
+// Filter options matching search query
+const filteredGroups = groups.filter((group) =>
+  group.name.toLowerCase().includes(groupSearchTerm.toLowerCase().trim())
+);
+
+// Close dropdown on outside click
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (
+      groupDropdownRef.current &&
+      !groupDropdownRef.current.contains(event.target)
+    ) {
+      setIsGroupOpen(false);
+    }
+  };
+
+  if (isGroupOpen) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [isGroupOpen]);
+
+// Selection Handler preserving original mapping and state setup logic
+const handleSelectGroup = (groupId) => {
+  setSelectedGroup(groupId);
+  setIsGroupOpen(false);
+  setGroupSearchTerm("");
+
+  const selected = groups.find((g) => String(g.id) === String(groupId));
+
+  if (!selected) {
+    setRows([]);
+    setOriginalRows([]);
+    return;
+  }
+
+  const kannels = groupKannelMap[selected.name] || {};
+
+  const rowData = Object.entries(kannels).map(([kannelName, percentage]) => {
+    const selectedKannel = kannelList.find((k) => k.name === kannelName);
+
+    return {
+      kannelId: selectedKannel?.id || "",
+      kannelName,
+      percentage,
+    };
+  });
+
+  setRows(rowData);
+
+  // Keep an untouched copy
+  setOriginalRows(JSON.parse(JSON.stringify(rowData)));
+
+  setAllocationError("");
+};
 
   const removeRow = (index) => {
     setRows(rows.filter((_, i) => i !== index));
@@ -230,60 +298,73 @@ const isAllocationInvalid = totalAllocated !== 100;
           proportion.
         </p>
 
-        <div className="manage-form-group">
+        <div className="manage-form-group" ref={groupDropdownRef}>
         <label>
-            Select Group <span>*</span>
+          Select Group <span className="mandatory">*</span>
         </label>
 
-        <select
-        value={selectedGroup}
-        onChange={(e) => {
-            const groupId = e.target.value;
-            setSelectedGroup(groupId);
+        <div className="custom-manage-dropdown">
+          {/* Dropdown Header Trigger */}
+          <button
+            type="button"
+            className={`manage-dropdown-trigger ${isGroupOpen ? "active" : ""}`}
+            onClick={() => setIsGroupOpen((prev) => !prev)}
+          >
+            <span className={`trigger-text ${!selectedGroupObj ? "placeholder" : ""}`}>
+              {selectedGroupObj ? selectedGroupObj.name : "-- Select --"}
+            </span>
+            {isGroupOpen ? (
+              <ChevronUp size={16} className="chevron-icon" />
+            ) : (
+              <ChevronDown size={16} className="chevron-icon" />
+            )}
+          </button>
 
-            const selected = groups.find(
-            (g) => String(g.id) === String(groupId)
-            );
+          {/* Dropdown Popup */}
+          {isGroupOpen && (
+            <div className="manage-dropdown-menu">
+              {/* Search Field Header */}
+              <div className="manage-dropdown-search-container">
+                <input
+                  type="text"
+                  className="manage-dropdown-search-input"
+                  placeholder="Search group..."
+                  value={groupSearchTerm}
+                  onChange={(e) => setGroupSearchTerm(e.target.value)}
+                  autoFocus
+                />
+              </div>
 
-            if (!selected) {
-            setRows([]);
-            setOriginalRows([]);
-            return;
-            }
+              {/* Options Scrollable List */}
+              <div className="manage-dropdown-options-list">
+                {/* Default "-- Select --" Reset Option */}
+                <div
+                  className={`manage-dropdown-option ${!selectedGroup ? "selected" : ""}`}
+                  onClick={() => handleSelectGroup("")}
+                >
+                  -- Select --
+                </div>
 
-            const kannels = groupKannelMap[selected.name] || {};
-
-            const rowData = Object.entries(kannels).map(
-            ([kannelName, percentage]) => {
-                const selectedKannel = kannelList.find(
-                (k) => k.name === kannelName
-                );
-
-                return {
-                kannelId: selectedKannel?.id || "",
-                kannelName,
-                percentage,
-                };
-            }
-            );
-
-            setRows(rowData);
-
-            // Keep an untouched copy
-            setOriginalRows(JSON.parse(JSON.stringify(rowData)));
-
-            setAllocationError("");
-        }}
-        >
-        <option value="">-- Select --</option>
-
-        {groups.map((group) => (
-            <option key={group.id} value={group.id}>
-            {group.name}
-            </option>
-        ))}
-        </select>
+                {filteredGroups.length > 0 ? (
+                  filteredGroups.map((group) => (
+                    <div
+                      key={group.id}
+                      className={`manage-dropdown-option ${
+                        String(selectedGroup) === String(group.id) ? "selected" : ""
+                      }`}
+                      onClick={() => handleSelectGroup(group.id)}
+                    >
+                      {group.name}
+                    </div>
+                  ))
+                ) : (
+                  <div className="manage-dropdown-no-results">No groups found</div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
+      </div>
 
         {!selectedGroup ? (
           <div className="empty-connect-state">

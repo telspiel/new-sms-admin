@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import "./NewUserRouting.css";
 import Endpoints from "../../api/endpoint";
 import { AuthContext } from "../../context/AuthContext";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 const NewUserRouting = () => {
 
@@ -21,6 +22,86 @@ const NewUserRouting = () => {
     type: "",
     group: "",
   });
+
+// Inside your component:
+const [isOpen, setIsOpen] = useState(false);
+const [searchTerm, setSearchTerm] = useState("");
+const dropdownRef = useRef(null);
+
+// Find selected user object for label display
+const selectedUserObj = userList.find(
+  (user) => String(user.userId) === String(selectedUser)
+);
+
+// Filter users matching search term
+const filteredUsers = userList.filter((user) =>
+  user.userName.toLowerCase().includes(searchTerm.toLowerCase().trim())
+);
+
+// Close dropdown on outside click
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      setIsOpen(false);
+    }
+  };
+
+  if (isOpen) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [isOpen]);
+
+// Option selection handler maintaining your original logic
+const handleUserSelect = (userId) => {
+  setSelectedUser(userId);
+  setErrors((prev) => ({ ...prev, user: "" }));
+  setIsOpen(false);
+  setSearchTerm("");
+};
+
+const [isGroupOpen, setIsGroupOpen] = useState(false);
+const [groupSearchTerm, setGroupSearchTerm] = useState("");
+const groupDropdownRef = useRef(null);
+
+// Find selected group object to display its name in the trigger header
+const selectedGroupObj = groups.find(
+  (group) => String(group.id) === String(selectedGroup)
+);
+
+// Filter groups matching search term
+const filteredGroups = groups.filter((group) =>
+  group.name.toLowerCase().includes(groupSearchTerm.toLowerCase().trim())
+);
+
+// Close dropdown on outside click
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (
+      groupDropdownRef.current &&
+      !groupDropdownRef.current.contains(event.target)
+    ) {
+      setIsGroupOpen(false);
+    }
+  };
+
+  if (isGroupOpen) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [isGroupOpen]);
+
+// Selection handler preserving original state & error clearing logic
+const handleGroupSelect = (groupId) => {
+  setSelectedGroup(groupId);
+  setErrors((prev) => ({ ...prev, group: "" }));
+  setIsGroupOpen(false);
+  setGroupSearchTerm("");
+};
 
   //==========Get Unrouted data API list=================
   const getUnroutedUserList = async () => {
@@ -196,28 +277,75 @@ const handleResetRouting = () => {
           for one or both message types.
         </p>
 
-        <div className="new-routing-form-group">
+        <div className="new-routing-form-group" ref={dropdownRef}>
         <label>
-            User List <span className="mandatory">*</span>
+          User List <span className="mandatory">*</span>
         </label>
 
-         <select
-            value={selectedUser}
-            className={errors.user ? "input-error" : ""}
-            onChange={(e) => {
-                setSelectedUser(e.target.value);
-                setErrors((prev) => ({ ...prev, user: "" }));
-            }}
-            >
-            <option value="">-- Select --</option>
+        <div className="custom-user-dropdown">
+          {/* Trigger Box */}
+          <button
+            type="button"
+            className={`dropdown-trigger ${isOpen ? "active" : ""} ${
+              errors.user ? "input-error" : ""
+            }`}
+            onClick={() => setIsOpen((prev) => !prev)}
+          >
+            <span className={`trigger-text ${!selectedUserObj ? "placeholder" : ""}`}>
+              {selectedUserObj ? selectedUserObj.userName : "-- Select --"}
+            </span>
+            {isOpen ? (
+              <ChevronUp size={16} className="chevron-icon" />
+            ) : (
+              <ChevronDown size={16} className="chevron-icon" />
+            )}
+          </button>
 
-            {userList.map((user) => (
-            <option key={user.userId} value={user.userId}>
-                {user.userName}
-            </option>
-            ))}
-        </select>
+          {/* Dropdown Popup */}
+          {isOpen && (
+            <div className="dropdown-menu">
+              {/* Sticky Search Field */}
+              <div className="dropdown-search-container">
+                <input
+                  type="text"
+                  className="dropdown-search-input"
+                  placeholder="Search admin..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  autoFocus
+                />
+              </div>
+
+              {/* Options List */}
+              <div className="dropdown-options-list">
+                {/* Default "-- Select --" Reset Option */}
+                <div
+                  className={`dropdown-option ${!selectedUser ? "selected" : ""}`}
+                  onClick={() => handleUserSelect("")}
+                >
+                  -- Select --
+                </div>
+
+                {filteredUsers.length > 0 ? (
+                  filteredUsers.map((user) => (
+                    <div
+                      key={user.userId}
+                      className={`dropdown-option ${
+                        String(selectedUser) === String(user.userId) ? "selected" : ""
+                      }`}
+                      onClick={() => handleUserSelect(user.userId)}
+                    >
+                      {user.userName}
+                    </div>
+                  ))
+                ) : (
+                  <div className="dropdown-no-results">No options found</div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
+      </div>
         {errors.user && (
         <p className="field-error">
             <i className="fa-solid fa-triangle-exclamation"></i> {errors.user}
@@ -269,28 +397,75 @@ const handleResetRouting = () => {
           </p>
         </div>
 
-        <div className="new-routing-form-group">
-        <label>
+        <div className="new-routing-form-group" ref={groupDropdownRef}>
+          <label>
             Group List <span className="mandatory">*</span>
-        </label>
+          </label>
 
-       <select
-        value={selectedGroup}
-        disabled={!selectedType}
-        className={errors.group ? "input-error" : ""}
-        onChange={(e) => {
-            setSelectedGroup(e.target.value);
-            setErrors((prev) => ({ ...prev, group: "" }));
-        }}
-        >
-        <option value="">-- Select --</option>
+          <div className="custom-user-dropdown">
+            {/* Trigger Box */}
+            <button
+              type="button"
+              className={`dropdown-trigger ${isGroupOpen ? "active" : ""} ${
+                errors.group ? "input-error" : ""
+              } ${!selectedType ? "disabled" : ""}`}
+              disabled={!selectedType}
+              onClick={() => setIsGroupOpen((prev) => !prev)}
+            >
+              <span className={`trigger-text ${!selectedGroupObj ? "placeholder" : ""}`}>
+                {selectedGroupObj ? selectedGroupObj.name : "-- Select --"}
+              </span>
+              {isGroupOpen ? (
+                <ChevronUp size={16} className="chevron-icon" />
+              ) : (
+                <ChevronDown size={16} className="chevron-icon" />
+              )}
+            </button>
 
-        {groups.map((group) => (
-            <option key={group.id} value={group.id}>
-            {group.name}
-            </option>
-        ))}
-        </select>
+            {/* Dropdown Popup */}
+            {isGroupOpen && (
+              <div className="dropdown-menu">
+                {/* Search Field Header */}
+                <div className="dropdown-search-container">
+                  <input
+                    type="text"
+                    className="dropdown-search-input"
+                    placeholder="Search group..."
+                    value={groupSearchTerm}
+                    onChange={(e) => setGroupSearchTerm(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+
+                {/* Options List */}
+                <div className="dropdown-options-list">
+                  {/* Default "-- Select --" Reset Option */}
+                  <div
+                    className={`dropdown-option ${!selectedGroup ? "selected" : ""}`}
+                    onClick={() => handleGroupSelect("")}
+                  >
+                    -- Select --
+                  </div>
+
+                  {filteredGroups.length > 0 ? (
+                    filteredGroups.map((group) => (
+                      <div
+                        key={group.id}
+                        className={`dropdown-option ${
+                          String(selectedGroup) === String(group.id) ? "selected" : ""
+                        }`}
+                        onClick={() => handleGroupSelect(group.id)}
+                      >
+                        {group.name}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="dropdown-no-results">No groups found</div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         {errors.group && (
         <p className="field-error">

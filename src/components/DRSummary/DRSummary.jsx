@@ -84,9 +84,7 @@ const filteredData = tableData.filter((item) => {
   setToDate(today);
   setSearch("");
 
-  setTimeout(() => {
-    loadDRSummary();
-  }, 0);
+  setTableData([]);
 };
 
   return (

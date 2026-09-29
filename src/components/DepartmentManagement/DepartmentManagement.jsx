@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import "./DepartmentManagement.css";
 import Endpoints from "../../api/endpoint";
 import { AuthContext } from "../../context/AuthContext";
@@ -26,6 +26,24 @@ const DepartmentManagement = () => {
      // State to handle the Discard Confirmation Modal
     const [showDiscardModal, setShowDiscardModal] = useState(false);
 
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+          setShowOrgDropdown(false);
+        }
+      };
+
+      if (showOrgDropdown) {
+        document.addEventListener("mousedown", handleClickOutside);
+      }
+
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [showOrgDropdown]);
+
     const initialDeptFormState = {
     orgId: "",
     deptName: "",
@@ -36,7 +54,6 @@ const DepartmentManagement = () => {
 
     // Helper to trigger closing the active form modal
     const handleConfirmDiscard = () => {
-    // Reset Add Department state
     setDeptForm(initialDeptFormState);
     setDeptErrors({});
 
@@ -575,7 +592,7 @@ const currentDepartments = filteredDepartments.slice(
                 />
              </div>
 
-              <div className="org-dropdown">
+              <div className="org-dropdown" ref={dropdownRef}>
                 <div
                     className="org-dropdown-header"
                     onClick={() => setShowOrgDropdown(!showOrgDropdown)}

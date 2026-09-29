@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import "./DetailedMis.css";
 import Endpoints from "../../api/endpoint";
@@ -8,17 +8,18 @@ const DetailedMis = () => {
   const { userData } = useContext(AuthContext);
 
   // Helper function to get today's date formatted as YYYY-MM-DD in IST
-  const formatDateIST = (dateObj) => {
-    const options = {
-      timeZone: "Asia/Kolkata",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    };
-    return new Intl.DateTimeFormat("en-CA", options).format(dateObj);
+ const formatDateIST = (dateObj) => {
+  const options = {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   };
+  return new Intl.DateTimeFormat("en-CA", options).format(dateObj);
+};
 
-  const getTodayIST = () => formatDateIST(new Date());
+const getTodayIST = () => formatDateIST(new Date());
+const todayIST = getTodayIST();
 
   // Client Data dropdown states
   const [clientList, setClientList] = useState([]);
@@ -26,12 +27,7 @@ const DetailedMis = () => {
   const [selectedClient, setSelectedClient] = useState("");
   const [showClientDropdown, setShowClientDropdown] = useState(false);
 
-  // Filter Form States
-  const [fromDate, setFromDate] = useState(getTodayIST());
-  const [toDate, setToDate] = useState("");
-
   // Max selectable date (Today IST) to prevent future date selection
-  const todayIST = getTodayIST();
   const [mobileNumber, setMobileNumber] = useState("");
   const [senderId, setSenderId] = useState("");
   const [messageId, setMessageId] = useState("");
@@ -45,6 +41,27 @@ const DetailedMis = () => {
   // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+const clientDropdownRef = useRef(null);
+
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (
+      clientDropdownRef.current &&
+      !clientDropdownRef.current.contains(event.target)
+    ) {
+      setShowClientDropdown(false);
+    }
+  };
+
+  if (showClientDropdown) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [showClientDropdown]);
 
   // Fetch Client List
   const getAllUsers = async () => {
@@ -166,18 +183,23 @@ const DetailedMis = () => {
     setCurrentPage(1);
   };
 
-  // Helper: Calculate +7 Days from selected From Date
-const calculateToDate = (selectedFromDate) => {
-  if (!selectedFromDate) return "";
+  const calculateToDate = (selectedFromDate) => {
+    if (!selectedFromDate) return "";
 
-  const from = new Date(selectedFromDate);
-  from.setDate(from.getDate() + 7);
+    // Parse YYYY-MM-DD string into a Local Date to avoid UTC shift bugs
+    const [year, month, day] = selectedFromDate.split("-").map(Number);
+    const from = new Date(year, month - 1, day);
+    from.setDate(from.getDate() + 7);
 
-  const calculatedTo = formatDateIST(from);
+    const calculatedTo = formatDateIST(from);
 
-  // Freeze future dates: if calculated +7 days exceeds today, cap at todayIST
-  return calculatedTo > todayIST ? todayIST : calculatedTo;
-};
+    // Freeze future dates: if +7 days exceeds today, cap at todayIST
+    return calculatedTo > todayIST ? todayIST : calculatedTo;
+  };
+
+// Filter Form States
+const [fromDate, setFromDate] = useState(todayIST);
+const [toDate, setToDate] = useState(calculateToDate(todayIST))
 
 const handleFromDateChange = (e) => {
   const newFromDate = e.target.value;
@@ -190,6 +212,21 @@ const handleFromDateChange = (e) => {
     setToDate("");
   }
 };
+
+
+const getMaxToDate = (selectedFromDate) => {
+  if (!selectedFromDate) return todayIST;
+
+  const [year, month, day] = selectedFromDate.split("-").map(Number);
+  const maxTo = new Date(year, month - 1, day);
+  maxTo.setDate(maxTo.getDate() + 7);
+
+  const formattedMaxTo = formatDateIST(maxTo);
+
+  return formattedMaxTo > todayIST ? todayIST : formattedMaxTo;
+};
+
+const maxToDate = getMaxToDate(fromDate);
 
   // Pagination Calculations
   const totalRecords = reportData.length;
@@ -230,7 +267,7 @@ const getPageNumbers = () => {
       <div className="detailed-mis-filter-card">
         <div className="detailed-mis-filter-grid">
           <div className="wrap-detailed-mis-input">
-            <div className="detailed-mis-field user-client-field">
+            <div className="detailed-mis-field user-client-field" ref={clientDropdownRef}>
             <label>
               User Name / Client Name <span>*</span>
             </label>
@@ -314,37 +351,38 @@ const getPageNumbers = () => {
           </div>
 
             {/* From Date */}
-            <div className="detailed-mis-field date-field">
-              <label>
-                From <span>*</span>
-              </label>
-              <div className="detailed-mis-input date-input">
-                <input
-                  type="date"
-                  value={fromDate}
-                  max={todayIST}
-                  onChange={handleFromDateChange}
-                  className="date-range-input"
-                />
-              </div>
+          <div className="detailed-mis-field date-field">
+            <label>
+              From <span>*</span>
+            </label>
+            <div className="detailed-mis-input date-input">
+              <input
+                type="date"
+                value={fromDate}
+                max={todayIST}
+                onChange={handleFromDateChange}
+                className="date-range-input"
+              />
             </div>
+          </div>
 
-            {/* To Date */}
-            <div className="detailed-mis-field date-field">
-              <label>
-                To <span>*</span>
-              </label>
-              <div className="detailed-mis-input date-input">
-                <input
-                  type="date"
-                  value={toDate}
-                  max={todayIST}
-                  disabled={!fromDate}
-                  onChange={(e) => setToDate(e.target.value)}
-                  className="date-range-input"
-                />
-              </div>
+          {/* To Date */}
+          <div className="detailed-mis-field date-field">
+            <label>
+              To <span>*</span>
+            </label>
+            <div className="detailed-mis-input date-input">
+              <input
+                type="date"
+                value={toDate}
+                min={fromDate}
+                max={maxToDate}
+                disabled={!fromDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="date-range-input"
+              />
             </div>
+          </div>
 
             {/* Mobile Number */}
             <div className="detailed-mis-field">

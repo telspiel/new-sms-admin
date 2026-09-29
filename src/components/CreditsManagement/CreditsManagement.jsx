@@ -681,15 +681,15 @@ const exportData = (format) => {
                 </small>
                 </div>
 
-                {creditData.userAvailableCredit !== null &&
-                creditData.loggedInUserCredit !== null &&
+                {creditData.loggedInUserCredit !== null &&
+                creditData.userAvailableCredit !== null &&
                 addAmount > 0 &&
-                (Number(addAmount) > Number(creditData.userAvailableCredit) ? (
+                (Number(addAmount) > Number(creditData.loggedInUserCredit) ? (
                   /* Error Banner */
                   <div className="error-banner">
                     Insufficient balance — you only have{" "}
                     <strong>
-                      {Number(creditData.userAvailableCredit).toLocaleString()}
+                      {Number(creditData.loggedInUserCredit).toLocaleString()}
                     </strong>{" "}
                     available.
                   </div>

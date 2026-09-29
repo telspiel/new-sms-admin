@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import "./UserwiseRouting.css";
-import { Shuffle } from "lucide-react";
+import { Shuffle, ChevronDown, ChevronUp } from "lucide-react";
 import Endpoints from "../../api/endpoint";
 import { AuthContext } from "../../context/AuthContext";
 
@@ -35,6 +35,49 @@ const UserwiseRouting = () => {
   const [editCircle, setEditCircle] = useState("");
   const [editCarrier, setEditCarrier] = useState("");
   const [editGroup, setEditGroup] = useState("");
+
+  // Inside your component:
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const dropdownRef = useRef(null);
+
+  // Find the selected user's object to display their name in the trigger header
+  const selectedUserObj = userList.find(
+    (user) => String(user.userId) === String(selectedUser)
+  );
+
+  // Filter options based on search query
+  const filteredUsers = userList.filter((user) =>
+    user.userName.toLowerCase().includes(searchTerm.toLowerCase().trim())
+  );
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  const handleUserSelect = (userId) => {
+    setSelectedUser(userId);
+    setIsOpen(false);
+    setSearchTerm(""); // Reset search on select
+
+    if (userId) {
+      getUserListDataOptions(userId, selectedType);
+    } else {
+      setRoutingData([]);
+    }
+  };
 
   //==========API to get Routed Uers=====================
   const getUserwiseMessageType = async (type) => {
@@ -349,35 +392,76 @@ const updateUserRouting = async () => {
             </div>
           </div>
 
-         <div className="userwise-field">
+        <div className="userwise-field" ref={dropdownRef}>
         <label>
-            User List <span className="mandatory">*</span>
+          User List <span className="mandatory">*</span>
         </label>
 
-        <select
-        disabled={!selectedType}
-        value={selectedUser}
-        onChange={(e) => {
-            const userId = e.target.value;
+        <div className="custom-user-dropdown">
+          {/* Trigger Header */}
+          <button
+            type="button"
+            className={`dropdown-trigger ${isOpen ? "active" : ""} ${
+              !selectedType ? "disabled" : ""
+            }`}
+            disabled={!selectedType}
+            onClick={() => setIsOpen((prev) => !prev)}
+          >
+            <span className={`trigger-text ${!selectedUserObj ? "placeholder" : ""}`}>
+              {selectedUserObj ? selectedUserObj.userName : "-- Select --"}
+            </span>
+            {isOpen ? (
+              <ChevronUp size={16} className="chevron-icon" />
+            ) : (
+              <ChevronDown size={16} className="chevron-icon" />
+            )}
+          </button>
 
-            setSelectedUser(userId);
+          {/* Dropdown Popup Menu */}
+          {isOpen && (
+            <div className="dropdown-menu">
+              {/* Search Input Box */}
+              <div className="dropdown-search-container">
+                <input
+                  type="text"
+                  className="dropdown-search-input"
+                  placeholder="Search admin..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  autoFocus
+                />
+              </div>
 
-            if (userId) {
-            getUserListDataOptions(userId, selectedType);
-            } else {
-            setRoutingData([]);
-            }
-        }}
-        >
-        <option value="">-- Select --</option>
+              {/* Options List */}
+              <div className="dropdown-options-list">
+                {/* Default "-- Select --" / Reset Option */}
+                <div
+                  className={`dropdown-option ${!selectedUser ? "selected" : ""}`}
+                  onClick={() => handleUserSelect("")}
+                >
+                  -- Select --
+                </div>
 
-        {userList.map((user) => (
-            <option key={user.userId} value={user.userId}>
-            {user.userName}
-            </option>
-        ))}
-        </select>
+                {filteredUsers.length > 0 ? (
+                  filteredUsers.map((user) => (
+                    <div
+                      key={user.userId}
+                      className={`dropdown-option ${
+                        String(selectedUser) === String(user.userId) ? "selected" : ""
+                      }`}
+                      onClick={() => handleUserSelect(user.userId)}
+                    >
+                      {user.userName}
+                    </div>
+                  ))
+                ) : (
+                  <div className="dropdown-no-results">No options found</div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
+      </div>
         </div>
       </div>
 
@@ -568,9 +652,17 @@ const updateUserRouting = async () => {
 
                     <td>{row.senderId || "ALL"}</td>
 
-                    <td>{row.circleName}</td>
+                    <td>
+                      {!row.circleName || row.circleName.toUpperCase() === "UNKNOWN"
+                        ? "ALL"
+                        : row.circleName}
+                    </td>
 
-                    <td>{row.carrierName}</td>
+                    <td>
+                      {!row.carrierName || row.carrierName.toUpperCase() === "UNKNOWN"
+                        ? "ALL"
+                        : row.carrierName}
+                    </td>
 
                     <td>
                    <span

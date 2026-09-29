@@ -187,10 +187,31 @@ const totalsLive = liveTraffic.reduce(
   }
 );
 
-// Total count of traffic history
+const [searchQuery, setSearchQuery] = useState("");
+
+const filteredHistoryTraffic = historyTraffic.filter((item) => {
+  const matchesConnect =
+    selectedConnect === "All" || item.connectName === selectedConnect;
+    
+  const matchesUser =
+    selectedUser === "All" || item.userName === selectedUser;
+    
+  const matchesSender =
+    selectedSenderId === "All" || item.senderId === selectedSenderId;
+
+  // Search input matching (case-insensitive check on connectName)
+  const matchesSearch =
+    !searchQuery ||
+    (item.connectName &&
+      item.connectName.toLowerCase().includes(searchQuery.toLowerCase().trim()));
+
+  return matchesConnect && matchesUser && matchesSender && matchesSearch;
+});
+
+////Total count of traffic history
 const totals =
-  historyTraffic.length > 0
-    ? historyTraffic.reduce(
+  filteredHistoryTraffic.length > 0
+    ? filteredHistoryTraffic.reduce(
         (acc, row) => {
           acc.submit += Number(row.totalSubmit || 0);
           acc.delivered += Number(row.totalDelivered || 0);
@@ -206,20 +227,7 @@ const totals =
           awaited: 0,
         }
       )
-    : null;
-
-
-// Filtered traffic array based on active dropdown selections
-const filteredHistoryTraffic = historyTraffic.filter((item) => {
-  const matchesConnect =
-    selectedConnect === "All" || item.connectName === selectedConnect;
-  const matchesUser =
-    selectedUser === "All" || item.userName === selectedUser;
-  const matchesSender =
-    selectedSenderId === "All" || item.senderId === selectedSenderId;
-
-  return matchesConnect && matchesUser && matchesSender;
-});
+    : { submit: 0, delivered: 0, failed: 0, awaited: 0 };
 
 // Helper function to trigger toast notification
   const showToast = (message) => {
@@ -235,27 +243,30 @@ const filteredHistoryTraffic = historyTraffic.filter((item) => {
   };
 
   // Helper to format table row data for export safely
-  const formatExportData = () => {
-    return historyTraffic.map((row) => {
-      const submit = Number(row.totalSubmit) || 0;
-      const delivered = Number(row.totalDelivered) || 0;
-      const failed = Number(row.totalFailed) || 0;
-      const awaited = Number(row.totalAwaited) || 0;
+  const formatExportData = (data = filteredHistoryTraffic) => {
+  return data.map((row) => {
+    const submit = Number(row.totalSubmit) || 0;
+    const delivered = Number(row.totalDelivered) || 0;
+    const failed = Number(row.totalFailed) || 0;
+    const awaited = Number(row.totalAwaited) || 0;
 
-      const deliveredPercent = submit === 0 ? "0%" : `${((delivered / submit) * 100).toFixed(1)}%`;
-      const failedPercent = submit === 0 ? "0%" : `${((failed / submit) * 100).toFixed(1)}%`;
-      const awaitedPercent = submit === 0 ? "0%" : `${((awaited / submit) * 100).toFixed(1)}%`;
+    const deliveredPercent =
+      submit === 0 ? "0%" : `${((delivered / submit) * 100).toFixed(1)}%`;
+    const failedPercent =
+      submit === 0 ? "0%" : `${((failed / submit) * 100).toFixed(1)}%`;
+    const awaitedPercent =
+      submit === 0 ? "0%" : `${((awaited / submit) * 100).toFixed(1)}%`;
 
-      return {
-        "SUMMARY DATE": row.summaryDate || "",
-        "CONNECT NAME": row.connectName || "",
-        "SUBMIT": `${submit.toLocaleString()} (100%)`,
-        "DELIVERED": `${delivered.toLocaleString()} (${deliveredPercent})`,
-        "FAILED": `${failed.toLocaleString()} (${failedPercent})`,
-        "AWAITED": `${awaited.toLocaleString()} (${awaitedPercent})`,
-      };
-    });
-  };
+    return {
+      "SUMMARY DATE": row.summaryDate || "",
+      "CONNECT NAME": row.connectName || "",
+      "SUBMIT": `${submit.toLocaleString()} (100%)`,
+      "DELIVERED": `${delivered.toLocaleString()} (${deliveredPercent})`,
+      "FAILED": `${failed.toLocaleString()} (${failedPercent})`,
+      "AWAITED": `${awaited.toLocaleString()} (${awaitedPercent})`,
+    };
+  });
+};
 
   // Safe file downloader utility
   const triggerDownload = (blob, fileName) => {
@@ -270,52 +281,55 @@ const filteredHistoryTraffic = historyTraffic.filter((item) => {
   };
 
   // Export to CSV
-  const handleExportCSV = () => {
-    try {
-      if (!historyTraffic || historyTraffic.length === 0) {
-        showToast("No Data To Download");
-        return;
-      }
-
-      const dataToExport = formatExportData();
-      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-      const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
-
-      const blob = new Blob([csvOutput], { type: "text/csv;charset=utf-8;" });
-      triggerDownload(blob, getFileName("csv"));
-
-      showToast("Exported in csv");
-    } catch (err) {
-      console.error("CSV Export failed:", err);
+const handleExportCSV = () => {
+  try {
+    if (!filteredHistoryTraffic || filteredHistoryTraffic.length === 0) {
+      showToast("No Data To Download");
+      return;
     }
-  };
 
-  // Export to XLSX (Browser-safe array buffer conversion)
-  const handleExportXLSX = () => {
-    try {
-      if (!historyTraffic || historyTraffic.length === 0) {
-        showToast("No Data To Download");
-        return;
-      }
+    const dataToExport = formatExportData(filteredHistoryTraffic);
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
 
-      const dataToExport = formatExportData();
-      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Traffic History");
+    const blob = new Blob([csvOutput], { type: "text/csv;charset=utf-8;" });
+    triggerDownload(blob, getFileName("csv"));
 
-      // Write as array buffer to prevent browser fs crashes
-      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-      const blob = new Blob([excelBuffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
+    showToast("Exported in csv");
+  } catch (err) {
+    console.error("CSV Export failed:", err);
+  }
+};
 
-      triggerDownload(blob, getFileName("xlsx"));
-
-      showToast("Exported in xlsx");
-    } catch (err) {
-      console.error("XLSX Export failed:", err);
+// Export to XLSX
+const handleExportXLSX = () => {
+  try {
+    if (!filteredHistoryTraffic || filteredHistoryTraffic.length === 0) {
+      showToast("No Data To Download");
+      return;
     }
-  };
+
+    const dataToExport = formatExportData(filteredHistoryTraffic);
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Traffic History");
+
+    // Write as array buffer to prevent browser fs crashes
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    triggerDownload(blob, getFileName("xlsx"));
+
+    showToast("Exported in xlsx");
+  } catch (err) {
+    console.error("XLSX Export failed:", err);
+  }
+};
 
   return (
     <div className="operator-traffic">
@@ -664,9 +678,7 @@ const filteredHistoryTraffic = historyTraffic.filter((item) => {
 
 
   <div className="traffic-cards">
-
     <div className="traffic-card">
-
       <div className="card-icon yellow">
         <i className="fa-regular fa-paper-plane"></i>
       </div>
@@ -683,7 +695,6 @@ const filteredHistoryTraffic = historyTraffic.filter((item) => {
     </div>
 
     <div className="traffic-card">
-
       <div className="card-icon green">
         <i className="fa-solid fa-check"></i>
       </div>
@@ -700,7 +711,6 @@ const filteredHistoryTraffic = historyTraffic.filter((item) => {
     </div>
 
     <div className="traffic-card">
-
       <div className="card-icon red">
         <i className="fa-solid fa-xmark"></i>
       </div>
@@ -717,7 +727,6 @@ const filteredHistoryTraffic = historyTraffic.filter((item) => {
     </div>
 
     <div className="traffic-card">
-
       <div className="card-icon blue">
         <i className="fa-regular fa-clock"></i>
       </div>
@@ -730,9 +739,7 @@ const filteredHistoryTraffic = historyTraffic.filter((item) => {
             : "-"}
         </h2>
       </div>
-
     </div>
-
   </div>
 
   {/* Table */}
@@ -744,9 +751,11 @@ const filteredHistoryTraffic = historyTraffic.filter((item) => {
         <i className="fa-solid fa-magnifying-glass"></i>
 
         <input
-          type="text"
-          placeholder="Search connect..."
-        />
+        type="text"
+        placeholder="Search connect..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
 
       </div>
 
