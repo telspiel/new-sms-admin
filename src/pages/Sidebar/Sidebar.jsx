@@ -266,7 +266,7 @@ function Sidebar() {
                 </NavLink>
               </li>
 
-              <li>
+              {/* <li>
                 <NavLink
                   to="/download-report"
                   className={({ isActive }) =>
@@ -275,7 +275,7 @@ function Sidebar() {
                 >
                   Download Report
                 </NavLink>
-              </li>
+              </li> */}
 
             </ul>
           )}

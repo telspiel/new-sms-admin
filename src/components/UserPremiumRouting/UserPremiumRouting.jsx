@@ -857,7 +857,7 @@ const handleConfirmDiscard = () => {
                           }}
                         />
                         <p style={{ color: bulkErrors.file ? "#d83b2d" : undefined }}>
-                          Only .txt, .csv or .xlsx files are allowed · max 500 numbers per file
+                          Only .txt, .csv files are allowed · max 500 numbers per file
                         </p>
                       </div>
                       {bulkErrors.file && (
