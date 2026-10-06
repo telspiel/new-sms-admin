@@ -668,8 +668,13 @@ const exportData = (format) => {
                   }
                 }}
                 placeholder="0"
-                onKeyDown={(e) => {
-                  if (e.key === "-" || e.key === "e") {
+               onKeyDown={(e) => {
+                  if (
+                    e.key === "-" ||
+                    e.key === "e" ||
+                    e.key === "." ||
+                    (e.key === "ArrowDown" && (Number(creditToAdd) <= 0 || !creditToAdd))
+                  ) {
                     e.preventDefault();
                   }
                 }}
@@ -942,7 +947,12 @@ const exportData = (format) => {
                 }}
                 placeholder="0"
                 onKeyDown={(e) => {
-                  if (e.key === "-" || e.key === "e") {
+                  if (
+                    e.key === "-" ||
+                    e.key === "e" ||
+                    e.key === "." ||
+                    (e.key === "ArrowDown" && (Number(creditToDeduct) <= 0 || !creditToDeduct))
+                  ) {
                     e.preventDefault();
                   }
                 }}

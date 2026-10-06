@@ -6,75 +6,65 @@ import { AuthContext } from "../../context/AuthContext";
 const ErrorCodeReport = () => {
   const { userData } = useContext(AuthContext);
   
-  // Format YYYY-MM-DD string into YYYY-M-D or YYYY-MM-DD
-  const formatDateToYYYYMMDD = (dateString) => {
-    if (!dateString) return "";
-    const [year, month, day] = dateString.split("-");
-    // parseInt strips leading zeros to produce formats like 2026-8-21
-    return `${year}-${parseInt(month, 10)}-${parseInt(day, 10)}`;
-  };
+ // Helper function to format YYYY-MM-DD into YYYY-M-D for the API
+const formatDateToYYYYMMDD = (dateString) => {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("-");
+  return `${year}-${parseInt(month, 10)}-${parseInt(day, 10)}`;
+};
 
-  const getDefaultDates = () => {
-    const today = new Date();
-    const prior = new Date();
-    prior.setDate(today.getDate() - 7);
+// Default single date state (defaults to today's date in YYYY-MM-DD format)
+const getTodayDate = () => new Date().toISOString().split("T")[0];
 
-    return {
-      fromDate: prior.toISOString().split("T")[0],
-      toDate: today.toISOString().split("T")[0],
+const [selectedDate, setSelectedDate] = useState(getTodayDate());
+const [selectedUser, setSelectedUser] = useState("");
+const [selectedErrorCode, setSelectedErrorCode] = useState("");
+
+const [reportData, setReportData] = useState([]);
+const [isLoading, setIsLoading] = useState(false);
+const [errorMessage, setErrorMessage] = useState("");
+
+const [rowsPerPage, setRowsPerPage] = useState(10);
+const [currentPage, setCurrentPage] = useState(1);
+
+const fetchErrorCodeReport = async () => {
+  if (!userData?.username) return;
+
+  setIsLoading(true);
+  setErrorMessage("");
+
+  const formattedDate = formatDateToYYYYMMDD(selectedDate);
+
+  try {
+    const payload = {
+      loggedInUserName: userData.username,
+      fromDate: formattedDate, // Pass single selected date as fromDate
+      toDate: formattedDate,   // Pass single selected date as toDate
     };
-  };
 
-  const initialDates = getDefaultDates();
+    const response = await Endpoints.post("errorcodeReport", payload);
 
-  const [fromDate, setFromDate] = useState(initialDates.fromDate);
-  const [toDate, setToDate] = useState(initialDates.toDate);
-  const [selectedUser, setSelectedUser] = useState("");
-  const [selectedErrorCode, setSelectedErrorCode] = useState("");
-
-  const [reportData, setReportData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const fetchErrorCodeReport = async () => {
-    if (!userData?.username) return;
-
-    setIsLoading(true);
-    setErrorMessage("");
-
-    try {
-      const payload = {
-        loggedInUserName: userData.username,
-        fromDate: formatDateToYYYYMMDD(fromDate),
-        toDate: formatDateToYYYYMMDD(toDate),
-      };
-
-      const response = await Endpoints.post("errorcodeReport", payload);
-
-      if (response.code === 21000) {
-        setReportData(response.grid || []);
-      } else {
-        setReportData([]);
-        setErrorMessage(
-          response.message || "Unable to fetch error code report."
-        );
-      }
-    } catch (error) {
-      console.error(error);
+    if (response.code === 21000) {
+      setReportData(response.grid || []);
+    } else {
       setReportData([]);
-      setErrorMessage("Something went wrong while fetching data.");
-    } finally {
-      setIsLoading(false);
-      setCurrentPage(1);
+      setErrorMessage(
+        response.message || "Unable to fetch error code report."
+      );
     }
-  };
+  } catch (error) {
+    console.error(error);
+    setReportData([]);
+    setErrorMessage("Something went wrong while fetching data.");
+  } finally {
+    setIsLoading(false);
+    setCurrentPage(1);
+  }
+};
 
-  useEffect(() => {
-    fetchErrorCodeReport();
-  }, []);
+useEffect(() => {
+  fetchErrorCodeReport();
+}, []);
 
   const userOptions = useMemo(() => {
     const users = reportData.map((item) => item.username).filter(Boolean);
@@ -154,12 +144,17 @@ const getPageNumbers = () => {
   };
 
   const handleReset = () => {
-    const defaults = getDefaultDates();
-    setFromDate(defaults.fromDate);
-    setToDate(defaults.toDate);
-    setSelectedUser("");
-    setSelectedErrorCode("");
-  };
+  // Reset dropdown selections
+  setSelectedUser("");
+  setSelectedErrorCode("");
+
+  setSelectedDate(getTodayDate());
+  setReportData([]);
+  setCurrentPage(1);
+};
+
+// Determines if dropdowns should be disabled (frozen)
+const isDropdownDisabled = isLoading || reportData.length === 0;
 
   return (
     <div className="errorcode-report">
@@ -182,6 +177,7 @@ const getPageNumbers = () => {
                 setSelectedUser(e.target.value);
                 setCurrentPage(1); // Reset page on filter change
               }}
+              disabled={isDropdownDisabled}
             >
               <option value="">All Users</option>
               {userOptions.map((user) => (
@@ -203,6 +199,7 @@ const getPageNumbers = () => {
                 setSelectedErrorCode(e.target.value);
                 setCurrentPage(1); // Reset page on filter change
               }}
+              disabled={isDropdownDisabled}
             >
               <option value="">All Error Codes</option>
               {errorCodeOptions.map((code) => (
@@ -215,32 +212,18 @@ const getPageNumbers = () => {
         </div>
 
         <div className="errorcode-filter-field date-field">
-          <label>
-            From <span>*</span>
-          </label>
-          <div className="date-input-wrap">
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              required
-            />
-          </div>
+        <label>
+          Date <span>*</span>
+        </label>
+        <div className="date-input-wrap">
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            required
+          />
         </div>
-
-        <div className="errorcode-filter-field date-field">
-          <label>
-            To <span>*</span>
-          </label>
-          <div className="date-input-wrap">
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              required
-            />
-          </div>
-        </div>
+      </div>
 
         <div className="errorcode-filter-actions">
           <button

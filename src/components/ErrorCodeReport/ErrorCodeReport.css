@@ -114,6 +114,13 @@
   background: #fff;
 }
 
+.errorcode-select select:disabled {
+  background-color: #e9ecef; 
+  color: #6c757d;           
+  cursor: not-allowed;       
+  opacity: 0.8;
+}
+
 .date-input-wrap {
   display: flex;
   align-items: center;
