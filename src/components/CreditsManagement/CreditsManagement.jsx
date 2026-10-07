@@ -44,6 +44,7 @@ const [creditData, setCreditData] = useState({
   const [creditToDeduct, setCreditToDeduct] = useState("");
 
   const [toastMessage, setToastMessage] = useState("");
+  const [isCreditInputDisabled, setIsCreditInputDisabled] = useState(false);
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState("");
@@ -147,21 +148,35 @@ const getViewCreditForUser = async (
   value,
   includeDates = false
 ) => {
-  if (!value) return;
+  if (!value) {
+    setSelectedAccount({ type: null, value: null });
+    setCreditData({
+      userAvailableCredit: null,
+      loggedInUserCredit: null,
+    });
+    setCreditToAdd("");
+    setCreditToDeduct("");
+    setIsCreditInputDisabled(false);
+    setToastMessage("");
+    return;
+  }
 
   setSelectedAccount({
     type,
     value,
   });
 
+  // Clear previous toast message on new selection
+  setToastMessage("");
+
   try {
     const payload = {
-    loggedInUserName: userData.username,
-    [type]: value,
-    ...(includeDates && {
+      loggedInUserName: userData.username,
+      [type]: value,
+      ...(includeDates && {
         fromDate,
         toDate,
-    }),
+      }),
     };
 
     const response = await Endpoints.post(
@@ -172,17 +187,29 @@ const getViewCreditForUser = async (
 
     console.log("View Credit:", response);
 
-    if (response.code === 8007) {
+    if (response.code === 8007 && response.result === "Success") {
+      // Success path: enable inputs and set customer data
       setCreditData(response.data.userCredit);
+      setIsCreditInputDisabled(false);
     } else {
+      // Failure path: clear balances, disable both inputs, and show toast
       setCreditData({
         userAvailableCredit: null,
         loggedInUserCredit: null,
       });
-      alert(response.message);
+      setCreditToAdd("");
+      setCreditToDeduct("");
+      setIsCreditInputDisabled(true);
+      
+      setToastMessage(response.message || "Not a valid prepaid customer.");
+
+      // Auto-clear toast after 3 seconds (optional)
+      setTimeout(() => setToastMessage(""), 3000);
     }
   } catch (error) {
     console.error(error);
+    setToastMessage("An error occurred while fetching user credit.");
+    setIsCreditInputDisabled(true);
   }
 };
 
@@ -276,6 +303,12 @@ const resetPage = () => {
     client: null,
   });
 
+  // Reset selectedAccount as well
+  setSelectedAccount({
+    type: null,
+    value: null,
+  });
+
   setCreditData({
     userAvailableCredit: null,
     loggedInUserCredit: null,
@@ -284,9 +317,8 @@ const resetPage = () => {
   setCreditToAdd("");
   setCreditToDeduct("");
 
-  setFromDate(today)
-  setToDate(today)
-
+  setFromDate(today);
+  setToDate(today);
 };
 
 //=======================Reset individual pages=====================
@@ -659,26 +691,48 @@ const exportData = (format) => {
                     Add Credit <span>*</span>
                 </label>
 
-               <input
-                type="number"
-                value={creditToAdd}
-                onChange={(e) => {
-                  if (e.target.value.length <= 16) {
-                    setCreditToAdd(e.target.value);
-                  }
-                }}
-                placeholder="0"
-               onKeyDown={(e) => {
-                  if (
-                    e.key === "-" ||
-                    e.key === "e" ||
-                    e.key === "." ||
-                    (e.key === "ArrowDown" && (Number(creditToAdd) <= 0 || !creditToAdd))
-                  ) {
-                    e.preventDefault();
-                  }
-                }}
-                disabled={!isUserSelected}
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={creditToAdd}
+                  onChange={(e) => {
+                    const val = e.target.value;
+
+                    // Allow empty string so user can delete/clear the input
+                    if (val === "") {
+                      setCreditToAdd("");
+                      return;
+                    }
+
+                    // Only allow positive integers (no leading zero, no negatives, no decimals)
+                    if (/^[1-9]\d*$/.test(val) && val.length <= 16) {
+                      setCreditToAdd(val);
+                    }
+                  }}
+                  placeholder="0"
+                  onKeyDown={(e) => {
+                    // Block invalid keypresses: minus, plus, e/E, decimals, commas
+                    if (
+                      e.key === "-" ||
+                      e.key === "+" ||
+                      e.key === "e" ||
+                      e.key === "E" ||
+                      e.key === "." ||
+                      e.key === "," ||
+                      (e.key === "ArrowDown" && (Number(creditToAdd) <= 1 || !creditToAdd))
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
+                  onPaste={(e) => {
+                    // Prevent pasting non-positive integers or negative values
+                    const paste = e.clipboardData.getData("text");
+                    if (!/^[1-9]\d*$/.test(paste)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  disabled={!isUserSelected || isCreditInputDisabled}
                 />
 
                 <small>
@@ -937,27 +991,50 @@ const exportData = (format) => {
                     Credits to Deduct <span>*</span>
                 </label>
 
-                <input
+               <input
                 type="number"
+                min="1"
+                step="1"
                 value={creditToDeduct}
                 onChange={(e) => {
-                  if (e.target.value.length <= 16) {
-                    setCreditToDeduct(e.target.value);
+                  const val = e.target.value;
+
+                  // Allow clearing the input field
+                  if (val === "") {
+                    setCreditToDeduct("");
+                    return;
+                  }
+
+                  // Only allow positive integers (no leading zeros, decimals, or negative signs) up to 16 digits
+                  if (/^[1-9]\d*$/.test(val) && val.length <= 16) {
+                    setCreditToDeduct(val);
                   }
                 }}
                 placeholder="0"
                 onKeyDown={(e) => {
+                  // Prevent typing negative signs (-), plus (+), exponential (e/E), decimals (.), commas (,),
+                  // and block ArrowDown when value is at or below 1 (or empty)
                   if (
                     e.key === "-" ||
+                    e.key === "+" ||
                     e.key === "e" ||
+                    e.key === "E" ||
                     e.key === "." ||
-                    (e.key === "ArrowDown" && (Number(creditToDeduct) <= 0 || !creditToDeduct))
+                    e.key === "," ||
+                    (e.key === "ArrowDown" && (Number(creditToDeduct) <= 1 || !creditToDeduct))
                   ) {
                     e.preventDefault();
                   }
                 }}
-                disabled={!isUserSelected}
-                />
+                onPaste={(e) => {
+                  // Prevent pasting values that are not valid positive integers
+                  const paste = e.clipboardData.getData("text");
+                  if (!/^[1-9]\d*$/.test(paste)) {
+                    e.preventDefault();
+                  }
+                }}
+                disabled={!isUserSelected || isCreditInputDisabled}
+              />
 
                 <small>
                     Cannot exceed the account's available credit

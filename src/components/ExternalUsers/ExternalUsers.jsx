@@ -207,7 +207,12 @@ const getAllDepartment = async (orgIds) => {
 
       if (response.code === 14000) {
         const userList = response.data.listUserFormDataGrid || [];
-        setExternalUsers([...userList].reverse());
+
+        const filteredList = userList.filter(
+        (user) => user.customerType?.toLowerCase() !== "superadmin"
+      );
+
+        setExternalUsers(filteredList.reverse());
       } else {
         setToastMessage(response.message);
       }
@@ -526,6 +531,9 @@ const handleCreateUser = async () => {
 
     if (response.code === 9001 || response.code === 200) {
       setShowAddExternalUser(false);
+
+      //update table
+      await getExternalUsers();
       // Reset form states here if needed
       setToastMessage(response.message || "User Added successfully");
 
@@ -1535,7 +1543,7 @@ const handleUpdateUser = async () => {
                         Password <span>*</span>
                       </label>
                       <input
-                        type="password"
+                        type="text"
                         className={errors.password ? "input-error" : ""}
                         placeholder="Enter password"
                         value={editFormData.password || ""}
