@@ -57,22 +57,23 @@ const OrganizationManagement = () => {
 
     //Filter data based on table
     const filteredOrganizations = organizationList
-    .filter((org) => {
-        const searchMatch =
-        org.orgName
-            ?.toLowerCase()
-            .includes(searchOrgName.toLowerCase());
+  .filter((org) => {
+    const searchMatch =
+      org.orgName
+        ?.toLowerCase()
+        .includes(searchOrgName.toLowerCase()) ?? false;
 
-        const statusMatch =
-        statusFilter === "All" || org.orgStatus === statusFilter;
+    // Use optional chaining or fallback to empty string
+    const statusMatch =
+      statusFilter === "All" || (org.orgStatus ?? "") === statusFilter;
 
-        const billingMatch =
-        billingFilter === "All" || org.orgBillingType === billingFilter;
+    const billingMatch =
+      billingFilter === "All" || (org.orgBillingType ?? "") === billingFilter;
 
-        return searchMatch && statusMatch && billingMatch;
-    })
-    .slice()
-    .reverse();
+    return searchMatch && statusMatch && billingMatch;
+  })
+  .slice()
+  .reverse();
 
     //Pagination structure
     const totalRows = filteredOrganizations.length;
@@ -628,10 +629,10 @@ const editOrganization = async () => {
                     </td>
 
                     <td>
-                    <span
-                        className={`billing ${org.orgBillingType.toLowerCase()}`}
+                   <span
+                      className={`billing ${(org.orgBillingType || "N/A").toLowerCase()}`}
                     >
-                        {org.orgBillingType.toUpperCase()}
+                      {(org.orgBillingType || "N/A").toUpperCase()}
                     </span>
 
                     <p>{org.orgBillingCycle}</p>
@@ -639,10 +640,10 @@ const editOrganization = async () => {
 
                     <td>
                     <span
-                        className={`status ${org.orgStatus.toLowerCase()}`}
-                    >
-                        {org.orgStatus}
-                    </span>
+                    className={`status ${(org.orgStatus || "N/A").toLowerCase()}`}
+                  >
+                    {org.orgStatus || "N/A"}
+                  </span>
                     </td>
 
                     <td>
@@ -651,18 +652,18 @@ const editOrganization = async () => {
                         onClick={() => {
                         setSelectedOrg(org);
 
-                        setEditOrgForm({
-                            orgId: org.orgId,
-                            orgName: org.orgName,
-                            orgEmailId: org.orgEmailId,
-                            orgContactNumber: org.orgContactNumber.replace(/^91/, ""),
-                            orgPrimaryContact: org.orgPrimaryContact.replace(/^91/, ""),
-                            orgGstNumber: org.orgGstNumber || "",
-                            orgBillingCycle: org.orgBillingCycle,
-                            orgBillingType: org.orgBillingType,
-                            orgStatus: org.orgStatus.toLowerCase(),
-                            orgAddress: org.orgAddress,
-                        });
+                       setEditOrgForm({
+                        orgId: org.orgId,
+                        orgName: org.orgName || "",
+                        orgEmailId: org.orgEmailId || "",
+                        orgContactNumber: (org.orgContactNumber || "").replace(/^91/, ""),
+                        orgPrimaryContact: (org.orgPrimaryContact || "").replace(/^91/, ""),
+                        orgGstNumber: org.orgGstNumber || "",
+                        orgBillingCycle: org.orgBillingCycle || "monthly",
+                        orgBillingType: org.orgBillingType || "prepaid",
+                        orgStatus: (org.orgStatus || "active").toLowerCase(),
+                        orgAddress: org.orgAddress || "",
+                      });
 
                         setShowEditOrg(true);
                     }}

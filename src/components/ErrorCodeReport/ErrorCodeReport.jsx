@@ -156,6 +156,18 @@ const getPageNumbers = () => {
 // Determines if dropdowns should be disabled (frozen)
 const isDropdownDisabled = isLoading || reportData.length === 0;
 
+const CUSTOM_ERROR_DESCRIPTIONS = {
+  "101": "INSUFFICIENT BALANCE",
+  "102": "MESSAGE_RECEIVED_POST_CUT_OFF",
+  "103": "DND_NUMBER_FOUND",
+  "104": "RESTRICTED_CONTENT_FOUND",
+  "106": "USER_BLACK_LIST_NUMBER",
+  "107": "GLOBAL_BLACK_LIST_NUMBER_FOUND",
+  "109": "GLOBAL_BLACK_LIST_SENDER_ID_FOUND",
+  "110": "INVALID DESTINATION",
+  "113": "TEMPLATE_CONTENT_MISMATCH",
+};
+
   return (
     <div className="errorcode-report">
       <div className="errorcode-report-header">
@@ -280,29 +292,32 @@ const isDropdownDisabled = isLoading || reportData.length === 0;
             </thead>
 
             <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan="5">
-                    <div className="table-loader">
-                      <div className="spinner"></div>
-                      <p>Loading Error Report...</p>
-                    </div>
+            {isLoading ? (
+              <tr>
+                <td colSpan="5">
+                  <div className="table-loader">
+                    <div className="spinner"></div>
+                    <p>Loading Error Report...</p>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              currentTableData.map((item, index) => (
+                <tr key={index}>
+                  <td>{item.date}</td>
+                  <td>{item.username}</td>
+                  <td>
+                    <span className="error-code-badge">{item.errorCode}</span>
                   </td>
+                  {/* Custom error description lookup with fallback */}
+                  <td>
+                    {CUSTOM_ERROR_DESCRIPTIONS[String(item.errorCode)] || item.errorDesc || "N/A"}
+                  </td>
+                  <td className="error-count">{item.count}</td>
                 </tr>
-              ) : (
-                currentTableData.map((item, index) => (
-                  <tr key={index}>
-                    <td>{item.date}</td>
-                    <td>{item.username}</td>
-                    <td>
-                      <span className="error-code-badge">{item.errorCode}</span>
-                    </td>
-                    <td>{item.errorDesc}</td>
-                    <td className="error-count">{item.count}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
+              ))
+            )}
+          </tbody>
           </table>
 
           {/* Hide summary footer during loading */}
