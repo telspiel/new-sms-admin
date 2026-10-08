@@ -299,6 +299,7 @@ const editOrganization = async () => {
         </div>
 
         <div className="wrap-add-org-btn">
+        {userData?.role !== "seller" && userData?.role !== "reseller" && (
         <button
             className="add-org-btn"
             onClick={() => setShowAddOrg(true)}
@@ -306,6 +307,7 @@ const editOrganization = async () => {
             <i className="fa-solid fa-plus"></i>
             Add Organization
         </button>
+         )}
         </div>
 
         {showAddOrg && (
