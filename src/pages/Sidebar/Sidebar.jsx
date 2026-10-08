@@ -282,7 +282,7 @@ function Sidebar() {
         </li>
 
         {/* DR Summary */}
-        {!["admin", "seller"].includes(role) && (
+        {!["admin", "seller", "reseller"].includes(role) && (
         <li className="menu-item">
           <NavLink
             to="/dr-summary"

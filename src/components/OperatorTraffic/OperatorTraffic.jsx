@@ -260,6 +260,8 @@ const totals =
     return {
       "SUMMARY DATE": row.summaryDate || "",
       "CONNECT NAME": row.connectName || "",
+      "USERNAME": row.userName || "",
+      "SENDER ID": row.senderId || "",
       "SUBMIT": `${submit.toLocaleString()} (100%)`,
       "DELIVERED": `${delivered.toLocaleString()} (${deliveredPercent})`,
       "FAILED": `${failed.toLocaleString()} (${failedPercent})`,
@@ -784,6 +786,8 @@ const handleExportXLSX = () => {
       <tr>
         <th>SUMMARY DATE</th>
         <th>CONNECT NAME</th>
+        <th>USERNAME</th>
+        <th>SENDER ID</th>
         <th>SUBMIT</th>
         <th>DELIVERED</th>
         <th>FAILED</th>
@@ -851,6 +855,14 @@ const handleExportXLSX = () => {
 
                   {row.connectName}
                 </div>
+              </td>
+
+              <td>
+                {row.userName}
+              </td>
+
+              <td>
+                {row.senderId}
               </td>
 
               <td className="submit">
