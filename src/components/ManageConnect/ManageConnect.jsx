@@ -2,208 +2,338 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import "./ManageConnect.css";
 import Endpoints from "../../api/endpoint";
 import { AuthContext } from "../../context/AuthContext";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Copy } from "lucide-react";
 
-const ManageConnect = () => {
-    
-   const { userData } = useContext(AuthContext);
-    
-   const [groups, setGroups] = useState([]);
-   const [selectedGroup, setSelectedGroup] = useState("");
+// --- Helper Component: Searchable Kannel Dropdown ---
+const KannelSearchableDropdown = ({
+  row,
+  index,
+  kannelList,
+  isKannelInvalid,
+  onSelectKannel,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const dropdownRef = useRef(null);
 
-   const [groupKannelMap, setGroupKannelMap] = useState({});
-   const [rows, setRows] = useState([]);
+  const selectedKannelObj = kannelList.find(
+    (k) => String(k.id) === String(row.kannelId)
+  );
 
-   const [kannelList, setKannelList] = useState([]);
-   const [allocationError, setAllocationError] = useState("");
-   const [toastMessage, setToastMessage] = useState("");
+  const filteredKannels = kannelList.filter((kannel) =>
+    kannel.name.toLowerCase().includes(searchTerm.toLowerCase().trim())
+  );
 
-   const [originalRows, setOriginalRows] = useState([]);
-   const [isSubmitted, setIsSubmitted] = useState(false);
-
-   const [isGroupOpen, setIsGroupOpen] = useState(false);
-const [groupSearchTerm, setGroupSearchTerm] = useState("");
-const groupDropdownRef = useRef(null);
-
-// Find selected group object to render label
-const selectedGroupObj = groups.find(
-  (g) => String(g.id) === String(selectedGroup)
-);
-
-// Filter options matching search query
-const filteredGroups = groups.filter((group) =>
-  group.name.toLowerCase().includes(groupSearchTerm.toLowerCase().trim())
-);
-
-// Close dropdown on outside click
-useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (
-      groupDropdownRef.current &&
-      !groupDropdownRef.current.contains(event.target)
-    ) {
-      setIsGroupOpen(false);
-    }
-  };
-
-  if (isGroupOpen) {
-    document.addEventListener("mousedown", handleClickOutside);
-  }
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, [isGroupOpen]);
-
-// Selection Handler preserving original mapping and state setup logic
-const handleSelectGroup = (groupId) => {
-  setSelectedGroup(groupId);
-  setIsGroupOpen(false);
-  setGroupSearchTerm("");
-
-  const selected = groups.find((g) => String(g.id) === String(groupId));
-
-  if (!selected) {
-    setRows([]);
-    setOriginalRows([]);
-    return;
-  }
-
-  const kannels = groupKannelMap[selected.name] || {};
-
-  const rowData = Object.entries(kannels).map(([kannelName, percentage]) => {
-    const selectedKannel = kannelList.find((k) => k.name === kannelName);
-
-    return {
-      kannelId: selectedKannel?.id || "",
-      kannelName,
-      percentage,
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
     };
-  });
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
-  setRows(rowData);
+  const handleSelect = (kannel) => {
+    onSelectKannel(index, kannel);
+    setIsOpen(false);
+    setSearchTerm("");
+  };
 
-  // Keep an untouched copy
-  setOriginalRows(JSON.parse(JSON.stringify(rowData)));
+  return (
+    <div
+      className={`custom-manage-dropdown ${isKannelInvalid ? "select-error" : ""}`}
+      ref={dropdownRef}
+    >
+      <button
+        type="button"
+        className={`manage-dropdown-trigger ${isOpen ? "active" : ""}`}
+        onClick={() => setIsOpen((prev) => !prev)}
+      >
+        <span
+          className={`trigger-text ${
+            !selectedKannelObj ? "placeholder" : ""
+          }`}
+        >
+          {selectedKannelObj ? selectedKannelObj.name : "-- Select --"}
+        </span>
+        {isOpen ? (
+          <ChevronUp size={16} className="chevron-icon" />
+        ) : (
+          <ChevronDown size={16} className="chevron-icon" />
+        )}
+      </button>
 
-  setAllocationError("");
+      {isOpen && (
+        <div className="manage-dropdown-menu">
+          <div className="manage-dropdown-search-container">
+            <input
+              type="text"
+              className="manage-dropdown-search-input"
+              placeholder="Search kannel..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              autoFocus
+            />
+          </div>
+
+          <div className="manage-dropdown-options-list">
+            <div
+              className={`manage-dropdown-option ${
+                !row.kannelId ? "selected" : ""
+              }`}
+              onClick={() => handleSelect(null)}
+            >
+              -- Select --
+            </div>
+
+            {filteredKannels.length > 0 ? (
+              filteredKannels.map((kannel) => (
+                <div
+                  key={kannel.id}
+                  className={`manage-dropdown-option ${
+                    String(row.kannelId) === String(kannel.id)
+                      ? "selected"
+                      : ""
+                  }`}
+                  onClick={() => handleSelect(kannel)}
+                >
+                  {kannel.name}
+                </div>
+              ))
+            ) : (
+              <div className="manage-dropdown-no-results">
+                No kannels found
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
+
+// --- Main ManageConnect Component ---
+const ManageConnect = () => {
+  const { userData } = useContext(AuthContext);
+
+  const [groups, setGroups] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState("");
+
+  const [groupKannelMap, setGroupKannelMap] = useState({});
+  const [rows, setRows] = useState([]);
+
+  const [kannelList, setKannelList] = useState([]);
+  const [allocationError, setAllocationError] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
+
+  const [originalRows, setOriginalRows] = useState([]);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const [isGroupOpen, setIsGroupOpen] = useState(false);
+  const [groupSearchTerm, setGroupSearchTerm] = useState("");
+  const groupDropdownRef = useRef(null);
+
+  // Find selected group object to render label
+  const selectedGroupObj = groups.find(
+    (g) => String(g.id) === String(selectedGroup)
+  );
+
+  // Filter options matching search query
+  const filteredGroups = groups.filter((group) =>
+    group.name.toLowerCase().includes(groupSearchTerm.toLowerCase().trim())
+  );
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        groupDropdownRef.current &&
+        !groupDropdownRef.current.contains(event.target)
+      ) {
+        setIsGroupOpen(false);
+      }
+    };
+
+    if (isGroupOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isGroupOpen]);
+
+  // Selection Handler preserving original mapping and state setup logic
+  const handleSelectGroup = (groupId) => {
+    setSelectedGroup(groupId);
+    setIsGroupOpen(false);
+    setGroupSearchTerm("");
+
+    const selected = groups.find((g) => String(g.id) === String(groupId));
+
+    if (!selected) {
+      setRows([]);
+      setOriginalRows([]);
+      return;
+    }
+
+    const kannels = groupKannelMap[selected.name] || {};
+
+    const rowData = Object.entries(kannels).map(([kannelName, percentage]) => {
+      const selectedKannel = kannelList.find((k) => k.name === kannelName);
+
+      return {
+        kannelId: selectedKannel?.id || "",
+        kannelName,
+        percentage,
+      };
+    });
+
+    setRows(rowData);
+    setOriginalRows(JSON.parse(JSON.stringify(rowData)));
+    setAllocationError("");
+  };
 
   const removeRow = (index) => {
     setRows(rows.filter((_, i) => i !== index));
   };
 
-  //Get all routing groupname list API
-  const getUserRoutingGroups = async () => {
-  try {
-    const payload = {
-      loggedInUsername: userData.username,
-    };
-
-    const response = await Endpoints.post(
-      "getUserRoutingGroups",
-      payload,
-      userData.authJwtToken
-    );
-
-    if (response.code === 1003) {
-      const groupMap = response.data?.userGroupAndGroupIdMap || {};
-
-      const groupList = Object.entries(groupMap).map(([name, id]) => ({
-        id,
-        name,
-      }));
-
-      setGroups(groupList);
+  const handleCopyKannel = (row) => {
+    if (!row.kannelName) {
+      setToastMessage("No kannel name selected to copy");
     } else {
-      setGroups([]);
-      alert(response.message);
+      navigator.clipboard.writeText(row.kannelName);
+      setToastMessage(`Copied: "${row.kannelName}"`);
     }
-  } catch (error) {
-    console.error(error);
-    setGroups([]);
-  }
-};
 
-//Get the kennel name based on groupname
-const getGroupKannelLoad = async () => {
-  try {
-    const payload = {
-      loggedInUsername: userData.username,
-    };
+    setTimeout(() => {
+      setToastMessage("");
+    }, 2000);
+  };
 
-    const response = await Endpoints.post(
-      "viewRoutingGroups",
-      payload,
-      userData.authJwtToken
-    );
+  const handleSelectKannelRow = (index, kannelObj) => {
+    const updated = [...rows];
+    updated[index].kannelId = kannelObj?.id || "";
+    updated[index].kannelName = kannelObj?.name || "";
+    setRows(updated);
+  };
 
-    if (response.code === 1001) {
-      setGroupKannelMap(response.data?.groupKannelLoadMap || {});
-    } else {
+  // Get all routing groupname list API
+  const getUserRoutingGroups = async () => {
+    try {
+      const payload = {
+        loggedInUsername: userData.username,
+      };
+
+      const response = await Endpoints.post(
+        "getUserRoutingGroups",
+        payload,
+        userData.authJwtToken
+      );
+
+      if (response.code === 1003) {
+        const groupMap = response.data?.userGroupAndGroupIdMap || {};
+
+        const groupList = Object.entries(groupMap).map(([name, id]) => ({
+          id,
+          name,
+        }));
+
+        setGroups(groupList);
+      } else {
+        setGroups([]);
+        alert(response.message);
+      }
+    } catch (error) {
+      console.error(error);
+      setGroups([]);
+    }
+  };
+
+  // Get the kannel name based on groupname
+  const getGroupKannelLoad = async () => {
+    try {
+      const payload = {
+        loggedInUsername: userData.username,
+      };
+
+      const response = await Endpoints.post(
+        "viewRoutingGroups",
+        payload,
+        userData.authJwtToken
+      );
+
+      if (response.code === 1001) {
+        setGroupKannelMap(response.data?.groupKannelLoadMap || {});
+      } else {
+        setGroupKannelMap({});
+      }
+    } catch (error) {
+      console.error(error);
       setGroupKannelMap({});
     }
-  } catch (error) {
-    console.error(error);
-    setGroupKannelMap({});
-  }
-};
+  };
 
-//To get all the kennel list names
-const getUserKennalList = async () => {
-  try {
-    const payload = {
-      loggedInUsername: userData.username,
-    };
+  // To get all the kannel list names
+  const getUserKennalList = async () => {
+    try {
+      const payload = {
+        loggedInUsername: userData.username,
+      };
 
-    const response = await Endpoints.post(
-      "getUserKennalList",
-      payload,
-      userData.authJwtToken
-    );
+      const response = await Endpoints.post(
+        "getUserKennalList",
+        payload,
+        userData.authJwtToken
+      );
 
-    if (response.code === 1005) {
-      const kannelMap = response.data?.userKannelMap || {};
+      if (response.code === 1005) {
+        const kannelMap = response.data?.userKannelMap || {};
 
-      const kannelArray = Object.entries(kannelMap).map(([name, id]) => ({
-        id,
-        name,
-      }));
+        const kannelArray = Object.entries(kannelMap).map(([name, id]) => ({
+          id,
+          name,
+        }));
 
-      setKannelList(kannelArray);
-    } else {
+        setKannelList(kannelArray);
+      } else {
+        setKannelList([]);
+      }
+    } catch (error) {
+      console.error(error);
       setKannelList([]);
     }
-  } catch (error) {
-    console.error(error);
-    setKannelList([]);
-  }
-};
+  };
 
-useEffect(() => {
-  getUserRoutingGroups();
-  getGroupKannelLoad();
-  getUserKennalList();
-}, []);
+  useEffect(() => {
+    getUserRoutingGroups();
+    getGroupKannelLoad();
+    getUserKennalList();
+  }, []);
 
+  const addRow = () => {
+    setRows((prev) => [
+      ...prev,
+      {
+        kannelId: "",
+        kannelName: "",
+        percentage: "",
+      },
+    ]);
+  };
 
-const addRow = () => {
-  setRows((prev) => [
-    ...prev,
-    {
-      kannelName: "",
-      percentage: "",
-    },
-  ]);
-};
+  const totalAllocated = rows.reduce(
+    (total, row) => total + (Number(row.percentage) || 0),
+    0
+  );
+  const isAllocationInvalid = totalAllocated !== 100;
 
-const totalAllocated = rows.reduce(
-  (total, row) => total + (Number(row.percentage) || 0),
-  0
-);
-const isAllocationInvalid = totalAllocated !== 100;
-
-//To update kennel group mapping API
-   const updateKennalGroupMap = async () => {
+  // To update kannel group mapping API
+  const updateKennalGroupMap = async () => {
     setIsSubmitted(true);
 
     if (!selectedGroup) {
@@ -211,13 +341,11 @@ const isAllocationInvalid = totalAllocated !== 100;
       return;
     }
 
-    // 1. Check if any row is missing a kannel selection
     const hasUnselectedKannel = rows.some((row) => !row.kannelId);
     if (hasUnselectedKannel) {
-      return; // Stops function execution before calling the API
+      return;
     }
 
-    // 2. Check total percentage allocation
     if (totalAllocated !== 100) {
       setAllocationError(
         `⚠ Total % of the group cannot be more or less than 100. Currently at ${totalAllocated}%.`
@@ -241,7 +369,6 @@ const isAllocationInvalid = totalAllocated !== 100;
       kannelList: kannelPayload,
     };
 
-    // 3. API Call will only execute if all validations pass
     try {
       const response = await Endpoints.post(
         "updatedKennalGroupMap",
@@ -267,23 +394,23 @@ const isAllocationInvalid = totalAllocated !== 100;
     }
   };
 
-    const handleCancel = () => {
+  const handleCancel = () => {
     setRows(JSON.parse(JSON.stringify(originalRows)));
     setAllocationError("");
     setIsSubmitted(false);
-    };
+  };
 
   return (
     <div className="manage-connect">
-        {toastMessage && (
+      {toastMessage && (
         <div className="toast-message">
-            <i className="fa-regular fa-circle-check"></i>
-            {toastMessage}
+          <i className="fa-regular fa-circle-check"></i>
+          {toastMessage}
         </div>
-        )} 
+      )}
+
       <div className="manage-connect-header">
         <h1>Manage Connect</h1>
-
         <p>
           Home / Routing Management / Manage Connect · Split a routing group's
           traffic across kannels
@@ -299,79 +426,84 @@ const isAllocationInvalid = totalAllocated !== 100;
         </p>
 
         <div className="manage-form-group" ref={groupDropdownRef}>
-        <label>
-          Select Group <span className="mandatory">*</span>
-        </label>
+          <label>
+            Select Group <span className="mandatory">*</span>
+          </label>
 
-        <div className="custom-manage-dropdown">
-          {/* Dropdown Header Trigger */}
-          <button
-            type="button"
-            className={`manage-dropdown-trigger ${isGroupOpen ? "active" : ""}`}
-            onClick={() => setIsGroupOpen((prev) => !prev)}
-          >
-            <span className={`trigger-text ${!selectedGroupObj ? "placeholder" : ""}`}>
-              {selectedGroupObj ? selectedGroupObj.name : "-- Select --"}
-            </span>
-            {isGroupOpen ? (
-              <ChevronUp size={16} className="chevron-icon" />
-            ) : (
-              <ChevronDown size={16} className="chevron-icon" />
-            )}
-          </button>
+          <div className="custom-manage-dropdown">
+            <button
+              type="button"
+              className={`manage-dropdown-trigger ${
+                isGroupOpen ? "active" : ""
+              }`}
+              onClick={() => setIsGroupOpen((prev) => !prev)}
+            >
+              <span
+                className={`trigger-text ${
+                  !selectedGroupObj ? "placeholder" : ""
+                }`}
+              >
+                {selectedGroupObj ? selectedGroupObj.name : "-- Select --"}
+              </span>
+              {isGroupOpen ? (
+                <ChevronUp size={16} className="chevron-icon" />
+              ) : (
+                <ChevronDown size={16} className="chevron-icon" />
+              )}
+            </button>
 
-          {/* Dropdown Popup */}
-          {isGroupOpen && (
-            <div className="manage-dropdown-menu">
-              {/* Search Field Header */}
-              <div className="manage-dropdown-search-container">
-                <input
-                  type="text"
-                  className="manage-dropdown-search-input"
-                  placeholder="Search group..."
-                  value={groupSearchTerm}
-                  onChange={(e) => setGroupSearchTerm(e.target.value)}
-                  autoFocus
-                />
-              </div>
-
-              {/* Options Scrollable List */}
-              <div className="manage-dropdown-options-list">
-                {/* Default "-- Select --" Reset Option */}
-                <div
-                  className={`manage-dropdown-option ${!selectedGroup ? "selected" : ""}`}
-                  onClick={() => handleSelectGroup("")}
-                >
-                  -- Select --
+            {isGroupOpen && (
+              <div className="manage-dropdown-menu">
+                <div className="manage-dropdown-search-container">
+                  <input
+                    type="text"
+                    className="manage-dropdown-search-input"
+                    placeholder="Search group..."
+                    value={groupSearchTerm}
+                    onChange={(e) => setGroupSearchTerm(e.target.value)}
+                    autoFocus
+                  />
                 </div>
 
-                {filteredGroups.length > 0 ? (
-                  filteredGroups.map((group) => (
-                    <div
-                      key={group.id}
-                      className={`manage-dropdown-option ${
-                        String(selectedGroup) === String(group.id) ? "selected" : ""
-                      }`}
-                      onClick={() => handleSelectGroup(group.id)}
-                    >
-                      {group.name}
+                <div className="manage-dropdown-options-list">
+                  <div
+                    className={`manage-dropdown-option ${
+                      !selectedGroup ? "selected" : ""
+                    }`}
+                    onClick={() => handleSelectGroup("")}
+                  >
+                    -- Select --
+                  </div>
+
+                  {filteredGroups.length > 0 ? (
+                    filteredGroups.map((group) => (
+                      <div
+                        key={group.id}
+                        className={`manage-dropdown-option ${
+                          String(selectedGroup) === String(group.id)
+                            ? "selected"
+                            : ""
+                        }`}
+                        onClick={() => handleSelectGroup(group.id)}
+                      >
+                        {group.name}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="manage-dropdown-no-results">
+                      No groups found
                     </div>
-                  ))
-                ) : (
-                  <div className="manage-dropdown-no-results">No groups found</div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
 
         {!selectedGroup ? (
           <div className="empty-connect-state">
             <i className="fa-solid fa-up-right-and-down-left-from-center"></i>
-
             <h3>Select a group to configure it</h3>
-
             <p>
               Choose a group above to see and edit the kannels its
               <br />
@@ -381,75 +513,69 @@ const isAllocationInvalid = totalAllocated !== 100;
         ) : (
           <>
             {rows.map((row, index) => {
-            const isKannelInvalid = isSubmitted && !row.kannelId;
+              const isKannelInvalid = isSubmitted && !row.kannelId;
 
-            return (
-              <>
-              <div className="routing-row" key={index}>
-                <div className="routing-field">
-                  {index === 0 && <label>KANNEL NAME</label>}
-                  <select
-                    className={isKannelInvalid ? "select-error" : ""}
-                    value={row.kannelId || ""}
-                    onChange={(e) => {
-                      const selected = kannelList.find(
-                        (k) => String(k.id) === e.target.value
-                      );
+              return (
+                <React.Fragment key={index}>
+                  <div className="routing-row">
+                    <div className="routing-field">
+                      {index === 0 && <label>KANNEL NAME</label>}
+                      <KannelSearchableDropdown
+                        row={row}
+                        index={index}
+                        kannelList={kannelList}
+                        isKannelInvalid={isKannelInvalid}
+                        onSelectKannel={handleSelectKannelRow}
+                      />
+                    </div>
 
-                      const updated = [...rows];
-                      updated[index].kannelId = selected?.id;
-                      updated[index].kannelName = selected?.name;
-                      setRows(updated);
-                    }}
-                  >
-                    <option value="">-- Select --</option>
+                    <div className="percentage-field">
+                      {index === 0 && <label>KANNEL PERCENTAGE</label>}
+                      <div className="percentage-input">
+                        <input
+                          type="number"
+                          value={row.percentage}
+                          min="0"
+                          max="100"
+                          onChange={(e) => {
+                            const updated = [...rows];
+                            updated[index].percentage = e.target.value;
+                            setRows(updated);
+                          }}
+                        />
+                        <span>%</span>
+                      </div>
+                    </div>
 
-                    {kannelList.map((kannel) => (
-                      <option key={kannel.id} value={kannel.id}>
-                        {kannel.name}
-                      </option>
-                    ))}
-                  </select>
-                  
-                  {/* Error message under the select dropdown */}
-                  
-                </div>
+                    <button
+                      type="button"
+                      className="remove-row"
+                      onClick={() => removeRow(index)}
+                      disabled={rows.length === 1}
+                      title="Remove Row"
+                    >
+                      <i className="fa-solid fa-xmark"></i>
+                    </button>
 
-                <div className="percentage-field">
-                  {index === 0 && <label>KANNEL PERCENTAGE</label>}
-
-                  <div className="percentage-input">
-                    <input
-                      type="number"
-                      value={row.percentage}
-                      min="0"
-                      max="100"
-                      onChange={(e) => {
-                        const updated = [...rows];
-                        updated[index].percentage = e.target.value;
-                        setRows(updated);
-                      }}
-                    />
-                    <span>%</span>
+                    {/* Copy Icon Button directly after the cross icon */}
+                    <button
+                      type="button"
+                      className="copy-kannel-btn"
+                      onClick={() => handleCopyKannel(row)}
+                      title="Copy Kannel Name"
+                    >
+                      <Copy size={16} />
+                    </button>
                   </div>
-                </div>
 
-                <button
-                  className="remove-row"
-                  onClick={() => removeRow(index)}
-                  disabled={rows.length === 1}
-                >
-                  <i className="fa-solid fa-xmark"></i>
-                </button>
-              </div>
-                {isKannelInvalid && (
+                  {isKannelInvalid && (
                     <span className="manage-field-error-text">
                       ⚠ Select a kannel.
                     </span>
                   )}
-                </>      
-            );
-          })}
+                </React.Fragment>
+              );
+            })}
 
             <button className="add-more-btn" onClick={addRow}>
               <i className="fa-solid fa-plus"></i>
@@ -457,34 +583,25 @@ const isAllocationInvalid = totalAllocated !== 100;
             </button>
 
             <div
-                className={`allocation-bar ${
-                    isAllocationInvalid ? "allocation-error" : ""
-                }`}
-                >
-                <span>Total allocated</span>
-
-                <strong>{totalAllocated}%</strong>
+              className={`allocation-bar ${
+                isAllocationInvalid ? "allocation-error" : ""
+              }`}
+            >
+              <span>Total allocated</span>
+              <strong>{totalAllocated}%</strong>
             </div>
+
             {allocationError && (
-            <p className="allocation-warning">
-                {allocationError}
-            </p>
+              <p className="allocation-warning">{allocationError}</p>
             )}
 
             <div className="footer-buttons">
-              <button
-                className="cancel-btn"
-                onClick={handleCancel}
-                >
+              <button className="cancel-btn" onClick={handleCancel}>
                 Cancel
-             </button>
-
-              <button
-                className="save-btn"
-                onClick={updateKennalGroupMap}
-                >
+              </button>
+              <button className="save-btn" onClick={updateKennalGroupMap}>
                 Save
-                </button>
+              </button>
             </div>
           </>
         )}
