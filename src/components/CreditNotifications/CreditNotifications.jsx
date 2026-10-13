@@ -63,12 +63,15 @@ const [selectedNotification, setSelectedNotification] = useState(null);
 
 const [toastMessage, setToastMessage] = useState("");
 
+const [isPrepaidCustomer, setIsPrepaidCustomer] = useState(true);
+
 // Update handleAddCredits to save the selected notification item
 const handleAddCredits = async (notification) => {
   setSelectedNotification(notification);
   setIsModalOpen(true);
   setModalLoading(true);
   setAmountToAdd("");
+  setIsPrepaidCustomer(true); 
 
   try {
     const url = Endpoints.get("viewCreditForUser");
@@ -105,10 +108,17 @@ const handleAddCredits = async (notification) => {
 
     const resData = await response.json();
 
-    if (resData?.code === 8007 || resData?.result === "Success") {
+    // if (resData?.code === 8007 || resData?.result === "Success") {
+    //   setSelectedUserCreditData(resData.data?.userCredit);
+    // } else {
+    //   alert(resData?.message || "Failed to fetch credit details.");
+    // }
+    if (resData?.result === "Success") {
       setSelectedUserCreditData(resData.data?.userCredit);
+      setIsPrepaidCustomer(true);
     } else {
-      alert(resData?.message || "Failed to fetch credit details.");
+      setIsPrepaidCustomer(false);
+      setSelectedUserCreditData(resData.data?.userCredit || null);
     }
   } catch (err) {
     console.error("Error fetching credit data:", err);
@@ -359,7 +369,8 @@ const handleModalSubmit = async (e) => {
                       value={amountToAdd}
                       onChange={(e) => setAmountToAdd(e.target.value)}
                       onKeyDown={(e) => ["-", "e", "E", "+"].includes(e.key) && e.preventDefault()}
-                      required
+                      required={isPrepaidCustomer}
+                      disabled={!isPrepaidCustomer} 
                       min="1"
                     />
                   </div>

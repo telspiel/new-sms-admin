@@ -383,7 +383,7 @@ const GlobalBlacklist = () => {
         <div className="search-box">
 
             <i className="fa-solid fa-magnifying-glass"></i>
-
+            <span className="phone-prefix">+91</span>
             <input
             type="text"
             value={mobileNumber}

@@ -86,7 +86,7 @@ const isUserSelected = !!selectedAccount.value;
     );
 
     if (response.code === 16000) {
-      setCreditHistory(response.data.grid || []);
+     setCreditHistory([...(response.data.grid || [])].reverse());
     } else {
       setCreditHistory([]);
     }

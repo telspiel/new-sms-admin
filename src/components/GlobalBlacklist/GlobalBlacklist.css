@@ -82,11 +82,13 @@
   color: #8b8b8b;
 }
 
-.search-section .country-code {
-  margin-left: 12px;
-  color: #444;
-  font-weight: 600;
-  font-size: 15px;
+.search-section .search-box .phone-prefix {
+    color: #4b5563;
+    font-size: 15px;
+    font-weight: 500;
+    user-select: none;
+    margin-left: 5px;
+
 }
 
 .search-section .search-box input {
@@ -94,6 +96,13 @@
   border: none;
   outline: none;
   background: transparent;
+  font-size: 15px;
+}
+
+.search-section .country-code {
+  margin-left: 12px;
+  color: #444;
+  font-weight: 600;
   font-size: 15px;
 }
 

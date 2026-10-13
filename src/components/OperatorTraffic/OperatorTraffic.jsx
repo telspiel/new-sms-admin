@@ -158,7 +158,7 @@ const getConnectSummary = async () => {
     console.log("Connect Summary :", response);
 
     if (response.code === 14000) {
-      setHistoryTraffic(response.data.grid || []);
+      setHistoryTraffic([...(response.data.grid || [])].reverse());
     } else {
       alert(response.message);
     }
