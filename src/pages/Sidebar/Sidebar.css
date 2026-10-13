@@ -10,8 +10,15 @@
 
   scrollbar-width: thin;
   scrollbar-color: #d4d4d4 transparent;
+ transition: transform 0.3s ease, width 0.3s ease, margin-left 0.3s ease;
 }
 
+/* Hide sidebar smoothly when toggled */
+.sidebar.closed {
+  transform: translateX(-100%);
+  margin-left: -300px; /* Pulls it out of layout flow so the content expands */
+  visibility: hidden;
+}
 
 .menu {
   list-style: none;

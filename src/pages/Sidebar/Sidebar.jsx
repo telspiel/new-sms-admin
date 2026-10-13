@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import "./Sidebar.css";
 
-function Sidebar() {
+function Sidebar({ isOpen }) {
   const location = useLocation();
 
   const [managementOpen, setManagementOpen] = useState(false);
@@ -75,7 +75,7 @@ function Sidebar() {
   }, [location.pathname]);
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${!isOpen ? "closed" : ""}`}>
       <ul className="menu">
 
         {/* Dashboard */}

@@ -2,10 +2,10 @@ import { useState, useContext, useRef, useEffect } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate, useLocation  } from "react-router-dom";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import { TriangleAlert, Sparkles } from "lucide-react";
+import { TriangleAlert, Sparkles, Menu } from "lucide-react";
 import "./Header.css";
 
-function Header() {
+function Header({toggleSidebar}) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -57,6 +57,9 @@ function Header() {
   return (
     <header className="header">
       <div className="header-left">
+        <button className="sidebar-toggle-btn" onClick={toggleSidebar} aria-label="Toggle Sidebar">
+          <Menu size={24} />
+        </button>
          <div className="user-logo">
           <img
             src={logoUrl}
