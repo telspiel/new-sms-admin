@@ -63,7 +63,7 @@ function Header({toggleSidebar}) {
          <div className="user-logo">
           <img
             src={logoUrl}
-            alt="Brand Logo"
+            alt=""
             className="header-logo"
           />
         </div>
