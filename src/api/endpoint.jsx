@@ -1,14 +1,9 @@
 class Endpoints {
   constructor() {
-   const isProduction = import.meta.env.PROD;
-
     this.serverAddresses = {
-      secondary: isProduction
-        ? "https://backend10.telsp.in/telco-summary-manager"
-        : "https://backend7.quicksmart.in/telco-summary-manager",
-      newAdmin: isProduction
-        ? "https://backend5.telsp.in/resellerservices/"
-        : "https://backendnewadmin.quicksmart.in/resellerservices",
+      // primary: "https://backend1.quicksmart.in/resellerservices",
+      secondary: "https://backend7.quicksmart.in/telco-summary-manager",
+      newAdmin: "https://backendnewadmin.quicksmart.in/resellerservices",
     };
 
     this.endpoints = {
@@ -118,7 +113,7 @@ class Endpoints {
     };
   }
 
- get(name) {
+  get(name) {
     const endpoint = this.endpoints[name];
 
     if (!endpoint) {
@@ -130,22 +125,28 @@ class Endpoints {
   }
 
   async post(endpointName, payload = {}) {
-    const userData = JSON.parse(localStorage.getItem("userData"));
 
-    const response = await fetch(this.get(endpointName), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: userData?.authJwtToken || "",
-      },
-      body: JSON.stringify(payload),
-    });
+  const userData = JSON.parse(
+    localStorage.getItem("userData")
+  );
 
-    return response.json();
-  }
+  const response = await fetch(this.get(endpointName), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: userData?.authJwtToken || "",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return response.json();
+}
 
   async getRequest(endpointName) {
-    const response = await fetch(this.get(endpointName));
+    const response = await fetch(
+      this.get(endpointName)
+    );
+
     return response.json();
   }
 }
