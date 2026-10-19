@@ -465,9 +465,9 @@ const validateForm = () => {
     newErrors.password = "Password must be 6-20 characters long.";
   }
 
-  if (!addFormData.serviceType || addFormData.serviceType === "null") {
-    newErrors.serviceType = "Service Type is required.";
-  }
+  // if (!addFormData.serviceType || addFormData.serviceType === "null") {
+  //   newErrors.serviceType = "Service Type is required.";
+  // }
 
   if (!selectedOrg) newErrors.orgId = "Organisation is required.";
   if (!selectedDept) newErrors.deptId = "Department is required.";
@@ -519,8 +519,10 @@ const handleCreateUser = async () => {
       senderIdType: addFormData.senderIdType.toLowerCase(),
       priority: addFormData.priority.toLowerCase(),
       status: addFormData.status.toLowerCase(),
-      serviceType: addFormData.serviceType ? addFormData.serviceType : "null",
-      userExpiryDate: "", // Always empty string as requested
+      ...(addFormData.serviceType && addFormData.serviceType !== "null" 
+          ? { serviceType: addFormData.serviceType.toLowerCase() } 
+          : { serviceType: "null" }),
+      userExpiryDate: "",
     };
 
     const response = await Endpoints.post(
@@ -705,8 +707,7 @@ const handleUpdateUser = async () => {
               <h3 className="external-section-title">USER ACCOUNT</h3>
 
               <div className="external-form-grid">
-                {/* Customer Type */}
-                <div className="external-form-group">
+                {/* <div className="external-form-group">
                   <label>
                     User Type <span>*</span>
                   </label>
@@ -721,7 +722,50 @@ const handleUpdateUser = async () => {
                     <option value="reseller">Reseller</option>
                     <option value="seller">Seller</option>
                   </select>
-                </div>
+                </div> */}
+                <div className="external-form-group">
+                <label>
+                  User Type <span>*</span>
+                </label>
+                <select
+                  value={addFormData.customerType}
+                  onChange={(e) =>
+                    setAddFormData({ ...addFormData, customerType: e.target.value })
+                  }
+                >
+                  {/* Superadmin sees all options */}
+                  {userData?.role === "superadmin" && (
+                    <>
+                      <option value="client">Client</option>
+                      <option value="admin">Admin</option>
+                      <option value="reseller">Reseller</option>
+                      <option value="seller">Seller</option>
+                    </>
+                  )}
+
+                  {/* Admin sees reseller, seller, client */}
+                  {userData?.role === "admin" && (
+                    <>
+                      <option value="reseller">Reseller</option>
+                      <option value="seller">Seller</option>
+                      <option value="client">Client</option>
+                    </>
+                  )}
+
+                  {/* Reseller sees seller and client */}
+                  {userData?.role === "reseller" && (
+                    <>
+                      <option value="seller">Seller</option>
+                      <option value="client">Client</option>
+                    </>
+                  )}
+
+                  {/* Seller sees only client */}
+                  {userData?.role === "seller" && (
+                    <option value="client">Client</option>
+                  )}
+                </select>
+              </div>
 
                 {/* Username */}
                 <div className="external-form-group">
@@ -859,7 +903,7 @@ const handleUpdateUser = async () => {
                   </select>
                 </div>
 
-                {/* Service Type */}
+              {userData?.role !== "reseller" && userData?.role !== "seller" && (
                 <div className="external-form-group">
                   <label>
                     Service Type <span>*</span>
@@ -889,6 +933,7 @@ const handleUpdateUser = async () => {
                     <div className="field-error">⚠ {errors.serviceType}</div>
                   )}
                 </div>
+                )}
 
                 {/* User Account Type */}
                 <div className="external-form-group">
@@ -1647,7 +1692,7 @@ const handleUpdateUser = async () => {
                       </select>
                     </div>
 
-                    {/* Service Type (Disabled - Skipped Validation) */}
+                  {userData?.role !== "reseller" && userData?.role !== "seller" && (
                     <div className="external-form-group">
                       <label>
                         Service Type <span>*</span>
@@ -1673,6 +1718,7 @@ const handleUpdateUser = async () => {
                       </select>
                       <Lock size={18} className="dept-lock-icon" />
                     </div>
+                    )}
 
                     {/* User Account Type */}
                     <div className="external-form-group">
