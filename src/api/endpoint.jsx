@@ -2,8 +2,13 @@ class Endpoints {
   constructor() {
     this.serverAddresses = {
       // primary: "https://backend1.quicksmart.in/resellerservices",
+<<<<<<< HEAD
       secondary: "https://backend10.telsp.in/telco-summary-manager",
       newAdmin: "https://backend5.telsp.in/resellerservices",
+=======
+      secondary: "https://backend7.quicksmart.in/telco-summary-manager",
+      newAdmin: "https://backendnewadmin.quicksmart.in/resellerservices",
+>>>>>>> dev
     };
 
     this.endpoints = {
