@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext, useMemo } from "react";
 import "./ErrorCodeReport.css";
 import Endpoints from "../../api/endpoint";
 import { AuthContext } from "../../context/AuthContext";
+import { ArrowUp, ArrowDown } from "lucide-react";
 
 const ErrorCodeReport = () => {
   const { userData } = useContext(AuthContext);
@@ -27,44 +28,57 @@ const [errorMessage, setErrorMessage] = useState("");
 const [rowsPerPage, setRowsPerPage] = useState(10);
 const [currentPage, setCurrentPage] = useState(1);
 
-const fetchErrorCodeReport = async () => {
-  if (!userData?.username) return;
+const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState("asc"); // "asc" or "desc"
 
-  setIsLoading(true);
-  setErrorMessage("");
-
-  const formattedDate = formatDateToYYYYMMDD(selectedDate);
-
-  try {
-    const payload = {
-      loggedInUserName: userData.username,
-      fromDate: formattedDate, // Pass single selected date as fromDate
-      toDate: formattedDate,   // Pass single selected date as toDate
-    };
-
-    const response = await Endpoints.post("errorcodeReport", payload);
-
-    if (response.code === 21000) {
-      setReportData(response.grid || []);
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
-      setReportData([]);
-      setErrorMessage(
-        response.message || "Unable to fetch error code report."
-      );
+      setSortField(field);
+      setSortDirection("asc");
     }
-  } catch (error) {
-    console.error(error);
-    setReportData([]);
-    setErrorMessage("Something went wrong while fetching data.");
-  } finally {
-    setIsLoading(false);
     setCurrentPage(1);
-  }
-};
+  };
 
-useEffect(() => {
-  fetchErrorCodeReport();
-}, []);
+  const fetchErrorCodeReport = async () => {
+    if (!userData?.username) return;
+
+    setIsLoading(true);
+    setErrorMessage("");
+
+    const formattedDate = formatDateToYYYYMMDD(selectedDate);
+
+    try {
+      const payload = {
+        loggedInUserName: userData.username,
+        fromDate: formattedDate, // Pass single selected date as fromDate
+        toDate: formattedDate,   // Pass single selected date as toDate
+      };
+
+      const response = await Endpoints.post("errorcodeReport", payload);
+
+      if (response.code === 21000) {
+        setReportData(response.grid || []);
+      } else {
+        setReportData([]);
+        setErrorMessage(
+          response.message || "Unable to fetch error code report."
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      setReportData([]);
+      setErrorMessage("Something went wrong while fetching data.");
+    } finally {
+      setIsLoading(false);
+      setCurrentPage(1);
+    }
+  };
+
+  useEffect(() => {
+    fetchErrorCodeReport();
+  }, []);
 
   const userOptions = useMemo(() => {
     const users = reportData.map((item) => item.username).filter(Boolean);
@@ -77,14 +91,28 @@ useEffect(() => {
   }, [reportData]);
 
   const filteredData = useMemo(() => {
-    return reportData.filter((item) => {
+    let processedData = reportData.filter((item) => {
       const matchesUser = selectedUser ? item.username === selectedUser : true;
       const matchesCode = selectedErrorCode
         ? String(item.errorCode) === String(selectedErrorCode)
         : true;
       return matchesUser && matchesCode;
     });
-  }, [reportData, selectedUser, selectedErrorCode]);
+
+    // Apply Sorting if sortField is active
+    if (sortField === "count") {
+      processedData.sort((a, b) => {
+        const valA = Number(a.count || 0);
+        const valB = Number(b.count || 0);
+
+        if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+        if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return processedData;
+  }, [reportData, selectedUser, selectedErrorCode, sortField, sortDirection]);
 
   const grandTotalCount = useMemo(() => {
     return filteredData.reduce(
@@ -102,41 +130,41 @@ useEffect(() => {
   );
 
   // Helper function to generate pagination items with ellipses
-const getPageNumbers = () => {
-  const pages = [];
-  const maxVisiblePages = 1; // Number of pages to show around current page
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 1; // Number of pages to show around current page
 
-  if (totalPages <= 5) {
-    // If 5 or fewer total pages, show all page numbers
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(i);
+    if (totalPages <= 5) {
+      // If 5 or fewer total pages, show all page numbers
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Always show first page
+      pages.push(1);
+
+      if (currentPage > maxVisiblePages + 2) {
+        pages.push("...");
+      }
+
+      // Determine start and end of middle pages
+      const startPage = Math.max(2, currentPage - maxVisiblePages);
+      const endPage = Math.min(totalPages - 1, currentPage + maxVisiblePages);
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+
+      if (currentPage < totalPages - (maxVisiblePages + 1)) {
+        pages.push("...");
+      }
+
+      // Always show last page
+      pages.push(totalPages);
     }
-  } else {
-    // Always show first page
-    pages.push(1);
 
-    if (currentPage > maxVisiblePages + 2) {
-      pages.push("...");
-    }
-
-    // Determine start and end of middle pages
-    const startPage = Math.max(2, currentPage - maxVisiblePages);
-    const endPage = Math.min(totalPages - 1, currentPage + maxVisiblePages);
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-
-    if (currentPage < totalPages - (maxVisiblePages + 1)) {
-      pages.push("...");
-    }
-
-    // Always show last page
-    pages.push(totalPages);
-  }
-
-  return pages;
-};
+    return pages;
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -144,29 +172,29 @@ const getPageNumbers = () => {
   };
 
   const handleReset = () => {
-  // Reset dropdown selections
-  setSelectedUser("");
-  setSelectedErrorCode("");
+    // Reset dropdown selections
+    setSelectedUser("");
+    setSelectedErrorCode("");
 
-  setSelectedDate(getTodayDate());
-  setReportData([]);
-  setCurrentPage(1);
-};
+    setSelectedDate(getTodayDate());
+    setReportData([]);
+    setCurrentPage(1);
+  };
 
-// Determines if dropdowns should be disabled (frozen)
-const isDropdownDisabled = isLoading || reportData.length === 0;
+  // Determines if dropdowns should be disabled (frozen)
+  const isDropdownDisabled = isLoading || reportData.length === 0;
 
-const CUSTOM_ERROR_DESCRIPTIONS = {
-  "101": "INSUFFICIENT BALANCE",
-  "102": "MESSAGE_RECEIVED_POST_CUT_OFF",
-  "103": "DND_NUMBER_FOUND",
-  "104": "RESTRICTED_CONTENT_FOUND",
-  "106": "USER_BLACK_LIST_NUMBER",
-  "107": "GLOBAL_BLACK_LIST_NUMBER_FOUND",
-  "109": "GLOBAL_BLACK_LIST_SENDER_ID_FOUND",
-  "110": "INVALID DESTINATION",
-  "113": "TEMPLATE_CONTENT_MISMATCH",
-};
+  const CUSTOM_ERROR_DESCRIPTIONS = {
+    "101": "INSUFFICIENT BALANCE",
+    "102": "MESSAGE_RECEIVED_POST_CUT_OFF",
+    "103": "DND_NUMBER_FOUND",
+    "104": "RESTRICTED_CONTENT_FOUND",
+    "106": "USER_BLACK_LIST_NUMBER",
+    "107": "GLOBAL_BLACK_LIST_NUMBER_FOUND",
+    "109": "GLOBAL_BLACK_LIST_SENDER_ID_FOUND",
+    "110": "INVALID DESTINATION",
+    "113": "TEMPLATE_CONTENT_MISMATCH",
+  };
 
   return (
     <div className="errorcode-report">
@@ -281,15 +309,32 @@ const CUSTOM_ERROR_DESCRIPTIONS = {
       ) : (
         <div className="errorcode-table-wrapper">
           <table className="errorcode-table">
-            <thead>
-              <tr>
-                <th>DATE</th>
-                <th>USERNAME</th>
-                <th>ERROR CODE</th>
-                <th>ERROR DESCRIPTION</th>
-                <th>COUNT</th>
-              </tr>
-            </thead>
+           <thead>
+                <tr>
+                  <th>DATE</th>
+                  <th>USERNAME</th>
+                  <th>ERROR CODE</th>
+                  <th>ERROR DESCRIPTION</th>
+                  <th
+                    onClick={() => handleSort("count")}
+                    style={{ cursor: "pointer", userSelect: "none" }}
+                  >
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      COUNT
+                      <span style={{ display: "inline-flex", flexDirection: "column", fontSize: "10px", lineHeight: "8px" }}>
+                        <ArrowUp
+                          size={10}
+                          color={sortField === "count" && sortDirection === "asc" ? "#000" : "#ccc"}
+                        />
+                        <ArrowDown
+                          size={10}
+                          color={sortField === "count" && sortDirection === "desc" ? "#000" : "#ccc"}
+                        />
+                      </span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
 
             <tbody>
             {isLoading ? (

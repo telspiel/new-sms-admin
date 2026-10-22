@@ -1,8 +1,9 @@
-import { useContext, useEffect, useState, useMemo } from "react";
+import { useContext, useEffect, useState, useMemo, useRef } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import "./SummaryReport.css";
 import Endpoints from "../../api/endpoint";
-import { Search } from "lucide-react";
+import { Search, ChevronDown, ChevronUp, ArrowUp, ArrowDown, Download  } from "lucide-react";
+
 
 const SummaryReport = () => {
   const { userData } = useContext(AuthContext);
@@ -37,9 +38,27 @@ const SummaryReport = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
+  const [isUserOpen, setIsUserOpen] = useState(false);
+  const [userSearchTerm, setUserSearchTerm] = useState("");
+  const [isSenderOpen, setIsSenderOpen] = useState(false);
+  const [senderSearchTerm, setSenderSearchTerm] = useState("");
+
   // Dynamic Column Visibility based on dropdown selections (Preserved)
   const showUserColumn = Boolean(selectedUser);
   const showSenderColumn = Boolean(selectedSenderId);
+
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState("asc"); // "asc" or "desc"
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+    setCurrentPage(1);
+  };
 
   // Fetch Summary Report Data
   const fetchSummaryReport = async () => {
@@ -74,6 +93,7 @@ const SummaryReport = () => {
           setUserList(uniqueUsers);
           setSenderList(uniqueSenders);
         }
+        
       } else {
         alert(response?.message || "Failed to fetch summary report");
         setGridData([]);
@@ -93,10 +113,11 @@ const SummaryReport = () => {
   }, [userData]);
 
   // Client-side filter fallback to guarantee instantaneous filtering and calculations
-  const filteredGridData = useMemo(() => {
+ const filteredGridData = useMemo(() => {
     if (!gridData || gridData.length === 0) return [];
 
-    return gridData.filter((row) => {
+    // Step 1: Filter rows based on selected dropdown values
+    const matchedRows = gridData.filter((row) => {
       const matchesUser = selectedUser
         ? row.username === selectedUser || row.clientName === selectedUser
         : true;
@@ -106,7 +127,66 @@ const SummaryReport = () => {
 
       return matchesUser && matchesSender;
     });
-  }, [gridData, selectedUser, selectedSenderId]);
+
+    // Step 2: Aggregation (Always group/merge rows by summaryDate to avoid duplicate dates)
+    const aggregatedMap = {};
+
+    matchedRows.forEach((item) => {
+      const date = item.summaryDate;
+      if (!aggregatedMap[date]) {
+        aggregatedMap[date] = {
+          summaryDate: date,
+          totalRequest: 0,
+          totalRejected: 0,
+          totalSubmit: 0,
+          totalDelivered: 0,
+          totalFailed: 0,
+          totalAwaited: 0,
+          // Retain username/senderId if filtered or keep them clean
+          username: selectedUser || item.username || "",
+          senderId: selectedSenderId || item.senderId || "",
+        };
+      }
+      aggregatedMap[date].totalRequest += Number(item.totalRequest || 0);
+      aggregatedMap[date].totalRejected += Number(item.totalRejected || 0);
+      aggregatedMap[date].totalSubmit += Number(item.totalSubmit || 0);
+      aggregatedMap[date].totalDelivered += Number(item.totalDelivered || 0);
+      aggregatedMap[date].totalFailed += Number(item.totalFailed || 0);
+      aggregatedMap[date].totalAwaited += Number(item.totalAwaited || 0);
+    });
+
+    let processedRows = Object.values(aggregatedMap);
+
+    // Step 3: Apply Sorting if a sort field is active
+    if (sortField) {
+      processedRows.sort((a, b) => {
+        const valA = Number(a[sortField] || 0);
+        const valB = Number(b[sortField] || 0);
+
+        if (valA < valB) return sortDirection === "asc" ? -1 : 1;
+        if (valA > valB) return sortDirection === "asc" ? 1 : -1;
+        return 0;
+      });
+    } else {
+      // Default fallback sorting by summaryDate descending
+      processedRows.sort((a, b) => new Date(b.summaryDate) - new Date(a.summaryDate));
+    }
+
+    return processedRows;
+  }, [gridData, selectedUser, selectedSenderId, sortField, sortDirection]);
+
+  // Filtered lists for custom search dropdowns
+  const filteredUsers = useMemo(() => {
+    return userList.filter((user) =>
+      user.toLowerCase().includes(userSearchTerm.toLowerCase())
+    );
+  }, [userList, userSearchTerm]);
+
+  const filteredSenders = useMemo(() => {
+    return senderList.filter((sender) =>
+      sender.toLowerCase().includes(senderSearchTerm.toLowerCase())
+    );
+  }, [senderList, senderSearchTerm]);
 
   const handleSearch = () => {
     setCurrentPage(1);
@@ -211,6 +291,110 @@ const SummaryReport = () => {
     (showUserColumn ? 1 : 0) + (showSenderColumn ? 1 : 0);
   const totalColumns = baseColumns + activeExtraColumnsCount;
 
+  // Inside your SummaryReport component:
+  const userDropdownRef = useRef(null);
+  const senderDropdownRef = useRef(null);
+
+  // Close User Dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
+        setIsUserOpen(false);
+      }
+    };
+    if (isUserOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isUserOpen]);
+
+  // Close Sender Dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (senderDropdownRef.current && !senderDropdownRef.current.contains(event.target)) {
+        setIsSenderOpen(false);
+      }
+    };
+    if (isSenderOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSenderOpen]);
+
+
+  //Download functionality
+  const downloadFile = (content, fileName, mimeType) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Export full filtered dataset as CSV
+  const handleDownloadCSV = () => {
+    if (!filteredGridData || filteredGridData.length === 0) return;
+
+    const headers = ["Summary Date", "Total Request", "Total Rejected", "Total Submit", "Total Delivered", "Total Failed", "Total Awaited"];
+    if (showUserColumn) headers.splice(1, 0, "Client Name");
+    if (showSenderColumn) headers.splice(showUserColumn ? 2 : 1, 0, "Sender ID");
+
+    const csvRows = [headers.join(",")];
+
+    filteredGridData.forEach((row) => {
+      const values = [
+        row.summaryDate,
+        ...(showUserColumn ? [row.username || "-"] : []),
+        ...(showSenderColumn ? [row.senderId || "-"] : []),
+        row.totalRequest || 0,
+        row.totalRejected || 0,
+        row.totalSubmit || 0,
+        row.totalDelivered || 0,
+        row.totalFailed || 0,
+        row.totalAwaited || 0,
+      ];
+      csvRows.push(values.join(","));
+    });
+
+    downloadFile(csvRows.join("\n"), `Summary_Report_${fromDate}_to_${toDate}.csv`, "text/csv;charset=utf-8;");
+  };
+
+  // Export full filtered dataset as simulated XLSX (Tab-separated format recognized by Excel)
+  const handleDownloadXLSX = () => {
+    if (!filteredGridData || filteredGridData.length === 0) return;
+
+    const headers = ["Summary Date", "Total Request", "Total Rejected", "Total Submit", "Total Delivered", "Total Failed", "Total Awaited"];
+    if (showUserColumn) headers.splice(1, 0, "Client Name");
+    if (showSenderColumn) headers.splice(showUserColumn ? 2 : 1, 0, "Sender ID");
+
+    const excelRows = [headers.join("\t")];
+
+    filteredGridData.forEach((row) => {
+      const values = [
+        row.summaryDate,
+        ...(showUserColumn ? [row.username || "-"] : []),
+        ...(showSenderColumn ? [row.senderId || "-"] : []),
+        row.totalRequest || 0,
+        row.totalRejected || 0,
+        row.totalSubmit || 0,
+        row.totalDelivered || 0,
+        row.totalFailed || 0,
+        row.totalAwaited || 0,
+      ];
+      excelRows.push(values.join("\t"));
+    });
+
+    downloadFile(excelRows.join("\n"), `Summary_Report_${fromDate}_to_${toDate}.xls`, "application/vnd.ms-excel;charset=utf-8;");
+  };
+
   return (
     <div className="summary-report">
       <div className="summary-report-header">
@@ -221,43 +405,144 @@ const SummaryReport = () => {
       </div>
 
       <div className="summary-filter-card">
-        <div className="summary-filter-field user-field">
+        <div className="summary-filter-field user-field" ref={userDropdownRef}>
           <label>User Name / Client Name</label>
-          <div className="summary-select">
-            <select
-              value={selectedUser}
-              onChange={(e) => {
-                setSelectedUser(e.target.value);
-                setCurrentPage(1);
-              }}
+          <div className="custom-summary-dropdown">
+            <button
+              type="button"
+              className={`summary-dropdown-trigger ${isUserOpen ? "active" : ""}`}
+              onClick={() => setIsUserOpen((prev) => !prev)}
             >
-              <option value="">All Users</option>
-              {userList.map((user, idx) => (
-                <option key={idx} value={user}>
-                  {user}
-                </option>
-              ))}
-            </select>
+              <span className={`trigger-text ${!selectedUser ? "placeholder" : ""}`}>
+                {selectedUser || "All Users"}
+              </span>
+              {isUserOpen ? (
+                <ChevronUp size={16} className="chevron-icon" />
+              ) : (
+                <ChevronDown size={16} className="chevron-icon" />
+              )}
+            </button>
+
+            {isUserOpen && (
+              <div className="summary-dropdown-menu">
+                <div className="summary-dropdown-search-container">
+                  <input
+                    type="text"
+                    className="summary-dropdown-search-input"
+                    placeholder="Search user..."
+                    value={userSearchTerm}
+                    onChange={(e) => setUserSearchTerm(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="manage-dropdown-options-list">
+                  <div
+                    className={`manage-dropdown-option ${!selectedUser ? "selected" : ""}`}
+                    onClick={() => {
+                      setSelectedUser("");
+                      setIsUserOpen(false);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    All Users
+                  </div>
+
+                  {filteredUsers.length > 0 ? (
+                    filteredUsers.map((user, idx) => (
+                      <div
+                        key={idx}
+                        className={`manage-dropdown-option ${
+                          selectedUser === user ? "selected" : ""
+                        }`}
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setIsUserOpen(false);
+                          setCurrentPage(1);
+                        }}
+                      >
+                        {user}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="manage-dropdown-no-results">
+                      No users found
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="summary-filter-field sender-field">
+        {/* Sender ID Custom Dropdown */}
+        <div className="summary-filter-field sender-field" ref={senderDropdownRef}>
           <label>Sender ID</label>
-          <div className="summary-select">
-            <select
-              value={selectedSenderId}
-              onChange={(e) => {
-                setSelectedSenderId(e.target.value);
-                setCurrentPage(1);
-              }}
+          <div className="custom-summary-dropdown">
+            <button
+              type="button"
+              className={`summary-dropdown-trigger ${isSenderOpen ? "active" : ""}`}
+              onClick={() => setIsSenderOpen((prev) => !prev)}
             >
-              <option value="">All Sender IDs</option>
-              {senderList.map((sender, idx) => (
-                <option key={idx} value={sender}>
-                  {sender}
-                </option>
-              ))}
-            </select>
+              <span className={`trigger-text ${!selectedSenderId ? "placeholder" : ""}`}>
+                {selectedSenderId || "All Sender IDs"}
+              </span>
+              {isSenderOpen ? (
+                <ChevronUp size={16} className="chevron-icon" />
+              ) : (
+                <ChevronDown size={16} className="chevron-icon" />
+              )}
+            </button>
+
+            {isSenderOpen && (
+              <div className="summary-dropdown-menu">
+                <div className="summary-dropdown-search-container">
+                  <input
+                    type="text"
+                    className="summary-dropdown-search-input"
+                    placeholder="Search sender ID..."
+                    value={senderSearchTerm}
+                    onChange={(e) => setSenderSearchTerm(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="manage-dropdown-options-list">
+                  <div
+                    className={`manage-dropdown-option ${!selectedSenderId ? "selected" : ""}`}
+                    onClick={() => {
+                      setSelectedSenderId("");
+                      setIsSenderOpen(false);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    All Sender IDs
+                  </div>
+
+                  {filteredSenders.length > 0 ? (
+                    filteredSenders.map((sender, idx) => (
+                      <div
+                        key={idx}
+                        className={`manage-dropdown-option ${
+                          selectedSenderId === sender ? "selected" : ""
+                        }`}
+                        onClick={() => {
+                          setSelectedSenderId(sender);
+                          setIsSenderOpen(false);
+                          setCurrentPage(1);
+                        }}
+                      >
+                        {sender}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="manage-dropdown-no-results">
+                      No sender IDs found
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -297,6 +582,27 @@ const SummaryReport = () => {
           <button className="summary-reset-btn" onClick={handleReset}>
             Reset
           </button>
+          
+          {!loading && (selectedUser || selectedSenderId) && filteredGridData.length > 0 && (
+            <div style={{ display: "inline-flex", gap: "8px", marginLeft: "auto" }}>
+              <button
+                type="button"
+                className="summary-reset-btn"
+                onClick={handleDownloadCSV}
+                style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+              >
+                <Download size={14} /> CSV
+              </button>
+              <button
+                type="button"
+                className="summary-reset-btn"
+                onClick={handleDownloadXLSX}
+                style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+              >
+                <Download size={14} /> XLSX
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -318,17 +624,40 @@ const SummaryReport = () => {
 
           <div className="summary-table-wrapper">
             <table className="summary-table">
-              <thead>
+             <thead>
                 <tr>
                   <th>SUMMARY DATE</th>
                   {showUserColumn && <th>CLIENT NAME</th>}
                   {showSenderColumn && <th>SENDER ID</th>}
-                  <th>TOTAL REQUEST</th>
-                  <th>TOTAL REJECTED</th>
-                  <th>TOTAL SUBMIT</th>
-                  <th>TOTAL DELIVERED</th>
-                  <th>TOTAL FAILED</th>
-                  <th>TOTAL AWAITED</th>
+
+                  {[
+                    { label: "TOTAL REQUEST", field: "totalRequest" },
+                    { label: "TOTAL REJECTED", field: "totalRejected" },
+                    { label: "TOTAL SUBMIT", field: "totalSubmit" },
+                    { label: "TOTAL DELIVERED", field: "totalDelivered" },
+                    { label: "TOTAL FAILED", field: "totalFailed" },
+                    { label: "TOTAL AWAITED", field: "totalAwaited" },
+                  ].map((col) => (
+                    <th
+                      key={col.field}
+                      onClick={() => handleSort(col.field)}
+                      style={{ cursor: "pointer", userSelect: "none" }}
+                    >
+                      <div style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        {col.label}
+                        <span style={{ display: "inline-flex", flexDirection: "column", fontSize: "10px", lineHeight: "8px" }}>
+                          <ArrowUp
+                            size={10}
+                            color={sortField === col.field && sortDirection === "asc" ? "#000" : "#ccc"}
+                          />
+                          <ArrowDown
+                            size={10}
+                            color={sortField === col.field && sortDirection === "desc" ? "#000" : "#ccc"}
+                          />
+                        </span>
+                      </div>
+                    </th>
+                  ))}
                 </tr>
               </thead>
 
