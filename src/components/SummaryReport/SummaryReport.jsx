@@ -44,8 +44,8 @@ const SummaryReport = () => {
   const [senderSearchTerm, setSenderSearchTerm] = useState("");
 
   // Dynamic Column Visibility based on dropdown selections (Preserved)
-  const showUserColumn = Boolean(selectedUser);
-  const showSenderColumn = Boolean(selectedSenderId);
+  const showUserColumn = selectedUser.length > 0;
+  const showSenderColumn = selectedSenderId.length > 0;
 
   const [sortField, setSortField] = useState(null);
   const [sortDirection, setSortDirection] = useState("asc"); // "asc" or "desc"
@@ -61,15 +61,15 @@ const SummaryReport = () => {
   };
 
   // Fetch Summary Report Data
-  const fetchSummaryReport = async () => {
+  const fetchSummaryReport = async (overridePayload) => {
     setLoading(true);
     try {
-      const payload = {
+      const payload = overridePayload || {
         loggedInUserName: userData.username,
         fromDate,
         toDate,
-        userName: selectedUser || undefined,
-        senderId: selectedSenderId || undefined,
+        userName: selectedUser.length > 0 ? selectedUser.join(",") : undefined,
+        senderId: selectedSenderId.length > 0 ? selectedSenderId.join(",") : undefined,
       };
 
       const response = await Endpoints.post(
@@ -83,7 +83,7 @@ const SummaryReport = () => {
         setGridData(rawGrid);
 
         // Keep dropdown lists intact by only initializing them when no dropdown filter is active
-        if (!selectedUser && !selectedSenderId) {
+        if (!payload.userName && !payload.senderId) {
           const uniqueUsers = [
             ...new Set(rawGrid.map((item) => item.username).filter(Boolean)),
           ];
@@ -93,7 +93,6 @@ const SummaryReport = () => {
           setUserList(uniqueUsers);
           setSenderList(uniqueSenders);
         }
-        
       } else {
         alert(response?.message || "Failed to fetch summary report");
         setGridData([]);
@@ -116,59 +115,58 @@ const SummaryReport = () => {
  const filteredGridData = useMemo(() => {
     if (!gridData || gridData.length === 0) return [];
 
-    // Step 1: Filter rows based on selected dropdown values
     const matchedRows = gridData.filter((row) => {
-      const matchesUser = selectedUser
-        ? row.username === selectedUser || row.clientName === selectedUser
-        : true;
-      const matchesSender = selectedSenderId
-        ? row.senderId === selectedSenderId
-        : true;
+      const rowUser = row.username || row.clientName;
+      const matchesUser = selectedUser.length > 0 ? selectedUser.includes(rowUser) : true;
+      const matchesSender = selectedSenderId.length > 0 ? selectedSenderId.includes(row.senderId) : true;
 
       return matchesUser && matchesSender;
     });
 
-    // Step 2: Aggregation (Always group/merge rows by summaryDate to avoid duplicate dates)
-    const aggregatedMap = {};
+    let processedRows = [];
 
-    matchedRows.forEach((item) => {
-      const date = item.summaryDate;
-      if (!aggregatedMap[date]) {
-        aggregatedMap[date] = {
-          summaryDate: date,
-          totalRequest: 0,
-          totalRejected: 0,
-          totalSubmit: 0,
-          totalDelivered: 0,
-          totalFailed: 0,
-          totalAwaited: 0,
-          // Retain username/senderId if filtered or keep them clean
-          username: selectedUser || item.username || "",
-          senderId: selectedSenderId || item.senderId || "",
-        };
-      }
-      aggregatedMap[date].totalRequest += Number(item.totalRequest || 0);
-      aggregatedMap[date].totalRejected += Number(item.totalRejected || 0);
-      aggregatedMap[date].totalSubmit += Number(item.totalSubmit || 0);
-      aggregatedMap[date].totalDelivered += Number(item.totalDelivered || 0);
-      aggregatedMap[date].totalFailed += Number(item.totalFailed || 0);
-      aggregatedMap[date].totalAwaited += Number(item.totalAwaited || 0);
-    });
+    if (selectedUser.length === 0 && selectedSenderId.length === 0) {
+      const aggregatedMap = {};
+      matchedRows.forEach((item) => {
+        const date = item.summaryDate;
+        if (!aggregatedMap[date]) {
+          aggregatedMap[date] = {
+            summaryDate: date,
+            totalRequest: 0,
+            totalRejected: 0,
+            totalSubmit: 0,
+            totalDelivered: 0,
+            totalFailed: 0,
+            totalAwaited: 0,
+            username: "",
+            senderId: "",
+          };
+        }
+        aggregatedMap[date].totalRequest += Number(item.totalRequest || 0);
+        aggregatedMap[date].totalRejected += Number(item.totalRejected || 0);
+        aggregatedMap[date].totalSubmit += Number(item.totalSubmit || 0);
+        aggregatedMap[date].totalDelivered += Number(item.totalDelivered || 0);
+        aggregatedMap[date].totalFailed += Number(item.totalFailed || 0);
+        aggregatedMap[date].totalAwaited += Number(item.totalAwaited || 0);
+      });
+      processedRows = Object.values(aggregatedMap);
+    } else {
+      processedRows = matchedRows.map((item) => ({
+        ...item,
+        username: item.username || item.clientName || "-",
+        senderId: item.senderId || "-",
+      }));
+    }
 
-    let processedRows = Object.values(aggregatedMap);
-
-    // Step 3: Apply Sorting if a sort field is active
     if (sortField) {
       processedRows.sort((a, b) => {
         const valA = Number(a[sortField] || 0);
         const valB = Number(b[sortField] || 0);
-
         if (valA < valB) return sortDirection === "asc" ? -1 : 1;
         if (valA > valB) return sortDirection === "asc" ? 1 : -1;
         return 0;
       });
     } else {
-      // Default fallback sorting by summaryDate descending
       processedRows.sort((a, b) => new Date(b.summaryDate) - new Date(a.summaryDate));
     }
 
@@ -193,16 +191,22 @@ const SummaryReport = () => {
     fetchSummaryReport();
   };
 
-  const handleReset = () => {
+const handleReset = () => {
     const today = getTodayIST();
-    setSelectedUser("");
-    setSelectedSenderId("");
+    setSelectedUser([]);
+    setSelectedSenderId([]);
     setFromDate(today);
     setToDate(today);
     setCurrentPage(1);
 
-    // Fetch fresh initial dataset and repopulate dropdown lists
-    fetchSummaryReport();
+    // Pass the fresh reset values directly into the fetch call
+    fetchSummaryReport({
+      loggedInUserName: userData.username,
+      fromDate: today,
+      toDate: today,
+      userName: undefined,
+      senderId: undefined,
+    });
   };
 
   // Percentage Helper (Calculated against Total Submit)
@@ -413,14 +417,14 @@ const SummaryReport = () => {
               className={`summary-dropdown-trigger ${isUserOpen ? "active" : ""}`}
               onClick={() => setIsUserOpen((prev) => !prev)}
             >
-              <span className={`trigger-text ${!selectedUser ? "placeholder" : ""}`}>
-                {selectedUser || "All Users"}
+              <span className={`trigger-text ${selectedUser.length === 0 ? "placeholder" : ""}`}>
+                {selectedUser.length === 0
+                  ? "All Clients"
+                  : selectedUser.length === 1
+                  ? selectedUser[0]
+                  : `${selectedUser.length} selected`}
               </span>
-              {isUserOpen ? (
-                <ChevronUp size={16} className="chevron-icon" />
-              ) : (
-                <ChevronDown size={16} className="chevron-icon" />
-              )}
+              {isUserOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
 
             {isUserOpen && (
@@ -429,7 +433,7 @@ const SummaryReport = () => {
                   <input
                     type="text"
                     className="summary-dropdown-search-input"
-                    placeholder="Search user..."
+                    placeholder="Search user / client..."
                     value={userSearchTerm}
                     onChange={(e) => setUserSearchTerm(e.target.value)}
                     autoFocus
@@ -437,38 +441,52 @@ const SummaryReport = () => {
                 </div>
 
                 <div className="manage-dropdown-options-list">
+                  {/* Select All Option */}
                   <div
-                    className={`manage-dropdown-option ${!selectedUser ? "selected" : ""}`}
+                    className="manage-dropdown-option"
+                    style={{ borderBottom: "1px solid #eee", fontWeight: "500" }}
                     onClick={() => {
-                      setSelectedUser("");
-                      setIsUserOpen(false);
+                      if (selectedUser.length === userList.length) {
+                        setSelectedUser([]);
+                      } else {
+                        setSelectedUser([...userList]);
+                      }
                       setCurrentPage(1);
                     }}
                   >
-                    All Users
+                    <input
+                      type="checkbox"
+                      checked={userList.length > 0 && selectedUser.length === userList.length}
+                      readOnly
+                      style={{ marginRight: "8px" }}
+                    />
+                    Select All
                   </div>
 
-                  {filteredUsers.length > 0 ? (
-                    filteredUsers.map((user, idx) => (
+                  {userList
+                    .filter((u) => u.toLowerCase().includes(userSearchTerm.toLowerCase()))
+                    .map((user, idx) => (
                       <div
                         key={idx}
-                        className={`manage-dropdown-option ${
-                          selectedUser === user ? "selected" : ""
-                        }`}
+                        className="manage-dropdown-option"
                         onClick={() => {
-                          setSelectedUser(user);
-                          setIsUserOpen(false);
+                          setSelectedUser((prev) =>
+                            prev.includes(user)
+                              ? prev.filter((item) => item !== user)
+                              : [...prev, user]
+                          );
                           setCurrentPage(1);
                         }}
                       >
+                        <input
+                          type="checkbox"
+                          checked={selectedUser.includes(user)}
+                          readOnly
+                          style={{ marginRight: "8px" }}
+                        />
                         {user}
                       </div>
-                    ))
-                  ) : (
-                    <div className="manage-dropdown-no-results">
-                      No users found
-                    </div>
-                  )}
+                    ))}
                 </div>
               </div>
             )}
@@ -476,7 +494,7 @@ const SummaryReport = () => {
         </div>
 
         {/* Sender ID Custom Dropdown */}
-        <div className="summary-filter-field sender-field" ref={senderDropdownRef}>
+       <div className="summary-filter-field sender-field" ref={senderDropdownRef}>
           <label>Sender ID</label>
           <div className="custom-summary-dropdown">
             <button
@@ -484,14 +502,14 @@ const SummaryReport = () => {
               className={`summary-dropdown-trigger ${isSenderOpen ? "active" : ""}`}
               onClick={() => setIsSenderOpen((prev) => !prev)}
             >
-              <span className={`trigger-text ${!selectedSenderId ? "placeholder" : ""}`}>
-                {selectedSenderId || "All Sender IDs"}
+              <span className={`trigger-text ${selectedSenderId.length === 0 ? "placeholder" : ""}`}>
+                {selectedSenderId.length === 0
+                  ? "All Sender IDs"
+                  : selectedSenderId.length === 1
+                  ? selectedSenderId[0]
+                  : `${selectedSenderId.length} selected`}
               </span>
-              {isSenderOpen ? (
-                <ChevronUp size={16} className="chevron-icon" />
-              ) : (
-                <ChevronDown size={16} className="chevron-icon" />
-              )}
+              {isSenderOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
 
             {isSenderOpen && (
@@ -508,38 +526,52 @@ const SummaryReport = () => {
                 </div>
 
                 <div className="manage-dropdown-options-list">
+                  {/* Select All Option */}
                   <div
-                    className={`manage-dropdown-option ${!selectedSenderId ? "selected" : ""}`}
+                    className="manage-dropdown-option"
+                    style={{ borderBottom: "1px solid #eee", fontWeight: "500" }}
                     onClick={() => {
-                      setSelectedSenderId("");
-                      setIsSenderOpen(false);
+                      if (selectedSenderId.length === senderList.length) {
+                        setSelectedSenderId([]);
+                      } else {
+                        setSelectedSenderId([...senderList]);
+                      }
                       setCurrentPage(1);
                     }}
                   >
-                    All Sender IDs
+                    <input
+                      type="checkbox"
+                      checked={senderList.length > 0 && selectedSenderId.length === senderList.length}
+                      readOnly
+                      style={{ marginRight: "8px" }}
+                    />
+                    Select All
                   </div>
 
-                  {filteredSenders.length > 0 ? (
-                    filteredSenders.map((sender, idx) => (
+                  {senderList
+                    .filter((s) => s.toLowerCase().includes(senderSearchTerm.toLowerCase()))
+                    .map((sender, idx) => (
                       <div
                         key={idx}
-                        className={`manage-dropdown-option ${
-                          selectedSenderId === sender ? "selected" : ""
-                        }`}
+                        className="manage-dropdown-option"
                         onClick={() => {
-                          setSelectedSenderId(sender);
-                          setIsSenderOpen(false);
+                          setSelectedSenderId((prev) =>
+                            prev.includes(sender)
+                              ? prev.filter((item) => item !== sender)
+                              : [...prev, sender]
+                          );
                           setCurrentPage(1);
                         }}
                       >
+                        <input
+                          type="checkbox"
+                          checked={selectedSenderId.includes(sender)}
+                          readOnly
+                          style={{ marginRight: "8px" }}
+                        />
                         {sender}
                       </div>
-                    ))
-                  ) : (
-                    <div className="manage-dropdown-no-results">
-                      No sender IDs found
-                    </div>
-                  )}
+                    ))}
                 </div>
               </div>
             )}
@@ -583,26 +615,26 @@ const SummaryReport = () => {
             Reset
           </button>
           
-          {!loading && (selectedUser || selectedSenderId) && filteredGridData.length > 0 && (
-            <div style={{ display: "inline-flex", gap: "8px", marginLeft: "auto" }}>
-              <button
-                type="button"
-                className="summary-reset-btn"
-                onClick={handleDownloadCSV}
-                style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
-              >
-                <Download size={14} /> CSV
-              </button>
-              <button
-                type="button"
-                className="summary-reset-btn"
-                onClick={handleDownloadXLSX}
-                style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
-              >
-                <Download size={14} /> XLSX
-              </button>
-            </div>
-          )}
+         {!loading && (selectedUser.length > 0 || selectedSenderId.length > 0) && filteredGridData.length > 0 && (
+          <div style={{ display: "inline-flex", gap: "8px", marginLeft: "auto" }}>
+            <button
+              type="button"
+              className="summary-reset-btn"
+              onClick={handleDownloadCSV}
+              style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+            >
+              <Download size={14} /> CSV
+            </button>
+            <button
+              type="button"
+              className="summary-reset-btn"
+              onClick={handleDownloadXLSX}
+              style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+            >
+              <Download size={14} /> XLSX
+            </button>
+          </div>
+        )}
         </div>
       </div>
 

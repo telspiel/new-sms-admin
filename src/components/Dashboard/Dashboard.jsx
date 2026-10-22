@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useMemo } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import "./Dashboard.css";
 
@@ -102,43 +102,62 @@ function Dashboard() {
   }
     };
 
+  // Aggregate hourly grid by summaryHour and sort them chronologically
+  const aggregatedHourlyData = useMemo(() => {
+    if (!hourlyGrid || hourlyGrid.length === 0) return [];
+
+    const hourMap = {};
+
+    hourlyGrid.forEach((item) => {
+      const hour = String(item.summaryHour ?? "0");
+      if (!hourMap[hour]) {
+        hourMap[hour] = {
+          summaryHour: hour,
+          totalSubmit: 0,
+          totalDelivered: 0,
+        };
+      }
+      hourMap[hour].totalSubmit += Number(item.totalSubmit || 0);
+      hourMap[hour].totalDelivered += Number(item.totalDelivered || 0);
+    });
+
+    // Convert map to array and sort by hour numerically (0 to 23)
+    return Object.values(hourMap).sort(
+      (a, b) => Number(a.summaryHour) - Number(b.summaryHour)
+    );
+  }, [hourlyGrid]);
+
   const hourlyData = {
-  labels: hourlyGrid.map((item) => `${item.summaryHour}:00`),
+    labels: aggregatedHourlyData.map((item) => `${item.summaryHour}:00`),
+    datasets: [
+      {
+        label: "Total Delivered",
+        data: aggregatedHourlyData.map((item) => item.totalDelivered),
+        borderColor: "#44a67e",
+        backgroundColor: "#44a67e",
+        fill: false,
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      },
+      {
+        label: "Total Submit",
+        data: aggregatedHourlyData.map((item) => item.totalSubmit),
+        borderColor: "#5c6575",
+        backgroundColor: "#5c6575",
+        fill: false,
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      },
+    ],
+  };
 
-  datasets: [
-    {
-      label: "Total Delivered",
-      data: hourlyGrid.map((item) =>
-        Number(item.totalDelivered)
-      ),
-      borderColor: "#44a67e",
-      backgroundColor: "#44a67e",
-      fill: false,
-      tension: 0.4,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-    },
-
-    {
-      label: "Total Submit",
-      data: hourlyGrid.map((item) =>
-        Number(item.totalSubmit)
-      ),
-      borderColor: "#5c6575",
-      backgroundColor: "#5c6575",
-      fill: false,
-      tension: 0.4,
-      pointRadius: 4,
-      pointHoverRadius: 6,
-    },
-  ],
-};
-
-const hasHourlyData = hourlyGrid.some(
-  (item) =>
-    Number(item.totalDelivered) > 0 ||
-    Number(item.totalSubmit) > 0
-);
+  const hasHourlyData = aggregatedHourlyData.some(
+    (item) =>
+      Number(item.totalDelivered) > 0 ||
+      Number(item.totalSubmit) > 0
+  );
 
 
     const getTodayIST = () => {
