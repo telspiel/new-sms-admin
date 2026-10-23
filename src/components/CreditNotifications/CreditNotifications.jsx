@@ -422,7 +422,7 @@ const numberToWords = (num) => {
                       min="1"
                     />
                   </div>
-                  <p className="numbers-to-words">
+                  <p className="numbers-to-words-header">
                     {amountToAdd ? numberToWords(amountToAdd) : ""}
                   </p>
                 </div>

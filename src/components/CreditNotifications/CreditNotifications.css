@@ -348,11 +348,12 @@
   box-shadow: 0 0 0 1px #eab308;
 }
 
-.numbers-to-words {
+.numbers-to-words-header {
   margin: 10px 0 0;
   font-weight: 500;
   font-size: 16px;
   text-align: left;
+  width: auto;
 }
 
 .notification-modal-footer {
