@@ -5,6 +5,7 @@ import {
   Search,
   TriangleAlert,
   TrendingDown,
+  Loader2,
 } from "lucide-react";
 
 import "./CreditNotifications.css";
@@ -193,6 +194,69 @@ const handleModalSubmit = async (e) => {
   }
 };
 
+//Converting credit amout numbers to words
+const numberToWords = (num) => {
+  if (!num || Number(num) <= 0) return "";
+
+  let n = Math.floor(Number(num));
+  if (n === 0) return "Zero";
+
+  const ones = [
+    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven",
+    "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen",
+    "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen",
+    "Nineteen",
+  ];
+
+  const tens = [
+    "", "", "Twenty", "Thirty", "Forty", "Fifty",
+    "Sixty", "Seventy", "Eighty", "Ninety",
+  ];
+
+  // Helper for numbers up to 999
+  const helper = (val) => {
+    if (val === 0) return "";
+    if (val < 20) return ones[val];
+    if (val < 100) {
+      return tens[Math.floor(val / 10)] + (val % 10 ? " " + ones[val % 10] : "");
+    }
+    if (val < 1000) {
+      return ones[Math.floor(val / 100)] + " Hundred" + (val % 100 ? " " + helper(val % 100) : "");
+    }
+    return "";
+  };
+
+  let str = "";
+
+  // Crore (1,00,00,000)
+  if (n >= 10000000) {
+    const crorePart = Math.floor(n / 10000000);
+    str += helper(crorePart) + " Crore ";
+    n %= 10000000;
+  }
+
+  // Lakh (1,00,000)
+  if (n >= 100000) {
+    const lakhPart = Math.floor(n / 100000);
+    str += helper(lakhPart) + " Lakh ";
+    n %= 100000;
+  }
+
+  // Thousand (1,000)
+  if (n >= 1000) {
+    const thousandPart = Math.floor(n / 1000);
+    str += helper(thousandPart) + " Thousand ";
+    n %= 1000;
+  }
+
+  // Hundreds and remainder
+  if (n > 0) {
+    str += helper(n);
+  }
+
+  return str.trim().replace(/\s+/g, " ");
+};
+
   return (
     <div className="credit-notifications">
        {toastMessage && (
@@ -328,7 +392,9 @@ const handleModalSubmit = async (e) => {
             </div>
 
             {modalLoading ? (
-              <div className="modal-loading">Loading account details...</div>
+              <div className="modal-loading">
+              <Loader2 className="loading-spinner" size={24} />
+            </div>
             ) : (
               <form onSubmit={handleModalSubmit}>
                 <div className="credit-modal-body">
@@ -374,6 +440,9 @@ const handleModalSubmit = async (e) => {
                       min="1"
                     />
                   </div>
+                  <p className="numbers-to-words-header">
+                    {amountToAdd ? numberToWords(amountToAdd) : ""}
+                  </p>
                 </div>
 
                 <div className="notification-modal-footer">

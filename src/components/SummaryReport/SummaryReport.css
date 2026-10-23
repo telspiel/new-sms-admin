@@ -204,7 +204,7 @@
   box-sizing: border-box;
   display: flex;
   align-items: flex-end;
-  gap: 15px;
+  gap: 20px;
   background: #fff6d9;
   border: 1px solid #f1dda0;
   border-radius: 15px;
@@ -232,7 +232,7 @@
 }
 
 .sender-field {
-  width: 191px;
+  width: 190px;
 }
 
 .date-field {
@@ -535,6 +535,86 @@
 .summary-table tfoot .summary-awaited-cell span {
   color: #718097;
 }
+
+/*  */
+.custom-summary-dropdown {
+  position: relative;
+  width: 400px;
+}
+
+/* Dropdown Trigger Box */
+.summary-dropdown-trigger {
+  width: 50%;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid #d8dee8;
+  padding: 0 16px;
+  font-size: 14px;
+  background: #ffffff;
+  color: #374151;
+  outline: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.summary-dropdown-trigger.active,
+.summary-dropdown-trigger:focus {
+  border-color: #ffcc29;
+  box-shadow: 0 0 0 2px rgba(255, 204, 41, 0.2);
+}
+
+.summary-dropdown-trigger .trigger-text.placeholder {
+  color: #374151;
+}
+
+.summary-dropdown-trigger .chevron-icon {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.summary-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 50%;
+  background: #ffffff;
+  border: 1px solid #edf2f7;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.summary-dropdown-search-container {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f2f5;
+  background: #fff;
+}
+
+.summary-dropdown-search-input {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  outline: none;
+  color: #374151;
+  background-color: #ffffff;
+}
+
+.summary-dropdown-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.summary-dropdown-search-input:focus {
+  border-color: #ffcc29;
+}
+
+
+/*  */
 
 .summary-pagination-dots {
   display: inline-flex;

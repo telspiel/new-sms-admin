@@ -470,6 +470,65 @@ const exportData = (format) => {
   }
 };
 
+//Converting credit amout numbers to words
+const numberToWords = (num) => {
+  if (!num || Number(num) <= 0) return "";
+
+  let n = Math.floor(Number(num));
+  if (n === 0) return "Zero";
+
+  const ones = [
+    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven",
+    "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen",
+    "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen",
+    "Nineteen",
+  ];
+
+  const tens = [
+    "", "", "Twenty", "Thirty", "Forty", "Fifty",
+    "Sixty", "Seventy", "Eighty", "Ninety",
+  ];
+
+  const convert = (val) => {
+    if (val === 0) return "";
+    if (val < 20) return ones[val];
+    if (val < 100) {
+      return tens[Math.floor(val / 10)] + (val % 10 ? " " + ones[val % 10] : "");
+    }
+    if (val < 1000) {
+      return ones[Math.floor(val / 100)] + " Hundred" + (val % 100 ? " " + convert(val % 100) : "");
+    }
+    return "";
+  };
+
+  let str = "";
+
+  // Crore (1,00,00,000)
+  if (n >= 10000000) {
+    str += convert(Math.floor(n / 10000000)) + " Crore ";
+    n %= 10000000;
+  }
+
+  // Lakh (1,00,000)
+  if (n >= 100000) {
+    str += convert(Math.floor(n / 100000)) + " Lakh ";
+    n %= 100000;
+  }
+
+  // Thousand (1,000)
+  if (n >= 1000) {
+    str += convert(Math.floor(n / 1000)) + " Thousand ";
+    n %= 1000;
+  }
+
+  // Hundreds and remainder
+  if (n > 0) {
+    str += convert(n);
+  }
+
+  return str.trim().replace(/\s+/g, " ");
+};
+
   return (
     <div className="credits-management">
         {toastMessage && (
@@ -699,20 +758,17 @@ const exportData = (format) => {
                   onChange={(e) => {
                     const val = e.target.value;
 
-                    // Allow empty string so user can delete/clear the input
                     if (val === "") {
                       setCreditToAdd("");
                       return;
                     }
 
-                    // Only allow positive integers (no leading zero, no negatives, no decimals)
                     if (/^[1-9]\d*$/.test(val) && val.length <= 16) {
                       setCreditToAdd(val);
                     }
                   }}
                   placeholder="0"
                   onKeyDown={(e) => {
-                    // Block invalid keypresses: minus, plus, e/E, decimals, commas
                     if (
                       e.key === "-" ||
                       e.key === "+" ||
@@ -738,6 +794,9 @@ const exportData = (format) => {
                 <small>
                     Whole numbers only · no per-transaction limit
                 </small>
+                <p className="numbers-to-words">
+                {creditToAdd ? numberToWords(creditToAdd) : ""}
+              </p>
                 </div>
 
                 {creditData.loggedInUserCredit !== null &&
@@ -984,7 +1043,6 @@ const exportData = (format) => {
             </div>
 
             <div className="credit-input-section">
-
                 <div className="credit-input">
 
                 <label>
@@ -1039,6 +1097,9 @@ const exportData = (format) => {
                 <small>
                     Cannot exceed the account's available credit
                 </small>
+                <p className="numbers-to-words">
+                  {creditToDeduct ? numberToWords(creditToDeduct) : ""}
+                </p>
                 </div>
 
                 {creditData.loggedInUserCredit !== null &&
