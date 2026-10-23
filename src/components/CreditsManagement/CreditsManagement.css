@@ -194,6 +194,14 @@
   margin-top: 10px;
 }
 
+.numbers-to-words {
+  margin: 10px 0 0;
+  font-weight: 500;
+  font-size: 16px;
+  text-align: left;
+  width: 500px;
+}
+
 .credit-input {
   width: 360px;
 }

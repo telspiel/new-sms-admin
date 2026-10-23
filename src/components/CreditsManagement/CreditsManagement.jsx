@@ -470,6 +470,51 @@ const exportData = (format) => {
   }
 };
 
+//Converting credit amout numbers to words
+const numberToWords = (num) => {
+  if (!num || Number(num) <= 0) return "";
+
+  const ones = [
+    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven",
+    "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen",
+    "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen",
+    "Nineteen",
+  ];
+
+  const tens = [
+    "", "", "Twenty", "Thirty", "Forty", "Fifty",
+    "Sixty", "Seventy", "Eighty", "Ninety",
+  ];
+
+  const convert = (n) => {
+    if (n < 20) return ones[n];
+
+    if (n < 100) {
+      return tens[Math.floor(n / 10)] +
+        (n % 10 ? " " + ones[n % 10] : "");
+    }
+
+    if (n < 1000) {
+      return ones[Math.floor(n / 100)] + " Hundred" +
+        (n % 100 ? " " + convert(n % 100) : "");
+    }
+
+    if (n < 1000000) {
+      return convert(Math.floor(n / 1000)) + " Thousand" +
+        (n % 1000 ? " " + convert(n % 1000) : "");
+    }
+
+    if (n < 1000000000) {
+      return convert(Math.floor(n / 1000000)) + " Million" +
+        (n % 1000000 ? " " + convert(n % 1000000) : "");
+    }
+
+    return "Number too large";
+  };
+
+  return convert(Math.floor(Number(num)));
+};
+
   return (
     <div className="credits-management">
         {toastMessage && (
@@ -699,20 +744,17 @@ const exportData = (format) => {
                   onChange={(e) => {
                     const val = e.target.value;
 
-                    // Allow empty string so user can delete/clear the input
                     if (val === "") {
                       setCreditToAdd("");
                       return;
                     }
 
-                    // Only allow positive integers (no leading zero, no negatives, no decimals)
                     if (/^[1-9]\d*$/.test(val) && val.length <= 16) {
                       setCreditToAdd(val);
                     }
                   }}
                   placeholder="0"
                   onKeyDown={(e) => {
-                    // Block invalid keypresses: minus, plus, e/E, decimals, commas
                     if (
                       e.key === "-" ||
                       e.key === "+" ||
@@ -738,6 +780,9 @@ const exportData = (format) => {
                 <small>
                     Whole numbers only · no per-transaction limit
                 </small>
+                <p className="numbers-to-words">
+                {creditToAdd ? numberToWords(creditToAdd) : ""}
+              </p>
                 </div>
 
                 {creditData.loggedInUserCredit !== null &&
@@ -984,7 +1029,6 @@ const exportData = (format) => {
             </div>
 
             <div className="credit-input-section">
-
                 <div className="credit-input">
 
                 <label>
@@ -1039,6 +1083,9 @@ const exportData = (format) => {
                 <small>
                     Cannot exceed the account's available credit
                 </small>
+                <p className="numbers-to-words">
+                  {creditToDeduct ? numberToWords(creditToDeduct) : ""}
+                </p>
                 </div>
 
                 {creditData.loggedInUserCredit !== null &&
