@@ -198,6 +198,9 @@ const handleModalSubmit = async (e) => {
 const numberToWords = (num) => {
   if (!num || Number(num) <= 0) return "";
 
+  let n = Math.floor(Number(num));
+  if (n === 0) return "Zero";
+
   const ones = [
     "", "One", "Two", "Three", "Four", "Five", "Six", "Seven",
     "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen",
@@ -210,33 +213,48 @@ const numberToWords = (num) => {
     "Sixty", "Seventy", "Eighty", "Ninety",
   ];
 
-  const convert = (n) => {
-    if (n < 20) return ones[n];
-
-    if (n < 100) {
-      return tens[Math.floor(n / 10)] +
-        (n % 10 ? " " + ones[n % 10] : "");
+  // Helper for numbers up to 999
+  const helper = (val) => {
+    if (val === 0) return "";
+    if (val < 20) return ones[val];
+    if (val < 100) {
+      return tens[Math.floor(val / 10)] + (val % 10 ? " " + ones[val % 10] : "");
     }
-
-    if (n < 1000) {
-      return ones[Math.floor(n / 100)] + " Hundred" +
-        (n % 100 ? " " + convert(n % 100) : "");
+    if (val < 1000) {
+      return ones[Math.floor(val / 100)] + " Hundred" + (val % 100 ? " " + helper(val % 100) : "");
     }
-
-    if (n < 1000000) {
-      return convert(Math.floor(n / 1000)) + " Thousand" +
-        (n % 1000 ? " " + convert(n % 1000) : "");
-    }
-
-    if (n < 1000000000) {
-      return convert(Math.floor(n / 1000000)) + " Million" +
-        (n % 1000000 ? " " + convert(n % 1000000) : "");
-    }
-
-    return "Number too large";
+    return "";
   };
 
-  return convert(Math.floor(Number(num)));
+  let str = "";
+
+  // Crore (1,00,00,000)
+  if (n >= 10000000) {
+    const crorePart = Math.floor(n / 10000000);
+    str += helper(crorePart) + " Crore ";
+    n %= 10000000;
+  }
+
+  // Lakh (1,00,000)
+  if (n >= 100000) {
+    const lakhPart = Math.floor(n / 100000);
+    str += helper(lakhPart) + " Lakh ";
+    n %= 100000;
+  }
+
+  // Thousand (1,000)
+  if (n >= 1000) {
+    const thousandPart = Math.floor(n / 1000);
+    str += helper(thousandPart) + " Thousand ";
+    n %= 1000;
+  }
+
+  // Hundreds and remainder
+  if (n > 0) {
+    str += helper(n);
+  }
+
+  return str.trim().replace(/\s+/g, " ");
 };
 
   return (
