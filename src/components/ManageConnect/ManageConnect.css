@@ -133,7 +133,7 @@
   background-color: #ffffff;
 }
 
-.manage-dropdown-search-input::placeholder {
+.manage-dropdown-search-input::placeholder { 
   color: #9ca3af;
 }
 
