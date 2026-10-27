@@ -141,6 +141,11 @@
   border-color: #ffcc29;
 }
 
+.manage-dropdown-option.highlighted {
+  background-color: #f0f0f0; /* Adjust to match your theme's hover state */
+  color: #000;
+}
+
 /* Options Scrollable Container */
 .manage-dropdown-options-list {
   max-height: 200px;

@@ -383,6 +383,10 @@ const ManageConnect = () => {
 
         setToastMessage(`${selectedGroupName} kannel routing saved`);
 
+        setSelectedGroup("");
+        setGroupSearchTerm("");
+        setIsGroupOpen(false);
+
         setTimeout(() => {
           setToastMessage("");
         }, 2000);
@@ -398,6 +402,10 @@ const ManageConnect = () => {
     setRows(JSON.parse(JSON.stringify(originalRows)));
     setAllocationError("");
     setIsSubmitted(false);
+
+    setSelectedGroup("");
+    setGroupSearchTerm("");
+    setIsGroupOpen(false);
   };
 
   return (
